@@ -1,22 +1,29 @@
 import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@/lib/supabase";
-import type { Food } from "@/lib/types";
+import { transformFoodLog } from "@/lib/transformFoodLog";
 
 export async function POST(req: NextRequest) {
   const { userId } = await auth();
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const body = await req.json();
-  const foods: Food[] = body.foods;
+  const formData = await req.formData();
+  const file = formData.get("file") as File | null;
 
-  if (!Array.isArray(foods) || foods.length === 0) {
-    return NextResponse.json({ error: "No foods provided" }, { status: 400 });
+  if (!file) {
+    return NextResponse.json({ error: "No file provided" }, { status: 400 });
+  }
+
+  const arrayBuffer = await file.arrayBuffer();
+  const buffer = Buffer.from(arrayBuffer);
+  const foods = transformFoodLog(buffer);
+
+  if (foods.length === 0) {
+    return NextResponse.json({ error: "No foods found in file" }, { status: 400 });
   }
 
   const supabase = createServerClient();
 
-  // Delete existing foods for this user and replace (full re-import)
   await supabase.from("foods").delete().eq("user_id", userId);
 
   const rows = foods.map((f) => ({
@@ -41,5 +48,5 @@ export async function POST(req: NextRequest) {
   const { error } = await supabase.from("foods").insert(rows);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
-  return NextResponse.json({ imported: rows.length });
+  return NextResponse.json({ imported: rows.length, foods });
 }

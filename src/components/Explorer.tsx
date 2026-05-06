@@ -138,7 +138,7 @@ export function Explorer() {
           <div style={{ textAlign: "center", padding: "80px 20px" }}>
             <div style={{ fontFamily: '"Fraunces", serif', fontSize: 28, fontWeight: 600, color: "#2a1f1a", marginBottom: 12 }}>No hay datos aún</div>
             <p style={{ fontFamily: '"Inter", sans-serif', fontSize: 15, color: "#6b4423", marginBottom: 24, lineHeight: 1.5 }}>
-              Importa tu archivo JSON de MacroFactor para comenzar.
+              Importa tu archivo Excel (.xlsx) de MacroFactor para comenzar.
             </p>
             <ImportButton onImported={setFoods} />
           </div>

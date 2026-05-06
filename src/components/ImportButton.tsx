@@ -6,7 +6,6 @@ interface Props {
   onImported: (foods: Food[]) => void;
 }
 
-// Re-processes the MacroFactor enriched JSON that we already computed
 export function ImportButton({ onImported }: Props) {
   const [status, setStatus] = useState<"idle" | "loading" | "done" | "error">("idle");
   const inputRef = useRef<HTMLInputElement>(null);
@@ -14,16 +13,15 @@ export function ImportButton({ onImported }: Props) {
   const handleFile = async (file: File) => {
     setStatus("loading");
     try {
-      const text = await file.text();
-      const foods: Food[] = JSON.parse(text);
+      const formData = new FormData();
+      formData.append("file", file);
       const res = await fetch("/api/import", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ foods }),
+        body: formData,
       });
       const data = await res.json();
       if (data.error) throw new Error(data.error);
-      onImported(foods);
+      onImported(data.foods);
       setStatus("done");
       setTimeout(() => setStatus("idle"), 3000);
     } catch (e) {
@@ -45,7 +43,7 @@ export function ImportButton({ onImported }: Props) {
       <input
         ref={inputRef}
         type="file"
-        accept=".json"
+        accept=".xlsx"
         style={{ display: "none" }}
         onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); }}
       />
