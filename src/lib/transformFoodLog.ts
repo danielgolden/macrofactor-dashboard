@@ -5,10 +5,10 @@ interface RawRow {
   "Food Name"?: string;
   "Serving Qty"?: number | string;
   "Serving Weight (g)"?: number | string;
-  "Calories"?: number | string;
+  "Calories (kcal)"?: number | string;
   "Protein (g)"?: number | string;
   "Fat (g)"?: number | string;
-  "Carbohydrates (g)"?: number | string;
+  "Carbs (g)"?: number | string;
   [key: string]: unknown;
 }
 
@@ -30,8 +30,17 @@ function classifyCategory(p: number, f: number, c: number): Category {
   return "mixed";
 }
 
-export function transformFoodLog(buffer: Buffer): Food[] {
-  const workbook = XLSX.read(buffer, { type: "buffer" });
+function fixCsvQuotes(text: string): string {
+  // MacroFactor CSV has unescaped " in food names (e.g. '0" Raw').
+  // A rogue quote is one preceded and followed by non-delimiter chars.
+  return text.replace(/([^,\n\r"])"(?=[^,\n\r"])/g, '$1""');
+}
+
+export function transformFoodLog(buffer: Buffer, filename = ""): Food[] {
+  const isCSV = filename.toLowerCase().endsWith(".csv");
+  const workbook = isCSV
+    ? XLSX.read(fixCsvQuotes(buffer.toString("utf-8")), { type: "string" })
+    : XLSX.read(buffer, { type: "buffer" });
 
   const sheetName = workbook.SheetNames.includes("Food Log")
     ? "Food Log"
@@ -69,10 +78,10 @@ export function transformFoodLog(buffer: Buffer): Food[] {
 
     if (!portionWeight || portionWeight <= 0) continue;
 
-    const calories = Number(row["Calories"]) || 0;
+    const calories = Number(row["Calories (kcal)"]) || 0;
     const protein = Number(row["Protein (g)"]) || 0;
     const fat = Number(row["Fat (g)"]) || 0;
-    const carb = Number(row["Carbohydrates (g)"]) || 0;
+    const carb = Number(row["Carbs (g)"]) || 0;
 
     const existing = accumulator.get(name);
     if (existing) {

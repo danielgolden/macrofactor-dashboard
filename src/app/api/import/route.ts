@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
 
   const arrayBuffer = await file.arrayBuffer();
   const buffer = Buffer.from(arrayBuffer);
-  const foods = transformFoodLog(buffer);
+  const foods = transformFoodLog(buffer, file.name);
 
   if (foods.length === 0) {
     return NextResponse.json({ error: "No foods found in file" }, { status: 400 });
