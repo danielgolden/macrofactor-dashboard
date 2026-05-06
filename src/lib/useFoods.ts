@@ -1,22 +1,41 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import type { Food } from "@/lib/types";
 
-export function useFoods() {
+export function useFoods(search: string, page: number) {
   const [foods, setFoods] = useState<Food[]>([]);
+  const [total, setTotal] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
-    fetch("/api/foods")
+    abortRef.current?.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
+
+    setLoading(true);
+    const params = new URLSearchParams();
+    if (search) {
+      params.set("search", search);
+    } else {
+      params.set("page", String(page));
+    }
+
+    fetch(`/api/foods?${params}`, { signal: controller.signal })
       .then((r) => r.json())
       .then((d) => {
         if (d.error) throw new Error(d.error);
         setFoods(d.foods);
+        setTotal(d.total);
+        setTotalPages(d.totalPages ?? 1);
       })
-      .catch((e) => setError(e.message))
-      .finally(() => setLoading(false));
-  }, []);
+      .catch((e) => { if (e.name !== "AbortError") setError(e.message); })
+      .finally(() => { if (!controller.signal.aborted) setLoading(false); });
 
-  return { foods, loading, error, setFoods };
+    return () => controller.abort();
+  }, [search, page]);
+
+  return { foods, total, totalPages, loading, error, setFoods };
 }

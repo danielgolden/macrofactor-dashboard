@@ -1,5 +1,5 @@
 "use client";
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import { UserButton } from "@clerk/nextjs";
 import type { Food, Zone, Category } from "@/lib/types";
 import { ZONE_META } from "@/lib/types";
@@ -21,10 +21,24 @@ const VIEWS = [
 type ViewId = typeof VIEWS[number]["id"];
 
 export function Explorer() {
-  const { foods: rawFoods, loading, error, setFoods } = useFoods();
   const [view, setView]         = useState<ViewId>("explorer");
   const [search, setSearch]     = useState("");
+  const [page, setPage]         = useState(1);
   const [sortBy, setSortBy]     = useState("density");
+
+  // Debounce search → reset page when it changes
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => {
+    if (debounceTimer.current) clearTimeout(debounceTimer.current);
+    debounceTimer.current = setTimeout(() => {
+      setDebouncedSearch(search);
+      setPage(1);
+    }, 300);
+    return () => { if (debounceTimer.current) clearTimeout(debounceTimer.current); };
+  }, [search]);
+
+  const { foods: rawFoods, total, totalPages, loading, error, setFoods } = useFoods(debouncedSearch, page);
   const [activeZones, setActiveZones]           = useState<Set<Zone>>(new Set(["low", "medium", "high"]));
   const [activeCategories, setActiveCategories] = useState<Set<Category>>(new Set(["protein", "carb", "fat", "mixed"]));
   const [selected, setSelected] = useState<Food | null>(null);
@@ -56,13 +70,12 @@ export function Explorer() {
     };
     return rawFoods
       .filter((f) => {
-        if (search && !f.name.toLowerCase().includes(search.toLowerCase())) return false;
         if (!activeZones.has(f.zone)) return false;
         if (!activeCategories.has(f.category)) return false;
         return true;
       })
       .sort(sorts[sortBy] ?? sorts.density);
-  }, [rawFoods, search, activeZones, activeCategories, sortBy]);
+  }, [rawFoods, activeZones, activeCategories, sortBy]);
 
   const stats = useMemo(() => {
     const totalCal = rawFoods.reduce((s, f) => s + f.totalCalories, 0);
@@ -151,7 +164,22 @@ export function Explorer() {
             )}
 
             {view === "explorer" && (
-              <ExplorerView foods={filtered} compareList={compareList} toggleCompare={toggleCompare} onSelect={setSelected} sortBy={sortBy} setSortBy={setSortBy} />
+              <>
+                <ExplorerView foods={filtered} compareList={compareList} toggleCompare={toggleCompare} onSelect={setSelected} sortBy={sortBy} setSortBy={setSortBy} />
+                {!debouncedSearch && totalPages > 1 && (
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 16, marginTop: 32, fontFamily: '"JetBrains Mono", monospace', fontSize: 11 }}>
+                    <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1}
+                      style={{ padding: "6px 14px", border: "1px solid #a8702c", background: "transparent", color: page === 1 ? "#c4b49a" : "#a8702c", cursor: page === 1 ? "default" : "pointer" }}>
+                      ← anterior
+                    </button>
+                    <span style={{ color: "#6b4423" }}>{page} / {totalPages} · {total} alimentos</span>
+                    <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages}
+                      style={{ padding: "6px 14px", border: "1px solid #a8702c", background: "transparent", color: page === totalPages ? "#c4b49a" : "#a8702c", cursor: page === totalPages ? "default" : "pointer" }}>
+                      siguiente →
+                    </button>
+                  </div>
+                )}
+              </>
             )}
             {view === "scatter" && (
               <>

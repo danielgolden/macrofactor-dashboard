@@ -1,21 +1,34 @@
 import { auth } from "@clerk/nextjs/server";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@/lib/supabase";
 
-export async function GET() {
+const PAGE_SIZE = 100;
+
+export async function GET(req: NextRequest) {
   const { userId } = await auth();
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
+  const { searchParams } = req.nextUrl;
+  const search = searchParams.get("search")?.trim() ?? "";
+  const page = Math.max(1, Number(searchParams.get("page") ?? 1));
+
   const supabase = createServerClient();
-  const { data, error } = await supabase
+
+  let query = supabase
     .from("foods")
-    .select("*")
+    .select("*", { count: "exact" })
     .eq("user_id", userId)
     .order("cal_density", { ascending: false });
 
+  if (search) {
+    query = query.ilike("name", `%${search}%`).limit(5000);
+  } else {
+    query = query.range((page - 1) * PAGE_SIZE, page * PAGE_SIZE - 1);
+  }
+
+  const { data, error, count } = await query;
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
-  // Map snake_case DB cols → camelCase for the frontend
   const foods = (data ?? []).map((r) => ({
     name: r.name,
     calDensity: Number(r.cal_density),
@@ -34,5 +47,8 @@ export async function GET() {
     impactScore: Number(r.impact_score),
   }));
 
-  return NextResponse.json({ foods });
+  const total = count ?? 0;
+  const totalPages = search ? 1 : Math.ceil(total / PAGE_SIZE);
+
+  return NextResponse.json({ foods, total, page, totalPages });
 }
