@@ -2,7 +2,11 @@
 import { useState, useEffect, useRef } from "react";
 import type { Food } from "@/lib/types";
 
-export function useFoods(search: string, page: number) {
+export function useFoods(
+  search: string,
+  page: number,
+  dateRange: { start: string; end: string } | null = null
+) {
   const [foods, setFoods] = useState<Food[]>([]);
   const [total, setTotal] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
@@ -17,7 +21,12 @@ export function useFoods(search: string, page: number) {
 
     setLoading(true);
     const params = new URLSearchParams();
-    if (search) {
+
+    if (dateRange) {
+      params.set("startDate", dateRange.start);
+      params.set("endDate", dateRange.end);
+      if (search) params.set("search", search);
+    } else if (search) {
       params.set("search", search);
     } else {
       params.set("page", String(page));
@@ -35,7 +44,7 @@ export function useFoods(search: string, page: number) {
       .finally(() => { if (!controller.signal.aborted) setLoading(false); });
 
     return () => controller.abort();
-  }, [search, page]);
+  }, [search, page, dateRange]);
 
   return { foods, total, totalPages, loading, error, setFoods };
 }

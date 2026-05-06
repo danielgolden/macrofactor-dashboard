@@ -1,6 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@/lib/supabase";
+import { aggregateEntries, type LogEntry } from "@/lib/aggregateEntries";
 
 const PAGE_SIZE = 100;
 
@@ -11,9 +12,43 @@ export async function GET(req: NextRequest) {
   const { searchParams } = req.nextUrl;
   const search = searchParams.get("search")?.trim() ?? "";
   const page = Math.max(1, Number(searchParams.get("page") ?? 1));
+  const startDate = searchParams.get("startDate")?.trim() ?? "";
+  const endDate = searchParams.get("endDate")?.trim() ?? "";
 
   const supabase = createServerClient();
 
+  // Date range mode: aggregate from food_log_entries
+  if (startDate && endDate) {
+    const { data, error } = await supabase
+      .from("food_log_entries")
+      .select("*")
+      .eq("user_id", userId)
+      .gte("date", startDate)
+      .lte("date", endDate);
+
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+    const entries: LogEntry[] = (data ?? []).map((r) => ({
+      date: r.date,
+      foodName: r.food_name,
+      weightG: Number(r.weight_g),
+      calories: Number(r.calories),
+      fatG: Number(r.fat_g),
+      carbsG: Number(r.carbs_g),
+      proteinG: Number(r.protein_g),
+    }));
+
+    let foods = aggregateEntries(entries);
+
+    if (search) {
+      const lower = search.toLowerCase();
+      foods = foods.filter((f) => f.name.toLowerCase().includes(lower));
+    }
+
+    return NextResponse.json({ foods, total: foods.length, page: 1, totalPages: 1 });
+  }
+
+  // Default mode: query foods table (paginated)
   let query = supabase
     .from("foods")
     .select("*", { count: "exact" })

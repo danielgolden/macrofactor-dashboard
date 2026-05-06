@@ -1,7 +1,9 @@
 import * as XLSX from "xlsx";
-import type { Food, Zone, Category } from "./types";
+import type { Food } from "./types";
+import { aggregateEntries, type LogEntry } from "./aggregateEntries";
 
 interface RawRow {
+  "Date"?: string;
   "Food Name"?: string;
   "Serving Qty"?: number | string;
   "Serving Weight (g)"?: number | string;
@@ -12,31 +14,13 @@ interface RawRow {
   [key: string]: unknown;
 }
 
-function classifyZone(density: number): Zone {
-  if (density < 1.5) return "low";
-  if (density <= 4) return "medium";
-  return "high";
-}
-
-function classifyCategory(p: number, f: number, c: number): Category {
-  const total = p * 4 + f * 9 + c * 4;
-  if (total === 0) return "mixed";
-  const pp = (p * 4) / total;
-  const fp = (f * 9) / total;
-  const cp = (c * 4) / total;
-  if (pp >= 0.4) return "protein";
-  if (cp >= 0.5) return "carb";
-  if (fp >= 0.5) return "fat";
-  return "mixed";
-}
-
 function fixCsvQuotes(text: string): string {
   // MacroFactor CSV has unescaped " in food names (e.g. '0" Raw').
   // A rogue quote is one preceded and followed by non-delimiter chars.
   return text.replace(/([^,\n\r"])"(?=[^,\n\r"])/g, '$1""');
 }
 
-export function transformFoodLog(buffer: Buffer, filename = ""): Food[] {
+export function transformFoodLog(buffer: Buffer, filename = ""): { foods: Food[]; entries: LogEntry[] } {
   const isCSV = filename.toLowerCase().endsWith(".csv");
   const workbook = isCSV
     ? XLSX.read(fixCsvQuotes(buffer.toString("utf-8")), { type: "string" })
@@ -58,15 +42,7 @@ export function transformFoodLog(buffer: Buffer, filename = ""): Food[] {
     return normalized;
   });
 
-  // Accumulate per food name
-  const accumulator = new Map<string, {
-    totalWeight: number;
-    totalCalories: number;
-    totalProtein: number;
-    totalFat: number;
-    totalCarb: number;
-    count: number;
-  }>();
+  const entries: LogEntry[] = [];
 
   for (const row of rows) {
     const name = String(row["Food Name"] ?? "").trim();
@@ -78,69 +54,26 @@ export function transformFoodLog(buffer: Buffer, filename = ""): Food[] {
 
     if (!portionWeight || portionWeight <= 0) continue;
 
-    const calories = Number(row["Calories (kcal)"]) || 0;
-    const protein = Number(row["Protein (g)"]) || 0;
-    const fat = Number(row["Fat (g)"]) || 0;
-    const carb = Number(row["Carbs (g)"]) || 0;
-
-    const existing = accumulator.get(name);
-    if (existing) {
-      existing.totalWeight += portionWeight;
-      existing.totalCalories += calories;
-      existing.totalProtein += protein;
-      existing.totalFat += fat;
-      existing.totalCarb += carb;
-      existing.count += 1;
-    } else {
-      accumulator.set(name, {
-        totalWeight: portionWeight,
-        totalCalories: calories,
-        totalProtein: protein,
-        totalFat: fat,
-        totalCarb: carb,
-        count: 1,
-      });
+    const rawDate = String(row["Date"] ?? "").trim();
+    // Normalize date to YYYY-MM-DD; MacroFactor exports as MM/DD/YYYY or YYYY-MM-DD
+    let date = rawDate;
+    if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(rawDate)) {
+      const [m, d, y] = rawDate.split("/");
+      date = `${y}-${m.padStart(2, "0")}-${d.padStart(2, "0")}`;
     }
-  }
 
-  const foods: Food[] = [];
-
-  for (const [name, acc] of accumulator.entries()) {
-    const { totalWeight, totalCalories, totalProtein, totalFat, totalCarb, count } = acc;
-
-    const calDensity = parseFloat((totalCalories / totalWeight).toFixed(2));
-    const proteinPer100g = parseFloat(((totalProtein / totalWeight) * 100).toFixed(1));
-    const fatPer100g = parseFloat(((totalFat / totalWeight) * 100).toFixed(1));
-    const carbPer100g = parseFloat(((totalCarb / totalWeight) * 100).toFixed(1));
-
-    const calFromMacros = proteinPer100g * 4 + fatPer100g * 9 + carbPer100g * 4;
-    const proteinPct = calFromMacros > 0 ? parseFloat(((proteinPer100g * 4 / calFromMacros) * 100).toFixed(1)) : 0;
-    const fatPct = calFromMacros > 0 ? parseFloat(((fatPer100g * 9 / calFromMacros) * 100).toFixed(1)) : 0;
-    const carbPct = calFromMacros > 0 ? parseFloat(((carbPer100g * 4 / calFromMacros) * 100).toFixed(1)) : 0;
-
-    const zone = classifyZone(calDensity);
-    const category = classifyCategory(proteinPer100g, fatPer100g, carbPer100g);
-    const avgPortion = parseFloat((totalWeight / count).toFixed(1));
-    const impactScore = parseFloat((totalCalories * calDensity).toFixed(0));
-
-    foods.push({
-      name,
-      calDensity,
-      timesEaten: count,
-      totalWeight: parseFloat(totalWeight.toFixed(1)),
-      totalCalories: parseFloat(totalCalories.toFixed(1)),
-      proteinPer100g,
-      fatPer100g,
-      carbPer100g,
-      proteinPct,
-      fatPct,
-      carbPct,
-      category,
-      zone,
-      avgPortion,
-      impactScore,
+    entries.push({
+      date,
+      foodName: name,
+      weightG: portionWeight,
+      calories: Number(row["Calories (kcal)"]) || 0,
+      fatG: Number(row["Fat (g)"]) || 0,
+      carbsG: Number(row["Carbs (g)"]) || 0,
+      proteinG: Number(row["Protein (g)"]) || 0,
     });
   }
 
-  return foods;
+  const foods = aggregateEntries(entries);
+
+  return { foods, entries };
 }

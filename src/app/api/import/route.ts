@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
 
   const arrayBuffer = await file.arrayBuffer();
   const buffer = Buffer.from(arrayBuffer);
-  const foods = transformFoodLog(buffer, file.name);
+  const { foods, entries } = transformFoodLog(buffer, file.name);
 
   if (foods.length === 0) {
     return NextResponse.json({ error: "No foods found in file" }, { status: 400 });
@@ -24,8 +24,29 @@ export async function POST(req: NextRequest) {
 
   const supabase = createServerClient();
 
+  // Clear existing data for this user
   await supabase.from("foods").delete().eq("user_id", userId);
+  await supabase.from("food_log_entries").delete().eq("user_id", userId);
 
+  // Insert raw entries in batches of 500
+  const entryRows = entries.map((e) => ({
+    user_id: userId,
+    date: e.date,
+    food_name: e.foodName,
+    weight_g: e.weightG,
+    calories: e.calories,
+    fat_g: e.fatG,
+    carbs_g: e.carbsG,
+    protein_g: e.proteinG,
+  }));
+
+  for (let i = 0; i < entryRows.length; i += 500) {
+    const batch = entryRows.slice(i, i + 500);
+    const { error } = await supabase.from("food_log_entries").insert(batch);
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  // Insert aggregated foods
   const rows = foods.map((f) => ({
     user_id: userId,
     name: f.name,
@@ -48,5 +69,5 @@ export async function POST(req: NextRequest) {
   const { error } = await supabase.from("foods").insert(rows);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
-  return NextResponse.json({ imported: rows.length, foods });
+  return NextResponse.json({ imported: foods.length, foods });
 }

@@ -11,6 +11,7 @@ import { ExplorerView } from "./ExplorerView";
 import { ScatterView } from "./ScatterView";
 import { RankingView } from "./RankingView";
 import { ImportButton } from "./ImportButton";
+import { DateRangePicker } from "./DateRangePicker";
 
 const VIEWS = [
   { id: "explorer", label: "Explorador" },
@@ -25,6 +26,7 @@ export function Explorer() {
   const [search, setSearch]     = useState("");
   const [page, setPage]         = useState(1);
   const [sortBy, setSortBy]     = useState("density");
+  const [dateRange, setDateRange] = useState<{ start: string; end: string } | null>(null);
 
   // Debounce search → reset page when it changes
   const [debouncedSearch, setDebouncedSearch] = useState("");
@@ -38,7 +40,13 @@ export function Explorer() {
     return () => { if (debounceTimer.current) clearTimeout(debounceTimer.current); };
   }, [search]);
 
-  const { foods: rawFoods, total, totalPages, loading, error, setFoods } = useFoods(debouncedSearch, page);
+  const { foods: rawFoods, total, totalPages, loading, error, setFoods } = useFoods(debouncedSearch, page, dateRange);
+
+  const handleDateRangeChange = useCallback((range: { start: string; end: string } | null) => {
+    setDateRange(range);
+    setPage(1);
+  }, []);
+
   const [activeZones, setActiveZones]           = useState<Set<Zone>>(new Set(["low", "medium", "high"]));
   const [activeCategories, setActiveCategories] = useState<Set<Category>>(new Set(["protein", "carb", "fat", "mixed"]));
   const [selected, setSelected] = useState<Food | null>(null);
@@ -132,6 +140,13 @@ export function Explorer() {
           ))}
         </div>
       </nav>
+
+      {/* Date range picker */}
+      <div style={{ background: "#faf6ed", borderBottom: "1px solid #e8dcc8", padding: "10px 24px" }}>
+        <div style={{ maxWidth: 900, margin: "0 auto" }}>
+          <DateRangePicker value={dateRange} onChange={handleDateRangeChange} />
+        </div>
+      </div>
 
       {/* Stats strip */}
       {rawFoods.length > 0 && (
