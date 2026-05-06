@@ -1,0 +1,31 @@
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --cream: #faf6ed;
+  --ink: #2a1f1a;
+  --brown: #6b4423;
+  --amber: #a8702c;
+  --red: #a83c2a;
+  --green: #4a7c2a;
+  --border: #d4c4a0;
+  --surface: #f5ebd6;
+}
+
+html { font-size: 16px; }
+
+body {
+  background: var(--cream);
+  color: var(--ink);
+  font-family: "Inter", sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+button { cursor: pointer; }
+input, select, button { font-family: inherit; }
+
+::selection { background: var(--amber); color: var(--cream); }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--cream); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 0; }

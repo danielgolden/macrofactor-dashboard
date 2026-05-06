@@ -1,0 +1,33 @@
+export type Zone = "low" | "medium" | "high";
+export type Category = "protein" | "carb" | "fat" | "mixed";
+
+export interface Food {
+  name: string;
+  calDensity: number;
+  timesEaten: number;
+  totalWeight: number;
+  totalCalories: number;
+  proteinPer100g: number;
+  fatPer100g: number;
+  carbPer100g: number;
+  proteinPct: number;
+  fatPct: number;
+  carbPct: number;
+  category: Category;
+  zone: Zone;
+  avgPortion: number;
+  impactScore: number;
+}
+
+export const ZONE_META: Record<Zone, { fill: string; light: string; label: string; range: string }> = {
+  low:    { fill: "#4a7c2a", light: "#e8f1e4", label: "Baja",  range: "< 1.5 kcal/g" },
+  medium: { fill: "#a8702c", light: "#f5ebd6", label: "Media", range: "1.5–4 kcal/g"  },
+  high:   { fill: "#a83c2a", light: "#f0d4cc", label: "Alta",  range: "> 4 kcal/g"    },
+};
+
+export const CAT_META: Record<Category, { label: string; color: string }> = {
+  protein: { label: "Proteína", color: "#a83c2a" },
+  carb:    { label: "Carbo",    color: "#a8702c" },
+  fat:     { label: "Grasa",    color: "#7a5a3a" },
+  mixed:   { label: "Mixto",    color: "#4a6a8a" },
+};

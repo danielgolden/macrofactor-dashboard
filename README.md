@@ -1,73 +1,89 @@
-# React + TypeScript + Vite
+# MacroFactor Explorer
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Visualizador personal de densidad calórica — Next.js + Clerk + Supabase.
 
-Currently, two official plugins are available:
+## Stack
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **Next.js 15** (App Router)
+- **Clerk** — autenticación con Google
+- **Supabase** — base de datos PostgreSQL
+- **Stripe Projects** — gestión de credenciales y servicios
 
-## React Compiler
+---
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Setup con Stripe Projects (recomendado)
 
-## Expanding the ESLint configuration
+```bash
+# 1. Instalar Stripe CLI y el plugin
+brew install stripe/stripe-cli/stripe
+stripe plugin install projects
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+# 2. Inicializar el proyecto (en esta carpeta)
+stripe projects init macrofactor-explorer
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+# 3. Conectar servicios
+stripe projects add clerk/auth
+stripe projects add supabase/database
+stripe projects add vercel/project
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+# 4. Sincronizar variables de entorno
+stripe projects env --pull
+# → Genera .env.local automáticamente
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+# 5. Instalar dependencias y correr
+npm install
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+---
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## Setup manual (alternativo)
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+cp .env.example .env.local
+# Llenar las variables con tus keys de Clerk, Supabase y Vercel
+npm install
+npm run dev
 ```
+
+---
+
+## Base de datos
+
+Después de crear el proyecto en Supabase, corre el migration:
+
+```bash
+# En el SQL Editor de Supabase, pega el contenido de:
+supabase/migration.sql
+```
+
+---
+
+## Importar datos de MacroFactor
+
+1. Exporta desde MacroFactor → **Food Log** como Excel
+2. Corre el script de procesamiento:
+   ```bash
+   node scripts/process-macrofactor.js tu-export.xlsx
+   # → genera foods.json
+   ```
+3. En la app, click en **↑ Importar datos** y selecciona `foods.json`
+
+---
+
+## Deploy
+
+Vercel detecta Next.js automáticamente. Con Stripe Projects:
+
+```bash
+stripe projects open vercel
+```
+
+O conecta el repo manualmente en vercel.com → New Project → Import from GitHub.
+
+Variables de entorno requeridas en Vercel:
+- `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`
+- `CLERK_SECRET_KEY`
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- `SUPABASE_SERVICE_ROLE_KEY`
