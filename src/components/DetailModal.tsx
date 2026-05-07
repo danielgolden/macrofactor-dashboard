@@ -9,6 +9,137 @@ interface Props {
   inCompare: boolean;
 }
 
+const RADAR_SIZE = 190;
+const CX = RADAR_SIZE / 2;
+const CY = RADAR_SIZE / 2;
+const R = 68;
+const GRID = [0.25, 0.5, 0.75, 1];
+
+interface Axis {
+  label: string;
+  value: number; // 0-1
+  rawLabel: string;
+}
+
+function radarPoint(i: number, n: number, value: number) {
+  const angle = (i / n) * 2 * Math.PI - Math.PI / 2;
+  return {
+    x: CX + R * value * Math.cos(angle),
+    y: CY + R * value * Math.sin(angle),
+    ax: CX + R * Math.cos(angle),
+    ay: CY + R * Math.sin(angle),
+    lx: CX + (R + 18) * Math.cos(angle),
+    ly: CY + (R + 18) * Math.sin(angle),
+  };
+}
+
+function RadarChart({ food }: { food: Food }) {
+  const axes: Axis[] = [
+    {
+      label: "Proteína",
+      value: food.proteinPct / 100,
+      rawLabel: `${food.proteinPer100g.toFixed(1)}g/100g`,
+    },
+    {
+      label: "Densidad",
+      value: Math.min(food.calDensity / 8, 1),
+      rawLabel: `${food.calDensity} kcal/g`,
+    },
+    {
+      label: "Carbos",
+      value: food.carbPct / 100,
+      rawLabel: `${food.carbPer100g.toFixed(1)}g/100g`,
+    },
+    {
+      label: "Grasa",
+      value: food.fatPct / 100,
+      rawLabel: `${food.fatPer100g.toFixed(1)}g/100g`,
+    },
+  ];
+
+  const n = axes.length;
+  const pts = axes.map((axis, i) => ({ ...axis, ...radarPoint(i, n, axis.value) }));
+  const gridPts = axes.map((_, i) => radarPoint(i, n, 1));
+  const dataPolygon = pts.map(p => `${p.x.toFixed(2)},${p.y.toFixed(2)}`).join(" ");
+  const catColor = CAT_META[food.category].color;
+
+  return (
+    <svg width={RADAR_SIZE} height={RADAR_SIZE} style={{ display: "block", margin: "0 auto" }}>
+      {/* Grid levels */}
+      {GRID.map(level => {
+        const gp = axes.map((_, i) => radarPoint(i, n, level));
+        return (
+          <polygon
+            key={level}
+            points={gp.map(p => `${p.x.toFixed(2)},${p.y.toFixed(2)}`).join(" ")}
+            fill="none"
+            stroke="#d4c4a0"
+            strokeWidth={level === 1 ? 1 : 0.5}
+          />
+        );
+      })}
+
+      {/* Axis lines */}
+      {gridPts.map((p, i) => (
+        <line key={i} x1={CX} y1={CY} x2={p.ax.toFixed(2)} y2={p.ay.toFixed(2)} stroke="#d4c4a0" strokeWidth={0.5} />
+      ))}
+
+      {/* Data polygon */}
+      <polygon
+        points={dataPolygon}
+        fill={catColor}
+        fillOpacity={0.25}
+        stroke={catColor}
+        strokeWidth={2}
+        strokeLinejoin="round"
+      />
+
+      {/* Data dots */}
+      {pts.map((p, i) => (
+        <circle key={i} cx={p.x.toFixed(2)} cy={p.y.toFixed(2)} r={3.5} fill={catColor} />
+      ))}
+
+      {/* Labels */}
+      {pts.map((p, i) => (
+        <text
+          key={i}
+          x={p.lx.toFixed(2)}
+          y={p.ly.toFixed(2)}
+          textAnchor="middle"
+          dominantBaseline="middle"
+          fontSize={8.5}
+          fontFamily='"JetBrains Mono", monospace'
+          fill="#6b4423"
+          style={{ textTransform: "uppercase", letterSpacing: 0.5 }}
+        >
+          {p.label}
+        </text>
+      ))}
+
+      {/* Percentage labels on data points (only when large enough) */}
+      {pts.map((p, i) => {
+        const pct = Math.round(p.value * 100);
+        if (pct < 8) return null;
+        return (
+          <text
+            key={`val-${i}`}
+            x={(p.x + (p.x - CX) * 0.22).toFixed(2)}
+            y={(p.y + (p.y - CY) * 0.22).toFixed(2)}
+            textAnchor="middle"
+            dominantBaseline="middle"
+            fontSize={7.5}
+            fontFamily='"JetBrains Mono", monospace'
+            fill={catColor}
+            fontWeight="bold"
+          >
+            {pct}%
+          </text>
+        );
+      })}
+    </svg>
+  );
+}
+
 export function DetailModal({ food, onClose, onCompare, inCompare }: Props) {
   if (!food) return null;
   const z = ZONE_META[food.zone];
@@ -37,7 +168,7 @@ export function DetailModal({ food, onClose, onCompare, inCompare }: Props) {
           </div>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 10, marginBottom: 16 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 10, marginBottom: 20 }}>
           {([
             ["Para 100 kcal", `${gramsFor100}g`],
             ["Porción típica", `${food.avgPortion.toFixed(0)}g`],
@@ -53,8 +184,18 @@ export function DetailModal({ food, onClose, onCompare, inCompare }: Props) {
           ))}
         </div>
 
-        <div style={{ background: "#f5ebd6", padding: 12, borderLeft: "3px solid #a8702c", fontSize: 12, color: "#6b4423", lineHeight: 1.5, marginBottom: 16 }}>
-          <strong>Macros por 100g:</strong> Proteína {food.proteinPer100g.toFixed(1)}g · Carbos {food.carbPer100g.toFixed(1)}g · Grasa {food.fatPer100g.toFixed(1)}g
+        {/* Radar chart */}
+        <div style={{ background: "#f5ebd6", padding: "16px 12px 12px", marginBottom: 18, borderLeft: `3px solid ${CAT_META[food.category].color}` }}>
+          <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 8, color: "#6b4423", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 10, textAlign: "center" }}>
+            Perfil de macros
+          </div>
+          <RadarChart food={food} />
+          <div style={{ display: "flex", justifyContent: "center", gap: 14, marginTop: 10, fontFamily: '"JetBrains Mono", monospace', fontSize: 8, color: "#6b4423" }}>
+            <span>P {food.proteinPer100g.toFixed(1)}g</span>
+            <span>G {food.fatPer100g.toFixed(1)}g</span>
+            <span>C {food.carbPer100g.toFixed(1)}g</span>
+            <span style={{ color: "#a8702c" }}>· por 100g</span>
+          </div>
         </div>
 
         <button
