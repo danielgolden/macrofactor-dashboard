@@ -8,10 +8,12 @@ interface Props {
 
 export function ImportButton({ onImported }: Props) {
   const [status, setStatus] = useState<"idle" | "loading" | "done" | "error">("idle");
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const handleFile = async (file: File) => {
     setStatus("loading");
+    setErrorMsg(null);
     try {
       const formData = new FormData();
       formData.append("file", file);
@@ -25,9 +27,11 @@ export function ImportButton({ onImported }: Props) {
       setStatus("done");
       setTimeout(() => setStatus("idle"), 3000);
     } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
       console.error(e);
+      setErrorMsg(msg);
       setStatus("error");
-      setTimeout(() => setStatus("idle"), 3000);
+      setTimeout(() => { setStatus("idle"); setErrorMsg(null); }, 8000);
     }
   };
 
@@ -39,7 +43,7 @@ export function ImportButton({ onImported }: Props) {
   }[status];
 
   return (
-    <>
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 4 }}>
       <input
         ref={inputRef}
         type="file"
@@ -64,6 +68,18 @@ export function ImportButton({ onImported }: Props) {
       >
         {label}
       </button>
-    </>
+      {errorMsg && (
+        <div style={{
+          fontFamily: '"JetBrains Mono", monospace',
+          fontSize: 9,
+          color: "#a83c2a",
+          maxWidth: 260,
+          textAlign: "right",
+          lineHeight: 1.4,
+        }}>
+          {errorMsg}
+        </div>
+      )}
+    </div>
   );
 }

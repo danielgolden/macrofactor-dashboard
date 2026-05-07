@@ -1,5 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
+
+export const maxDuration = 60; // Vercel Pro: hasta 60s
 import { createServerClient } from "@/lib/supabase";
 import { transformFoodLog } from "@/lib/transformFoodLog";
 
@@ -46,7 +48,7 @@ export async function POST(req: NextRequest) {
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  // Insert aggregated foods
+  // Insert aggregated foods in batches of 500
   const rows = foods.map((f) => ({
     user_id: userId,
     name: f.name,
@@ -66,8 +68,10 @@ export async function POST(req: NextRequest) {
     impact_score: f.impactScore,
   }));
 
-  const { error } = await supabase.from("foods").insert(rows);
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  for (let i = 0; i < rows.length; i += 500) {
+    const { error } = await supabase.from("foods").insert(rows.slice(i, i + 500));
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  }
 
   return NextResponse.json({ imported: foods.length, foods });
 }
