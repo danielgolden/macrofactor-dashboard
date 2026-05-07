@@ -1,7 +1,11 @@
 .next/
 node_modules/
-.env
-.env.local
 .projects/state.local.json
 *.log
 .DS_Store
+
+.projects/cache
+.projects/vault
+.env
+.env.local
+.vercel

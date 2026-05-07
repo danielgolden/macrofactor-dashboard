@@ -18,14 +18,10 @@ export async function POST(req: NextRequest) {
 
   const arrayBuffer = await file.arrayBuffer();
   const buffer = Buffer.from(arrayBuffer);
-  const { foods, entries, debug } = transformFoodLog(buffer, file.name);
+  const { foods, entries } = transformFoodLog(buffer, file.name);
 
   if (foods.length === 0) {
-    console.error("[import] No foods found. Debug:", JSON.stringify(debug, null, 2));
-    return NextResponse.json({
-      error: "No foods found in file",
-      debug,
-    }, { status: 400 });
+    return NextResponse.json({ error: "No foods found in file" }, { status: 400 });
   }
 
   const supabase = createServerClient();

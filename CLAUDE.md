@@ -42,3 +42,7 @@ Stripe Projects las genera automáticamente con `stripe projects env --pull`.
 - El middleware de Clerk protege todas las rutas excepto `/sign-in`
 - La tabla `foods` usa RLS — cada usuario solo ve sus propios datos
 - El import de datos va a `/api/import` (POST) con el JSON de MacroFactor procesado
+
+<!-- stripe-projects-cli managed:claude-md:start -->
+look at AGENTS.md for your rules
+<!-- stripe-projects-cli managed:claude-md:end -->

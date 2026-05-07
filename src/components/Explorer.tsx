@@ -13,14 +13,12 @@ import { RankingView } from "./RankingView";
 import { ImportButton } from "./ImportButton";
 import { DateRangePicker } from "./DateRangePicker";
 import { TreemapView } from "./TreemapView";
-import { CalendarHeatmap } from "./CalendarHeatmap";
 
 const VIEWS = [
   { id: "explorer", label: "Explorador" },
   { id: "scatter",  label: "Densidad vs Porción" },
   { id: "ranking",  label: "Ranking Mensual" },
   { id: "treemap",  label: "Mapa de Calorías" },
-  { id: "calendar", label: "Calendario" },
 ] as const;
 
 type ViewId = typeof VIEWS[number]["id"];
@@ -220,9 +218,6 @@ export function Explorer() {
             )}
             {view === "treemap" && (
               <TreemapView foods={filtered} onSelect={setSelected} />
-            )}
-            {view === "calendar" && (
-              <CalendarHeatmap dateRange={dateRange} />
             )}
           </>
         )}

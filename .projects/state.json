@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "providers": {
+    "clerk": {
+      "name": "Clerk"
+    },
+    "supabase": {
+      "name": "Supabase"
+    },
+    "vercel": {
+      "name": "Vercel"
+    }
+  },
+  "resources": {
+    "clerk-auth": {
+      "name": "clerk-auth",
+      "providerName": "Clerk",
+      "serviceId": "auth"
+    },
+    "supabase-project": {
+      "name": "supabase-project",
+      "providerName": "Supabase",
+      "serviceId": "project"
+    },
+    "vercel-project": {
+      "name": "vercel-project",
+      "providerName": "Vercel",
+      "serviceId": "project"
+    }
+  }
+}

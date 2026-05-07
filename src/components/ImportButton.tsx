@@ -22,10 +22,7 @@ export function ImportButton({ onImported }: Props) {
         body: formData,
       });
       const data = await res.json();
-      if (data.error) {
-        if (data.debug) console.table(data.debug);
-        throw new Error(data.error);
-      }
+      if (data.error) throw new Error(data.error);
       onImported(data.foods);
       setStatus("done");
       setTimeout(() => setStatus("idle"), 3000);

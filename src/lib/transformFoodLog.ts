@@ -20,7 +20,7 @@ function fixCsvQuotes(text: string): string {
   return text.replace(/([^,\n\r"])"(?=[^,\n\r"])/g, '$1""');
 }
 
-export function transformFoodLog(buffer: Buffer, filename = ""): { foods: Food[]; entries: LogEntry[]; debug: Record<string, unknown> } {
+export function transformFoodLog(buffer: Buffer, filename = ""): { foods: Food[]; entries: LogEntry[] } {
   const isCSV = filename.toLowerCase().endsWith(".csv");
   const workbook = isCSV
     ? XLSX.read(fixCsvQuotes(buffer.toString("utf-8")), { type: "string" })
@@ -44,20 +44,19 @@ export function transformFoodLog(buffer: Buffer, filename = ""): { foods: Food[]
   });
 
   const entries: LogEntry[] = [];
-  let skipNoName = 0, skipNoPortion = 0, skipNoDate = 0, skipBadDate = 0;
 
   for (const row of rows) {
     const name = String(row["Food Name"] ?? "").trim();
-    if (!name) { skipNoName++; continue; }
+    if (!name) continue;
 
     const qty = Number(row["Serving Qty"]);
     const weight = Number(row["Serving Weight (g)"]);
     const portionWeight = qty * weight;
 
-    if (!portionWeight || portionWeight <= 0) { skipNoPortion++; continue; }
+    if (!portionWeight || portionWeight <= 0) continue;
 
     const rawDate = String(row["Date"] ?? "").trim();
-    if (!rawDate) { skipNoDate++; continue; }
+    if (!rawDate) continue;
 
     // Normalize date to YYYY-MM-DD
     // MacroFactor exports: M/D/YY (all-time), MM/DD/YYYY (monthly), or YYYY-MM-DD
@@ -70,7 +69,7 @@ export function transformFoodLog(buffer: Buffer, filename = ""): { foods: Food[]
       date = `${y}-${m.padStart(2, "0")}-${d.padStart(2, "0")}`;
     }
 
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) { skipBadDate++; continue; }
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) continue;
 
     entries.push({
       date,
@@ -85,21 +84,5 @@ export function transformFoodLog(buffer: Buffer, filename = ""): { foods: Food[]
 
   const foods = aggregateEntries(entries);
 
-  // Sample first non-empty row for debugging
-  const sampleRow = rows.find(r => Object.values(r).some(v => v !== "")) ?? rows[0];
-
-  const debug = {
-    sheetNames: workbook.SheetNames,
-    usedSheet: sheetName,
-    totalRows: rows.length,
-    columns: rows[0] ? Object.keys(rows[0]) : [],
-    sampleValues: sampleRow ? JSON.stringify(sampleRow).slice(0, 300) : null,
-    skipNoName,
-    skipNoPortion,
-    skipNoDate,
-    skipBadDate,
-    entriesBuilt: entries.length,
-  };
-
-  return { foods, entries, debug };
+  return { foods, entries };
 }
