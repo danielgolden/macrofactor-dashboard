@@ -33,11 +33,12 @@ export function transformFoodLog(buffer: Buffer, filename = ""): { foods: Food[]
   const sheet = workbook.Sheets[sheetName];
   const rawRows: RawRow[] = XLSX.utils.sheet_to_json(sheet, { raw: false, defval: "" });
 
-  // Normalize headers by trimming
+  // Normalize headers: trim whitespace and strip surrounding quotes
   const rows: RawRow[] = rawRows.map((row) => {
     const normalized: RawRow = {};
     for (const key of Object.keys(row)) {
-      (normalized as Record<string, unknown>)[key.trim()] = row[key];
+      const cleanKey = key.trim().replace(/^"+|"+$/g, "");
+      (normalized as Record<string, unknown>)[cleanKey] = row[key];
     }
     return normalized;
   });
