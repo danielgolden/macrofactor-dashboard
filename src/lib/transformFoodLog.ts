@@ -20,7 +20,7 @@ function fixCsvQuotes(text: string): string {
   return text.replace(/([^,\n\r"])"(?=[^,\n\r"])/g, '$1""');
 }
 
-export function transformFoodLog(buffer: Buffer, filename = ""): { foods: Food[]; entries: LogEntry[] } {
+export function transformFoodLog(buffer: Buffer, filename = ""): { foods: Food[]; entries: LogEntry[]; debug: Record<string, unknown> } {
   const isCSV = filename.toLowerCase().endsWith(".csv");
   const workbook = isCSV
     ? XLSX.read(fixCsvQuotes(buffer.toString("utf-8")), { type: "string" })
@@ -79,5 +79,14 @@ export function transformFoodLog(buffer: Buffer, filename = ""): { foods: Food[]
 
   const foods = aggregateEntries(entries);
 
-  return { foods, entries };
+  const debug = {
+    sheetNames: workbook.SheetNames,
+    usedSheet: sheetName,
+    totalRows: rows.length,
+    columns: rows[0] ? Object.keys(rows[0]) : [],
+    firstRow: rows[0] ?? null,
+    entriesBuilt: entries.length,
+  };
+
+  return { foods, entries, debug };
 }
