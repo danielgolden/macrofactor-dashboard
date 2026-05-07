@@ -26,8 +26,8 @@ export const ZONE_META: Record<Zone, { fill: string; light: string; label: strin
 };
 
 export const CAT_META: Record<Category, { label: string; color: string }> = {
-  protein: { label: "Proteína", color: "#a83c2a" },
-  carb:    { label: "Carbo",    color: "#a8702c" },
-  fat:     { label: "Grasa",    color: "#7a5a3a" },
-  mixed:   { label: "Mixto",    color: "#4a6a8a" },
+  protein: { label: "Proteína", color: "#3a7c3a" },
+  carb:    { label: "Carbo",    color: "#a83c2a" },
+  fat:     { label: "Grasa",    color: "#2a5a8a" },
+  mixed:   { label: "Mixto",    color: "#7a5a3a" },
 };
