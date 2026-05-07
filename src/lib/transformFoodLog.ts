@@ -44,28 +44,33 @@ export function transformFoodLog(buffer: Buffer, filename = ""): { foods: Food[]
   });
 
   const entries: LogEntry[] = [];
+  let skipNoName = 0, skipNoPortion = 0, skipNoDate = 0, skipBadDate = 0;
 
   for (const row of rows) {
     const name = String(row["Food Name"] ?? "").trim();
-    if (!name) continue;
+    if (!name) { skipNoName++; continue; }
 
     const qty = Number(row["Serving Qty"]);
     const weight = Number(row["Serving Weight (g)"]);
     const portionWeight = qty * weight;
 
-    if (!portionWeight || portionWeight <= 0) continue;
+    if (!portionWeight || portionWeight <= 0) { skipNoPortion++; continue; }
 
     const rawDate = String(row["Date"] ?? "").trim();
-    if (!rawDate) continue; // filas sin fecha (totales, encabezados extra, etc.)
+    if (!rawDate) { skipNoDate++; continue; }
 
-    // Normalize date to YYYY-MM-DD; MacroFactor exports as MM/DD/YYYY or YYYY-MM-DD
+    // Normalize date to YYYY-MM-DD
+    // MacroFactor exports: M/D/YY (all-time), MM/DD/YYYY (monthly), or YYYY-MM-DD
     let date = rawDate;
-    if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(rawDate)) {
+    if (/^\d{1,2}\/\d{1,2}\/\d{2}$/.test(rawDate)) {
+      const [m, d, y] = rawDate.split("/");
+      date = `20${y}-${m.padStart(2, "0")}-${d.padStart(2, "0")}`;
+    } else if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(rawDate)) {
       const [m, d, y] = rawDate.split("/");
       date = `${y}-${m.padStart(2, "0")}-${d.padStart(2, "0")}`;
     }
 
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) continue; // formato no reconocido, saltar
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) { skipBadDate++; continue; }
 
     entries.push({
       date,
@@ -80,12 +85,19 @@ export function transformFoodLog(buffer: Buffer, filename = ""): { foods: Food[]
 
   const foods = aggregateEntries(entries);
 
+  // Sample first non-empty row for debugging
+  const sampleRow = rows.find(r => Object.values(r).some(v => v !== "")) ?? rows[0];
+
   const debug = {
     sheetNames: workbook.SheetNames,
     usedSheet: sheetName,
     totalRows: rows.length,
     columns: rows[0] ? Object.keys(rows[0]) : [],
-    firstRow: rows[0] ?? null,
+    sampleValues: sampleRow ? JSON.stringify(sampleRow).slice(0, 300) : null,
+    skipNoName,
+    skipNoPortion,
+    skipNoDate,
+    skipBadDate,
     entriesBuilt: entries.length,
   };
 

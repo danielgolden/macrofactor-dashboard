@@ -21,6 +21,7 @@ export async function POST(req: NextRequest) {
   const { foods, entries, debug } = transformFoodLog(buffer, file.name);
 
   if (foods.length === 0) {
+    console.error("[import] No foods found. Debug:", JSON.stringify(debug, null, 2));
     return NextResponse.json({
       error: "No foods found in file",
       debug,
