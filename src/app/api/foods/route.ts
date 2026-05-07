@@ -14,6 +14,7 @@ export async function GET(req: NextRequest) {
   const page = Math.max(1, Number(searchParams.get("page") ?? 1));
   const startDate = searchParams.get("startDate")?.trim() ?? "";
   const endDate = searchParams.get("endDate")?.trim() ?? "";
+  const fetchAll = searchParams.get("all") === "true";
 
   const supabase = createServerClient();
 
@@ -57,6 +58,8 @@ export async function GET(req: NextRequest) {
 
   if (search) {
     query = query.ilike("name", `%${search}%`).limit(5000);
+  } else if (fetchAll) {
+    query = query.limit(10000);
   } else {
     query = query.range((page - 1) * PAGE_SIZE, page * PAGE_SIZE - 1);
   }
@@ -83,7 +86,7 @@ export async function GET(req: NextRequest) {
   }));
 
   const total = count ?? 0;
-  const totalPages = search ? 1 : Math.ceil(total / PAGE_SIZE);
+  const totalPages = (search || fetchAll) ? 1 : Math.ceil(total / PAGE_SIZE);
 
   return NextResponse.json({ foods, total, page, totalPages });
 }

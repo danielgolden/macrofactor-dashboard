@@ -5,7 +5,8 @@ import type { Food } from "@/lib/types";
 export function useFoods(
   search: string,
   page: number,
-  dateRange: { start: string; end: string } | null = null
+  dateRange: { start: string; end: string } | null = null,
+  fetchAll = false
 ) {
   const [foods, setFoods] = useState<Food[]>([]);
   const [total, setTotal] = useState(0);
@@ -28,6 +29,8 @@ export function useFoods(
       if (search) params.set("search", search);
     } else if (search) {
       params.set("search", search);
+    } else if (fetchAll) {
+      params.set("all", "true");
     } else {
       params.set("page", String(page));
     }
@@ -44,7 +47,7 @@ export function useFoods(
       .finally(() => { if (!controller.signal.aborted) setLoading(false); });
 
     return () => controller.abort();
-  }, [search, page, dateRange]);
+  }, [search, page, dateRange, fetchAll]);
 
   return { foods, total, totalPages, loading, error, setFoods };
 }

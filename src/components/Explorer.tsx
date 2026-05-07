@@ -42,7 +42,8 @@ export function Explorer() {
     return () => { if (debounceTimer.current) clearTimeout(debounceTimer.current); };
   }, [search]);
 
-  const { foods: rawFoods, total, totalPages, loading, error, setFoods } = useFoods(debouncedSearch, page, dateRange);
+  const fetchAll = view !== "explorer" && !dateRange;
+  const { foods: rawFoods, total, totalPages, loading, error, setFoods } = useFoods(debouncedSearch, page, dateRange, fetchAll);
 
   const handleDateRangeChange = useCallback((range: { start: string; end: string } | null) => {
     setDateRange(range);
