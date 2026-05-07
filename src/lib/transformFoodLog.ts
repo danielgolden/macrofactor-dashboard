@@ -55,12 +55,16 @@ export function transformFoodLog(buffer: Buffer, filename = ""): { foods: Food[]
     if (!portionWeight || portionWeight <= 0) continue;
 
     const rawDate = String(row["Date"] ?? "").trim();
+    if (!rawDate) continue; // filas sin fecha (totales, encabezados extra, etc.)
+
     // Normalize date to YYYY-MM-DD; MacroFactor exports as MM/DD/YYYY or YYYY-MM-DD
     let date = rawDate;
     if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(rawDate)) {
       const [m, d, y] = rawDate.split("/");
       date = `${y}-${m.padStart(2, "0")}-${d.padStart(2, "0")}`;
     }
+
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) continue; // formato no reconocido, saltar
 
     entries.push({
       date,
