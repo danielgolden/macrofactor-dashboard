@@ -17,6 +17,8 @@ import { RankingView } from "./RankingView";
 import { ImportButton } from "./ImportButton";
 import { DateRangePicker } from "./DateRangePicker";
 import { TreemapView } from "./TreemapView";
+import { TrendsView } from "./TrendsView";
+import { CalorieShareDonut } from "./CalorieShareDonut";
 
 export function Explorer() {
   const [view, setView]         = useState<ViewId>("explorer");
@@ -36,7 +38,7 @@ export function Explorer() {
     return () => { if (debounceTimer.current) clearTimeout(debounceTimer.current); };
   }, [search]);
 
-  const fetchAll = view !== "explorer" && !dateRange;
+  const fetchAll = view !== "explorer" && view !== "trends" && !dateRange;
   const { foods: rawFoods, total, totalPages, loading, error, setFoods } = useFoods(debouncedSearch, page, dateRange, fetchAll);
 
   const handleDateRangeChange = useCallback((range: { start: string; end: string } | null) => {
@@ -116,13 +118,13 @@ export function Explorer() {
 
   const currentView = VIEWS.find((v) => v.id === view)!;
 
-  if (loading) return (
+  if (loading && view !== "trends") return (
     <div className="flex min-h-screen items-center justify-center">
       <p className="text-sm text-muted-foreground">Loading data…</p>
     </div>
   );
 
-  if (error) return (
+  if (error && view !== "trends") return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-2">
       <p className="text-lg font-semibold text-destructive">Error loading data</p>
       <p className="text-sm text-muted-foreground">{error}</p>
@@ -146,7 +148,11 @@ export function Explorer() {
 
         <div className="flex flex-1 flex-col">
           <div className="flex flex-1 flex-col gap-4 py-4 md:gap-6 md:py-6">
-            {rawFoods.length === 0 ? (
+            {view === "trends" ? (
+              <div className="px-4 lg:px-6">
+                <TrendsView />
+              </div>
+            ) : rawFoods.length === 0 ? (
               <div className="px-4 lg:px-6">
                 <Card>
                   <CardContent className="flex flex-col items-center gap-4 py-16 text-center">
@@ -167,6 +173,11 @@ export function Explorer() {
 
                 {/* Stats cards */}
                 <SectionCards stats={stats} trend={trend} />
+
+                {/* Top foods calorie-share donut */}
+                <div className="px-4 lg:px-6">
+                  <CalorieShareDonut foods={rawFoods} onSelect={setSelected} />
+                </div>
 
                 <div className="flex flex-col gap-4 px-4 lg:px-6">
                   <Controls search={search} setSearch={setSearch} activeZones={activeZones} setActiveZones={setActiveZones} activeCategories={activeCategories} setActiveCategories={setActiveCategories} />
