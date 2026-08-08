@@ -69,38 +69,32 @@ supabase/migration.sql
    ```
 3. En la app, click en **↑ Importar datos** y selecciona `foods.json`
 
-### Por qué no hay importación automática (a fecha de agosto 2026)
+### Por qué no hay importación automática (agosto 2026)
 
-MacroFactor no expone una API pública ni un programa de desarrolladores.
-Investigamos todas las vías de acceso programático conocidas y ninguna es
-viable para una sincronización automatizada en este momento:
+MacroFactor no expone una API pública. Investigamos todas las vías de
+acceso programático conocidas y ninguna es viable para una
+sincronización automatizada:
 
-- **Sin API oficial.** La documentación de integraciones
-  (`help.macrofactorapp.com/en/articles/102-integrations`) solo menciona
-  Apple Health (iOS) y Health Connect (Android). Sin OAuth, sin claves de
-  API, sin acceso para partners.
-- **Clientes reverse-engineered de Firestore rotos.** En mayo de 2026,
-  Stronger By Science activó Firebase App Check, así que todo cliente de
-  terceros que hablaba directamente con Firestore ahora recibe `401`
-  (`benthecarman/macro-factor-rs` y `sjawhar/macrofactor` — este último
-  archivado por su autor con esa explicación).
-- **El patrón "bridge con iOS Shortcuts" no resuelve la lectura.** El
-  puente sanctioned de `chaotix345/macrofactor-mcp` automatiza las
-  *escrituras* vía el action oficial `Log by JSON`, pero las *lecturas*
-  siguen requiriendo que el usuario dispare la exportación manual
-  (`More → Data Management → Data Export`) y suba el `.xlsx`/`.csv`. La
-  variante que reintenta Firestore con un App Check token relayado desde
-  el iPhone (`andreparmar/macrofactor-mcp-remote`) es especulativa,
-  incompleta y probablemente inviable: App Attest solo puede emitir tokens
-  desde la app oficial con el SDK de Firebase, no desde Shortcuts.
-- **Apple Health como puente es insuficiente.** MacroFactor sincroniza
-  calorías, macros, micros y peso hacia Apple Health / Health Connect,
-  pero **no** el trend weight, el gasto adaptativo (TDEE) ni los datos de
-  coaching — que son justo los valores centrales de este dashboard.
+- **Sin API oficial** — la documentación solo menciona Apple Health
+  (iOS) y Health Connect (Android); sin OAuth, claves de API, ni
+  acceso para partners.
+- **Clientes reverse-engineered de Firestore rotos** — en mayo de 2026
+  Stronger By Science activó Firebase App Check, así que todo cliente
+  de terceros que hablaba directamente con Firestore ahora recibe
+  `401` (ver `benthecarman/macro-factor-rs` y `sjawhar/macrofactor`,
+  este último archivado por esa razón).
+- **El puente con iOS Shortcuts no resuelve la lectura** — automatiza
+  las *escrituras* (`Log by JSON`), pero las *lecturas* siguen
+  requiriendo exportación manual. La variante que reintenta Firestore
+  con un App Check token relayado desde el iPhone es especulativa:
+  App Attest solo puede emitir tokens desde la app oficial.
+- **Apple Health es insuficiente** — MacroFactor sincroniza calorías,
+  macros, micros y peso, pero **no** el trend weight, el TDEE adaptativo
+  ni los datos de coaching, que son los valores centrales de este
+  dashboard.
 
-Mientras no exista una API oficial, el flujo manual de exportar → subir es
-la única vía confiable. El foco está en reducir la fricción de ese flujo
-(Ver issue #8 para el seguimiento).
+Mientras no exista una API oficial, el flujo manual de exportar → subir
+es la única vía confiable (ver issue #8 para el seguimiento).
 
 ---
 
