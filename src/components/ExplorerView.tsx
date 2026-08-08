@@ -9,7 +9,7 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { ArrowUpDownIcon, PlusIcon, CheckIcon } from "lucide-react";
+import { ArrowUpDownIcon, PlusIcon, CheckIcon, FlameIcon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -28,8 +28,8 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
-import type { Food, Zone, Category } from "@/lib/types";
-import { ZONE_META, CAT_META } from "@/lib/types";
+import type { Food, Zone } from "@/lib/types";
+import { ZONE_META } from "@/lib/types";
 
 const MAX_DENSITY = 8;
 
@@ -48,7 +48,7 @@ interface Props {
 
 export function ExplorerView({ foods, compareList, toggleCompare, onSelect }: Props) {
   const [sorting, setSorting] = useState<SortingState>([
-    { id: "calDensity", desc: true },
+    { id: "totalCalories", desc: true },
   ]);
 
   const columns = useMemo<ColumnDef<Food>[]>(
@@ -94,10 +94,15 @@ export function ExplorerView({ foods, compareList, toggleCompare, onSelect }: Pr
         },
       },
       {
-        accessorKey: "timesEaten",
-        header: "Frecuencia",
+        accessorKey: "totalCalories",
+        header: () => (
+          <span className="inline-flex items-center gap-1">
+            <FlameIcon className="size-3" />
+            consumidas
+          </span>
+        ),
         cell: ({ row }) => (
-          <span className="tabular-nums">{row.original.timesEaten}</span>
+          <span className="tabular-nums">{row.original.totalCalories.toLocaleString()}</span>
         ),
       },
       {
@@ -108,18 +113,6 @@ export function ExplorerView({ foods, compareList, toggleCompare, onSelect }: Pr
           return (
             <Badge variant={ZONE_BADGE_VARIANT[row.original.zone]}>
               {z.label}
-            </Badge>
-          );
-        },
-      },
-      {
-        accessorKey: "category",
-        header: "Categoría",
-        cell: ({ row }) => {
-          const c = CAT_META[row.original.category];
-          return (
-            <Badge variant="outline" style={{ color: c.color }}>
-              {c.label}
             </Badge>
           );
         },
@@ -239,14 +232,14 @@ function FoodNameCell({ name, onSelect }: { name: string; onSelect: () => void }
     <span
       ref={ref}
       onMouseEnter={handleMouseEnter}
-      className="block max-w-[200px] truncate text-left font-medium"
+      className="block max-w-[300px] truncate text-left font-medium"
     >
       {name}
     </span>
   );
 
   return (
-    <TooltipProvider delay={550}>
+    <TooltipProvider delay={350}>
       <Tooltip>
         <TooltipTrigger
           render={

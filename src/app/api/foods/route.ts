@@ -48,6 +48,8 @@ export async function GET(req: NextRequest) {
 
     const foods = aggregateEntries(entries);
 
+    foods.sort((a, b) => b.totalCalories - a.totalCalories);
+
     const total = foods.length;
 
     // Paginate aggregated results (unless fetchAll)
@@ -67,7 +69,7 @@ export async function GET(req: NextRequest) {
     .from("foods")
     .select("*", { count: "exact" })
     .eq("user_id", userId)
-    .order("cal_density", { ascending: false });
+    .order("total_calories", { ascending: false });
 
   if (search) {
     query = query.ilike("name", `%${search}%`);

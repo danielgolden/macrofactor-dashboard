@@ -1,5 +1,5 @@
 "use client";
-import { useState, useMemo, useCallback, useEffect, useRef } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import type { Food, Zone, Category } from "@/lib/types";
 import { VIEWS, type ViewId } from "@/lib/views";
 import { useFoods } from "@/lib/useFoods";
@@ -24,20 +24,9 @@ export function Explorer() {
   const [page, setPage]         = useState(1);
   const [dateRange, setDateRange] = useState<{ start: string; end: string } | null>(null);
 
-  // Debounce search → reset page when it changes
-  const [debouncedSearch, setDebouncedSearch] = useState("");
-  const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  useEffect(() => {
-    if (debounceTimer.current) clearTimeout(debounceTimer.current);
-    debounceTimer.current = setTimeout(() => {
-      setDebouncedSearch(search);
-      setPage(1);
-    }, 300);
-    return () => { if (debounceTimer.current) clearTimeout(debounceTimer.current); };
-  }, [search]);
+  const { foods: rawFoods, loading, error, setFoods } = useFoods(dateRange);
 
-  const fetchAll = view !== "explorer" && !dateRange;
-  const { foods: rawFoods, total, totalPages, loading, error, setFoods } = useFoods(debouncedSearch, page, dateRange, fetchAll);
+  useEffect(() => { setPage(1); }, [search]);
 
   const handleDateRangeChange = useCallback((range: { start: string; end: string } | null) => {
     setDateRange(range);
@@ -58,18 +47,25 @@ export function Explorer() {
   }, []);
 
   const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
     return rawFoods.filter((f) => {
+      if (q && !f.name.toLowerCase().includes(q)) return false;
       if (activeZones.size > 0 && !activeZones.has(f.zone)) return false;
       if (activeCategories.size > 0 && !activeCategories.has(f.category)) return false;
       return true;
     });
-  }, [rawFoods, activeZones, activeCategories]);
+  }, [rawFoods, search, activeZones, activeCategories]);
 
   const stats = useMemo(() => {
     const totalW = rawFoods.reduce((s, f) => s + f.totalWeight, 0);
     const totalCal = rawFoods.reduce((s, f) => s + f.totalCalories, 0);
     return { count: rawFoods.length, avgDensity: totalW > 0 ? totalCal / totalW : 0 };
   }, [rawFoods]);
+
+  const PAGE_SIZE = 100;
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const currentPage = Math.min(page, totalPages);
+  const paged = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
   const [prevAvgDensity, setPrevAvgDensity] = useState<number | null>(null);
   useEffect(() => {
@@ -177,15 +173,15 @@ export function Explorer() {
 
                   {view === "explorer" && (
                     <>
-                      <ExplorerView foods={filtered} compareList={compareList} toggleCompare={toggleCompare} onSelect={setSelected} />
+                      <ExplorerView foods={paged} compareList={compareList} toggleCompare={toggleCompare} onSelect={setSelected} />
                       {totalPages > 1 && (
                         <div className="flex items-center justify-center gap-4 text-xs">
-                          <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1}
+                          <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={currentPage === 1}
                             className="rounded-md border px-3 py-1.5 disabled:opacity-40">
                             ← anterior
                           </button>
-                          <span className="text-muted-foreground">{page} / {totalPages} · {total} alimentos</span>
-                          <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages}
+                          <span className="text-muted-foreground">{currentPage} / {totalPages} · {filtered.length} alimentos</span>
+                          <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}
                             className="rounded-md border px-3 py-1.5 disabled:opacity-40">
                             siguiente →
                           </button>
