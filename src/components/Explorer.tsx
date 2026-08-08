@@ -3,6 +3,8 @@ import { useState, useMemo, useCallback, useEffect } from "react";
 import type { Food, Zone, Category } from "@/lib/types";
 import { VIEWS, type ViewId } from "@/lib/views";
 import { useFoods } from "@/lib/useFoods";
+import { useDateRangeBounds } from "@/lib/useDateRangeBounds";
+import { computeInitialRange, type DateRange } from "@/lib/dateRange";
 import { AppSidebar } from "./app-sidebar";
 import { SiteHeader } from "./site-header";
 import { SectionCards } from "./section-cards";
@@ -24,13 +26,20 @@ export function Explorer() {
   const [view, setView]         = useState<ViewId>("explorer");
   const [search, setSearch]     = useState("");
   const [page, setPage]         = useState(1);
-  const [dateRange, setDateRange] = useState<{ start: string; end: string } | null>(null);
+  const [dateRange, setDateRange] = useState<DateRange | null>(null);
+
+  const { bounds, loading: boundsLoading } = useDateRangeBounds();
+
+  useEffect(() => {
+    if (boundsLoading || dateRange) return;
+    setDateRange(computeInitialRange(bounds));
+  }, [boundsLoading, bounds, dateRange]);
 
   const { foods: rawFoods, loading, error, setFoods } = useFoods(dateRange);
 
   useEffect(() => { setPage(1); }, [search]);
 
-  const handleDateRangeChange = useCallback((range: { start: string; end: string } | null) => {
+  const handleDateRangeChange = useCallback((range: DateRange | null) => {
     setDateRange(range);
     setPage(1);
   }, []);
@@ -120,6 +129,12 @@ export function Explorer() {
     </div>
   );
 
+  if (boundsLoading && view !== "trends") return (
+    <div className="flex min-h-screen items-center justify-center">
+      <p className="text-sm text-muted-foreground">Loading data…</p>
+    </div>
+  );
+
   if (error && view !== "trends") return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-2">
       <p className="text-lg font-semibold text-destructive">Error loading data</p>
@@ -164,7 +179,7 @@ export function Explorer() {
               <>
                 {/* Date range picker */}
                 <div className="px-4 lg:px-6">
-                  <DateRangePicker value={dateRange} onChange={handleDateRangeChange} />
+                  <DateRangePicker value={dateRange} onChange={handleDateRangeChange} bounds={bounds} />
                 </div>
 
                 {/* Stats cards */}

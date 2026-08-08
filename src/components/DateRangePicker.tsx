@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { CalendarIcon } from "lucide-react";
 import { format, parseISO } from "date-fns";
 
@@ -9,78 +9,31 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { cn } from "@/lib/utils";
-
-type DateRange = { start: string; end: string };
+import {
+  PRESETS,
+  isPresetDisabled,
+  type DateBounds,
+  type DateRange,
+} from "@/lib/dateRange";
 
 interface Props {
   value: DateRange | null;
   onChange: (range: DateRange | null) => void;
+  bounds: DateBounds | null;
 }
 
 function toISO(d: Date): string {
   return d.toISOString().slice(0, 10);
 }
 
-function today(): Date {
-  const d = new Date();
-  d.setHours(0, 0, 0, 0);
-  return d;
-}
-
-function addDays(d: Date, n: number): Date {
-  const r = new Date(d);
-  r.setDate(r.getDate() + n);
-  return r;
-}
-
-const PRESETS: { label: string; range: () => DateRange | null }[] = [
-  { label: "All", range: () => null },
-  {
-    label: "Today",
-    range: () => {
-      const t = today();
-      return { start: toISO(t), end: toISO(t) };
-    },
-  },
-  {
-    label: "This week",
-    range: () => {
-      const t = today();
-      const day = t.getDay();
-      const monday = addDays(t, day === 0 ? -6 : 1 - day);
-      return { start: toISO(monday), end: toISO(t) };
-    },
-  },
-  {
-    label: "30 d",
-    range: () => {
-      const t = today();
-      return { start: toISO(addDays(t, -30)), end: toISO(t) };
-    },
-  },
-];
-
-export function DateRangePicker({ value, onChange }: Props) {
+export function DateRangePicker({ value, onChange, bounds }: Props) {
   const [open, setOpen] = useState(false);
-  const [bounds, setBounds] = useState<{ min: Date; max: Date } | null>(null);
-
-  useEffect(() => {
-    fetch("/api/date-range")
-      .then((r) => r.json())
-      .then((d) => {
-        if (d.min && d.max) {
-          setBounds({ min: parseISO(d.min), max: parseISO(d.max) });
-        }
-      })
-      .catch(() => {});
-  }, []);
 
   const activeLabel = (() => {
-    if (!value) return "All";
+    if (!value) return "";
     for (const p of PRESETS) {
-      if (p.label === "All") continue;
       const r = p.range();
-      if (r && r.start === value.start && r.end === value.end) return p.label;
+      if (r.start === value.start && r.end === value.end) return p.label;
     }
     return "";
   })();
@@ -117,7 +70,12 @@ export function DateRangePicker({ value, onChange }: Props) {
         }}
       >
         {PRESETS.map((p) => (
-          <ToggleGroupItem key={p.label} value={p.label}>
+          <ToggleGroupItem
+            key={p.label}
+            value={p.label}
+            disabled={isPresetDisabled(p, bounds)}
+            className="disabled:pointer-events-auto disabled:cursor-not-allowed disabled:hover:bg-transparent"
+          >
             {p.label}
           </ToggleGroupItem>
         ))}

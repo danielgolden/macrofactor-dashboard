@@ -13,13 +13,18 @@ export function useFoods(dateRange: { start: string; end: string } | null = null
     const controller = new AbortController();
     abortRef.current = controller;
 
+    if (!dateRange) {
+      setFoods([]);
+      setError(null);
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     const params = new URLSearchParams();
 
-    if (dateRange) {
-      params.set("startDate", dateRange.start);
-      params.set("endDate", dateRange.end);
-    }
+    params.set("startDate", dateRange.start);
+    params.set("endDate", dateRange.end);
     params.set("all", "true");
 
     fetch(`/api/foods?${params}`, { signal: controller.signal })
