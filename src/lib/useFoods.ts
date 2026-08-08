@@ -27,8 +27,10 @@ export function useFoods(
       params.set("startDate", dateRange.start);
       params.set("endDate", dateRange.end);
       if (search) params.set("search", search);
+      params.set("page", String(page));
     } else if (search) {
       params.set("search", search);
+      params.set("page", String(page));
     } else if (fetchAll) {
       params.set("all", "true");
     } else {

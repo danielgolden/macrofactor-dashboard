@@ -1,24 +1,23 @@
 "use client";
 
-import { ArrowDownIcon, ArrowUpIcon, FlameIcon, GaugeIcon, TrophyIcon } from "lucide-react";
+import { GaugeIcon, TrendingDownIcon, TrendingUpIcon, TrophyIcon } from "lucide-react";
 
 import { Card, CardAction, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import type { Food } from "@/lib/types";
 
 interface SectionCardsProps {
   stats: {
     count: number;
-    totalCal: number;
     avgDensity: number;
   };
-  sortedByDensity: Food[];
+  trend: number | null;
 }
 
-export function SectionCards({ stats, sortedByDensity }: SectionCardsProps) {
-  const mostDense = sortedByDensity[0];
+export function SectionCards({ stats, trend }: SectionCardsProps) {
+  const trendUp = trend !== null && trend > 0;
+  const trendDown = trend !== null && trend < 0;
 
   return (
-    <div className="grid grid-cols-1 gap-4 px-4 lg:grid-cols-2 xl:grid-cols-4 lg:px-6">
+    <div className="grid grid-cols-1 gap-4 px-4 lg:grid-cols-2 lg:px-6">
       <Card>
         <CardHeader>
           <CardDescription>Total Alimentos</CardDescription>
@@ -45,39 +44,28 @@ export function SectionCards({ stats, sortedByDensity }: SectionCardsProps) {
             <GaugeIcon className="size-4 text-muted-foreground" />
           </CardAction>
         </CardHeader>
-        <CardFooter className="text-xs text-muted-foreground">
-          calorías por gramo
-        </CardFooter>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardDescription>Más Denso</CardDescription>
-          <CardTitle className="truncate text-2xl font-semibold">
-            {mostDense?.name ?? "—"}
-          </CardTitle>
-          <CardAction>
-            <ArrowUpIcon className="size-4 text-muted-foreground" />
-          </CardAction>
-        </CardHeader>
-        <CardFooter className="text-xs text-muted-foreground">
-          <FlameIcon className="mr-1 size-3 text-muted-foreground" />
-          {mostDense?.calDensity.toFixed(1)} kcal/g
-        </CardFooter>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardDescription>Calorías del Mes</CardDescription>
-          <CardTitle className="text-2xl font-semibold tabular-nums">
-            {stats.totalCal.toLocaleString()}
-          </CardTitle>
-          <CardAction>
-            <ArrowDownIcon className="size-4 text-muted-foreground" />
-          </CardAction>
-        </CardHeader>
-        <CardFooter className="text-xs text-muted-foreground">
-          kcal totales consumidas
+        <CardFooter className="text-xs">
+          {trend === null ? (
+            <span className="text-muted-foreground">calorías por gramo</span>
+          ) : (
+            <span
+              className={
+                trendUp
+                  ? "flex items-center gap-1 font-medium text-emerald-600 dark:text-emerald-400"
+                  : trendDown
+                    ? "flex items-center gap-1 font-medium text-red-600 dark:text-red-400"
+                    : "flex items-center gap-1 text-muted-foreground"
+              }
+            >
+              {trendUp ? (
+                <TrendingUpIcon className="size-3" />
+              ) : trendDown ? (
+                <TrendingDownIcon className="size-3" />
+              ) : null}
+              {trend > 0 ? "+" : ""}
+              {trend.toFixed(1)}% vs período anterior
+            </span>
+          )}
         </CardFooter>
       </Card>
     </div>
