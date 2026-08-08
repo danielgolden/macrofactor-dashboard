@@ -1,4 +1,10 @@
 "use client";
+
+import { SearchIcon, XIcon } from "lucide-react";
+
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import type { Zone, Category } from "@/lib/types";
 import { ZONE_META, CAT_META } from "@/lib/types";
 
@@ -12,54 +18,78 @@ interface Props {
 }
 
 export function Controls({ search, setSearch, activeZones, toggleZone, activeCategories, toggleCategory }: Props) {
+  const handleZonesChange = (vals: string[]) => {
+    const next = new Set(vals as Zone[]);
+    (Object.keys(ZONE_META) as Zone[]).forEach((z) => {
+      if (activeZones.has(z) !== next.has(z)) toggleZone(z);
+    });
+  };
+
+  const handleCategoriesChange = (vals: string[]) => {
+    const next = new Set(vals as Category[]);
+    (Object.keys(CAT_META) as Category[]).forEach((c) => {
+      if (activeCategories.has(c) !== next.has(c)) toggleCategory(c);
+    });
+  };
+
   return (
-    <div style={{ display: "flex", flexWrap: "wrap", gap: 16, alignItems: "flex-end", marginBottom: 28, paddingBottom: 24, borderBottom: "1px solid #d4c4a0" }}>
+    <div className="flex flex-wrap items-end gap-4">
       {/* Search */}
-      <div style={{ flex: "1 1 240px" }}>
-        <label style={{ display: "block", fontFamily: '"JetBrains Mono", monospace', fontSize: 10, letterSpacing: 1.5, color: "#6b4423", textTransform: "uppercase", marginBottom: 6 }}>Buscar</label>
-        <div style={{ position: "relative" }}>
-          <span style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: "#a8702c", fontSize: 14 }}>⌕</span>
-          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="ej. banana, cottage, eggs..."
-            style={{ width: "100%", padding: "9px 32px 9px 30px", fontSize: 14, background: "#fff", border: "1px solid #c9b896", color: "#2a1f1a", outline: "none", boxSizing: "border-box" }}
+      <div className="min-w-56 flex-1">
+        <Label htmlFor="food-search" className="mb-1.5">Buscar</Label>
+        <div className="relative">
+          <SearchIcon className="absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            id="food-search"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="ej. banana, cottage, eggs..."
+            className="pl-8 pr-8"
           />
           {search && (
-            <button onClick={() => setSearch("")} style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", color: "#a8702c", fontSize: 18, lineHeight: 1 }}>×</button>
+            <button
+              onClick={() => setSearch("")}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              aria-label="Limpiar búsqueda"
+            >
+              <XIcon className="size-4" />
+            </button>
           )}
         </div>
       </div>
 
       {/* Zone filters */}
       <div>
-        <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 10, letterSpacing: 1.5, color: "#6b4423", textTransform: "uppercase", marginBottom: 6 }}>Zona</div>
-        <div style={{ display: "flex", gap: 5 }}>
-          {(Object.keys(ZONE_META) as Zone[]).map((k) => {
-            const v = ZONE_META[k];
-            const on = activeZones.has(k);
-            return (
-              <button key={k} onClick={() => toggleZone(k)}
-                style={{ padding: "6px 11px", fontSize: 12, border: `1px solid ${v.fill}`, background: on ? v.fill : "transparent", color: on ? "#faf6ed" : v.fill, fontFamily: '"JetBrains Mono", monospace' }}>
-                {v.label}
-              </button>
-            );
-          })}
-        </div>
+        <Label className="mb-1.5">Zona</Label>
+        <ToggleGroup
+          multiple
+          variant="outline"
+          value={Array.from(activeZones)}
+          onValueChange={handleZonesChange}
+        >
+          {(Object.keys(ZONE_META) as Zone[]).map((k) => (
+            <ToggleGroupItem key={k} value={k}>
+              {ZONE_META[k].label}
+            </ToggleGroupItem>
+          ))}
+        </ToggleGroup>
       </div>
 
       {/* Category filters */}
       <div>
-        <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 10, letterSpacing: 1.5, color: "#6b4423", textTransform: "uppercase", marginBottom: 6 }}>Macro</div>
-        <div style={{ display: "flex", gap: 5 }}>
-          {(Object.keys(CAT_META) as Category[]).map((k) => {
-            const v = CAT_META[k];
-            const on = activeCategories.has(k);
-            return (
-              <button key={k} onClick={() => toggleCategory(k)}
-                style={{ padding: "6px 11px", fontSize: 12, border: `1px solid ${v.color}`, background: on ? v.color : "transparent", color: on ? "#faf6ed" : v.color, fontFamily: '"JetBrains Mono", monospace' }}>
-                {v.label}
-              </button>
-            );
-          })}
-        </div>
+        <Label className="mb-1.5">Macro</Label>
+        <ToggleGroup
+          multiple
+          variant="outline"
+          value={Array.from(activeCategories)}
+          onValueChange={handleCategoriesChange}
+        >
+          {(Object.keys(CAT_META) as Category[]).map((k) => (
+            <ToggleGroupItem key={k} value={k}>
+              {CAT_META[k].label}
+            </ToggleGroupItem>
+          ))}
+        </ToggleGroup>
       </div>
     </div>
   );

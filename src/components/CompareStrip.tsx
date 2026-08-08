@@ -1,4 +1,10 @@
 "use client";
+
+import { XIcon } from "lucide-react";
+
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { Food } from "@/lib/types";
 import { ZONE_META, CAT_META } from "@/lib/types";
 
@@ -12,17 +18,29 @@ function CompareCard({ food, onRemove }: { food: Food; onRemove: () => void }) {
   const z = ZONE_META[food.zone];
   const cat = CAT_META[food.category];
   return (
-    <div style={{ padding: 14, border: "1px solid #4a3a2a", position: "relative" }}>
-      <button onClick={onRemove} style={{ position: "absolute", top: 6, right: 6, background: "none", border: "none", color: "#c9b896", fontSize: 16 }}>×</button>
-      <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 9, color: "#c9b896", textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 }}>
-        {z.label} · {cat.label}
+    <div className="relative rounded-lg border p-3">
+      <button
+        onClick={onRemove}
+        className="absolute right-2 top-2 text-muted-foreground hover:text-foreground"
+        aria-label="Quitar"
+      >
+        <XIcon className="size-4" />
+      </button>
+      <div className="mb-1 flex gap-1.5">
+        <Badge variant="secondary" style={{ backgroundColor: z.fill, color: "#fff" }}>{z.label}</Badge>
+        <Badge variant="outline" style={{ color: cat.color, borderColor: cat.color }}>{cat.label}</Badge>
       </div>
-      <div style={{ fontFamily: '"Fraunces", serif', fontSize: 15, fontWeight: 600, lineHeight: 1.2, marginBottom: 10, paddingRight: 20, color: "#faf6ed" }}>{food.name}</div>
-      <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 28, fontWeight: 600, color: "#faf6ed" }}>
-        {food.calDensity.toFixed(2)}<span style={{ fontSize: 11, color: "#a8702c", marginLeft: 4 }}>kcal/g</span>
+      <div className="mb-2 pr-6 text-sm font-semibold leading-tight">{food.name}</div>
+      <div className="text-2xl font-bold tabular-nums">
+        {food.calDensity.toFixed(2)}
+        <span className="ml-1 text-xs font-normal text-muted-foreground">kcal/g</span>
       </div>
-      <div style={{ fontSize: 11, color: "#d4c4a0", marginTop: 6 }}>
-        P {food.proteinPer100g.toFixed(1)} · C {food.carbPer100g.toFixed(1)} · G {food.fatPer100g.toFixed(1)} <span style={{ color: "#a8702c" }}>por 100g</span>
+      <div className="mt-1 text-xs text-muted-foreground">
+        P {food.proteinPer100g.toFixed(1)} · C {food.carbPer100g.toFixed(1)} · G {food.fatPer100g.toFixed(1)}{" "}
+        <span className="opacity-70">por 100g</span>
+      </div>
+      <div className="mt-1 text-xs text-muted-foreground tabular-nums">
+        {food.totalCalories.toLocaleString()} kcal · {food.timesEaten}×
       </div>
     </div>
   );
@@ -36,31 +54,33 @@ export function CompareStrip({ foods, onClear, onRemove }: Props) {
   const lighter = b ? (a.calDensity > b.calDensity ? b : a) : null;
 
   return (
-    <div style={{ background: "#2a1f1a", color: "#faf6ed", padding: 20, marginBottom: 28 }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
-        <span style={{ fontFamily: '"Fraunces", serif', fontSize: 16, fontWeight: 600 }}>Comparación</span>
-        <button onClick={onClear} style={{ background: "none", border: "1px solid #faf6ed", color: "#faf6ed", padding: "3px 10px", fontSize: 10, fontFamily: '"JetBrains Mono", monospace', textTransform: "uppercase", letterSpacing: 1 }}>
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-sm">Comparación</CardTitle>
+        <Button variant="outline" size="sm" className="ml-auto h-7 text-xs" onClick={onClear}>
           Limpiar
-        </button>
-      </div>
-      <div style={{ display: "grid", gridTemplateColumns: b ? "1fr auto 1fr" : "1fr", gap: 16, alignItems: "center" }}>
-        <CompareCard food={a} onRemove={() => onRemove(a.name)} />
-        {b && (
-          <>
-            <div style={{ textAlign: "center", fontFamily: '"Fraunces", serif', fontStyle: "italic", color: "#c9b896", fontSize: 13 }}>
-              {ratio!.toFixed(1)}×<br />
-              <span style={{ fontSize: 9, fontFamily: '"JetBrains Mono", monospace', textTransform: "uppercase", letterSpacing: 1 }}>diferencia</span>
-            </div>
-            <CompareCard food={b} onRemove={() => onRemove(b.name)} />
-          </>
-        )}
-      </div>
-      {b && heavier && lighter && (
-        <div style={{ marginTop: 14, paddingTop: 14, borderTop: "1px solid #4a3a2a", fontSize: 12, color: "#d4c4a0", lineHeight: 1.5 }}>
-          Para las calorías de <strong>100g de {heavier.name}</strong> ({Math.round(heavier.calDensity * 100)} kcal),
-          necesitas <strong style={{ color: "#faf6ed" }}>{Math.round(ratio! * 100)}g de {lighter.name}</strong>.
+        </Button>
+      </CardHeader>
+      <CardContent>
+        <div className={`grid items-center gap-4 ${b ? "grid-cols-1 sm:grid-cols-[1fr_auto_1fr]" : "grid-cols-1"}`}>
+          <CompareCard food={a} onRemove={() => onRemove(a.name)} />
+          {b && (
+            <>
+              <div className="text-center">
+                <div className="text-xl font-bold italic">{ratio!.toFixed(1)}×</div>
+                <div className="text-[10px] uppercase tracking-wide text-muted-foreground">diferencia</div>
+              </div>
+              <CompareCard food={b} onRemove={() => onRemove(b.name)} />
+            </>
+          )}
         </div>
-      )}
-    </div>
+        {b && heavier && lighter && (
+          <div className="mt-4 border-t pt-3 text-sm leading-relaxed text-muted-foreground">
+            Para las calorías de <strong className="text-foreground">100g de {heavier.name}</strong> ({Math.round(heavier.calDensity * 100)} kcal),
+            necesitas <strong className="text-foreground">{Math.round(ratio! * 100)}g de {lighter.name}</strong>.
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 }

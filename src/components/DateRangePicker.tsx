@@ -1,5 +1,8 @@
 "use client";
 
+import { Input } from "@/components/ui/input";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+
 type DateRange = { start: string; end: string };
 
 interface Props {
@@ -95,80 +98,50 @@ export function DateRangePicker({ value, onChange }: Props) {
       const r = p.range();
       if (r && r.start === value.start && r.end === value.end) return p.label;
     }
-    return null;
+    return "";
   })();
 
   return (
-    <div style={{
-      display: "flex",
-      alignItems: "center",
-      gap: 6,
-      flexWrap: "wrap",
-      fontFamily: '"JetBrains Mono", monospace',
-      fontSize: 10,
-      letterSpacing: 0.3,
-    }}>
-      {PRESETS.map((p) => {
-        const isActive = p.label === "Todo" ? !value : activeLabel === p.label;
-        return (
-          <button
-            key={p.label}
-            onClick={() => onChange(p.range())}
-            style={{
-              padding: "4px 8px",
-              border: "1px solid",
-              borderColor: isActive ? "#a83c2a" : "#c4b49a",
-              background: isActive ? "#a83c2a" : "transparent",
-              color: isActive ? "#faf6ed" : "#6b4423",
-              cursor: "pointer",
-              textTransform: "uppercase",
-              fontSize: 9,
-              letterSpacing: 0.5,
-              lineHeight: 1,
-            }}
-          >
+    <div className="flex flex-wrap items-center gap-3">
+      <ToggleGroup
+        variant="outline"
+        size="sm"
+        value={activeLabel ? [activeLabel] : []}
+        onValueChange={(vals) => {
+          const val = vals[0];
+          if (!val) return;
+          const preset = PRESETS.find((p) => p.label === val);
+          if (preset) onChange(preset.range());
+        }}
+      >
+        {PRESETS.map((p) => (
+          <ToggleGroupItem key={p.label} value={p.label}>
             {p.label}
-          </button>
-        );
-      })}
+          </ToggleGroupItem>
+        ))}
+      </ToggleGroup>
 
-      <span style={{ color: "#c4b49a", margin: "0 2px" }}>|</span>
-
-      <input
-        type="date"
-        value={value?.start ?? ""}
-        onChange={(e) => {
-          const start = e.target.value;
-          if (start) onChange({ start, end: value?.end ?? start });
-        }}
-        style={{
-          border: "1px solid #c4b49a",
-          background: "transparent",
-          color: "#2a1f1a",
-          fontFamily: '"JetBrains Mono", monospace',
-          fontSize: 10,
-          padding: "3px 6px",
-          outline: "none",
-        }}
-      />
-      <span style={{ color: "#a8702c" }}>→</span>
-      <input
-        type="date"
-        value={value?.end ?? ""}
-        onChange={(e) => {
-          const end = e.target.value;
-          if (end) onChange({ start: value?.start ?? end, end });
-        }}
-        style={{
-          border: "1px solid #c4b49a",
-          background: "transparent",
-          color: "#2a1f1a",
-          fontFamily: '"JetBrains Mono", monospace',
-          fontSize: 10,
-          padding: "3px 6px",
-          outline: "none",
-        }}
-      />
+      <div className="flex items-center gap-1.5">
+        <Input
+          type="date"
+          value={value?.start ?? ""}
+          onChange={(e) => {
+            const start = e.target.value;
+            if (start) onChange({ start, end: value?.end ?? start });
+          }}
+          className="h-8 w-auto text-xs"
+        />
+        <span className="text-muted-foreground">→</span>
+        <Input
+          type="date"
+          value={value?.end ?? ""}
+          onChange={(e) => {
+            const end = e.target.value;
+            if (end) onChange({ start: value?.start ?? end, end });
+          }}
+          className="h-8 w-auto text-xs"
+        />
+      </div>
     </div>
   );
 }

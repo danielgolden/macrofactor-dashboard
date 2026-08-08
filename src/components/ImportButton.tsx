@@ -1,5 +1,8 @@
 "use client";
 import { useState, useRef } from "react";
+import { CheckIcon, Loader2Icon, UploadIcon, XIcon } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
 import type { Food } from "@/lib/types";
 
 interface Props {
@@ -36,49 +39,40 @@ export function ImportButton({ onImported }: Props) {
   };
 
   const label = {
-    idle: "↑ Importar datos",
+    idle: "Importar datos",
     loading: "Importando…",
-    done: "✓ Importado",
-    error: "✗ Error",
+    done: "Importado",
+    error: "Error",
   }[status];
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 4 }}>
+    <div className="flex flex-col items-end gap-1">
       <input
         ref={inputRef}
         type="file"
         accept=".xlsx,.csv"
-        style={{ display: "none" }}
+        className="hidden"
         onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); }}
       />
-      <button
-        onClick={() => inputRef.current?.click()}
+      <Button
+        variant={status === "done" ? "default" : status === "error" ? "destructive" : "outline"}
+        size="sm"
         disabled={status === "loading"}
-        style={{
-          padding: "7px 14px",
-          fontSize: 11,
-          border: "1px solid #a8702c",
-          background: status === "done" ? "#4a7c2a" : status === "error" ? "#a83c2a" : "transparent",
-          color: status === "idle" ? "#a8702c" : "#faf6ed",
-          fontFamily: '"JetBrains Mono", monospace',
-          letterSpacing: 0.5,
-          textTransform: "uppercase",
-          transition: "all 0.2s",
-        }}
+        onClick={() => inputRef.current?.click()}
       >
+        {status === "loading" ? (
+          <Loader2Icon className="size-4 animate-spin" />
+        ) : status === "done" ? (
+          <CheckIcon className="size-4" />
+        ) : status === "error" ? (
+          <XIcon className="size-4" />
+        ) : (
+          <UploadIcon className="size-4" />
+        )}
         {label}
-      </button>
+      </Button>
       {errorMsg && (
-        <div style={{
-          fontFamily: '"JetBrains Mono", monospace',
-          fontSize: 9,
-          color: "#a83c2a",
-          maxWidth: 260,
-          textAlign: "right",
-          lineHeight: 1.4,
-        }}>
-          {errorMsg}
-        </div>
+        <p className="max-w-60 text-right text-xs text-destructive">{errorMsg}</p>
       )}
     </div>
   );
