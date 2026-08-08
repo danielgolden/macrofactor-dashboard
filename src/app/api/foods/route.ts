@@ -20,12 +20,19 @@ export async function GET(req: NextRequest) {
 
   // Date range mode: aggregate from food_log_entries
   if (startDate && endDate) {
-    const { data, error } = await supabase
+    let query = supabase
       .from("food_log_entries")
       .select("*")
       .eq("user_id", userId)
       .gte("date", startDate)
       .lte("date", endDate);
+
+    // Push the name filter into the DB query so fewer rows are transferred/aggregated
+    if (search) {
+      query = query.ilike("food_name", `%${search}%`);
+    }
+
+    const { data, error } = await query;
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
@@ -39,14 +46,20 @@ export async function GET(req: NextRequest) {
       proteinG: Number(r.protein_g),
     }));
 
-    let foods = aggregateEntries(entries);
+    const foods = aggregateEntries(entries);
 
-    if (search) {
-      const lower = search.toLowerCase();
-      foods = foods.filter((f) => f.name.toLowerCase().includes(lower));
+    const total = foods.length;
+
+    // Paginate aggregated results (unless fetchAll)
+    if (fetchAll) {
+      return NextResponse.json({ foods, total, page: 1, totalPages: 1 });
     }
 
-    return NextResponse.json({ foods, total: foods.length, page: 1, totalPages: 1 });
+    const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+    const startIdx = (page - 1) * PAGE_SIZE;
+    const paginated = foods.slice(startIdx, startIdx + PAGE_SIZE);
+
+    return NextResponse.json({ foods: paginated, total, page, totalPages });
   }
 
   // Default mode: query foods table (paginated)
@@ -57,8 +70,10 @@ export async function GET(req: NextRequest) {
     .order("cal_density", { ascending: false });
 
   if (search) {
-    query = query.ilike("name", `%${search}%`).limit(5000);
-  } else if (fetchAll) {
+    query = query.ilike("name", `%${search}%`);
+  }
+
+  if (fetchAll) {
     query = query.limit(10000);
   } else {
     query = query.range((page - 1) * PAGE_SIZE, page * PAGE_SIZE - 1);
@@ -86,7 +101,7 @@ export async function GET(req: NextRequest) {
   }));
 
   const total = count ?? 0;
-  const totalPages = (search || fetchAll) ? 1 : Math.ceil(total / PAGE_SIZE);
+  const totalPages = fetchAll ? 1 : Math.ceil(total / PAGE_SIZE);
 
   return NextResponse.json({ foods, total, page, totalPages });
 }

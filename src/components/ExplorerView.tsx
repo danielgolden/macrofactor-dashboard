@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState, type MouseEvent } from "react";
 import {
   type ColumnDef,
   type SortingState,
@@ -21,6 +21,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import type { Food, Zone, Category } from "@/lib/types";
 import { ZONE_META, CAT_META } from "@/lib/types";
@@ -61,12 +67,7 @@ export function ExplorerView({ foods, compareList, toggleCompare, onSelect }: Pr
         accessorKey: "name",
         header: "Alimento",
         cell: ({ row }) => (
-          <button
-            onClick={() => onSelect(row.original)}
-            className="text-left font-medium hover:underline"
-          >
-            {row.original.name}
-          </button>
+          <FoodNameCell name={row.original.name} onSelect={() => onSelect(row.original)} />
         ),
       },
       {
@@ -91,20 +92,6 @@ export function ExplorerView({ foods, compareList, toggleCompare, onSelect }: Pr
             </div>
           );
         },
-      },
-      {
-        accessorKey: "totalCalories",
-        header: "Calorías",
-        cell: ({ row }) => (
-          <span className="tabular-nums">{row.original.totalCalories.toLocaleString()}</span>
-        ),
-      },
-      {
-        accessorKey: "avgPortion",
-        header: "Porción (g)",
-        cell: ({ row }) => (
-          <span className="tabular-nums">{Math.round(row.original.avgPortion)}</span>
-        ),
       },
       {
         accessorKey: "timesEaten",
@@ -236,5 +223,50 @@ export function ExplorerView({ foods, compareList, toggleCompare, onSelect }: Pr
         </Table>
       </div>
     </div>
+  );
+}
+
+function FoodNameCell({ name, onSelect }: { name: string; onSelect: () => void }) {
+  const ref = useRef<HTMLSpanElement>(null);
+  const [truncated, setTruncated] = useState(false);
+
+  const handleMouseEnter = () => {
+    const el = ref.current;
+    if (el) setTruncated(el.scrollWidth > el.clientWidth);
+  };
+
+  const content = (
+    <span
+      ref={ref}
+      onMouseEnter={handleMouseEnter}
+      className="block max-w-[200px] truncate text-left font-medium"
+    >
+      {name}
+    </span>
+  );
+
+  return (
+    <TooltipProvider delay={550}>
+      <Tooltip>
+        <TooltipTrigger
+          render={
+            <button
+              onClick={(e: MouseEvent) => {
+                e.stopPropagation();
+                onSelect();
+              }}
+              className="flex h-full w-full items-center text-left"
+            />
+          }
+        >
+          {content}
+        </TooltipTrigger>
+        {truncated && (
+          <TooltipContent side="top" className="max-w-sm">
+            {name}
+          </TooltipContent>
+        )}
+      </Tooltip>
+    </TooltipProvider>
   );
 }

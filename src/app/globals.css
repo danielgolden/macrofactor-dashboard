@@ -126,4 +126,17 @@
   html {
     @apply font-sans;
     }
+  button,
+  [role="button"],
+  [data-slot="button"],
+  [data-slot="combobox-trigger"],
+  [data-slot="combobox-item"],
+  [data-slot="toggle-group-item"],
+  [data-slot="sidebar-menu-button"] {
+    cursor: pointer;
+    }
+  button:disabled,
+  [data-slot="button"]:disabled {
+    cursor: not-allowed;
+    }
 }

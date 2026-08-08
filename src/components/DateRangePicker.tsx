@@ -1,7 +1,14 @@
 "use client";
 
-import { Input } from "@/components/ui/input";
+import { useEffect, useState } from "react";
+import { CalendarIcon } from "lucide-react";
+import { format, parseISO } from "date-fns";
+
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { cn } from "@/lib/utils";
 
 type DateRange = { start: string; end: string };
 
@@ -29,41 +36,19 @@ function addDays(d: Date, n: number): Date {
 const PRESETS: { label: string; range: () => DateRange | null }[] = [
   { label: "Todo", range: () => null },
   {
+    label: "Hoy",
+    range: () => {
+      const t = today();
+      return { start: toISO(t), end: toISO(t) };
+    },
+  },
+  {
     label: "Esta sem.",
     range: () => {
       const t = today();
-      const day = t.getDay(); // 0=Sun
+      const day = t.getDay();
       const monday = addDays(t, day === 0 ? -6 : 1 - day);
       return { start: toISO(monday), end: toISO(t) };
-    },
-  },
-  {
-    label: "Últ. sem.",
-    range: () => {
-      const t = today();
-      const day = t.getDay();
-      const thisMonday = addDays(t, day === 0 ? -6 : 1 - day);
-      const lastMonday = addDays(thisMonday, -7);
-      const lastSunday = addDays(thisMonday, -1);
-      return { start: toISO(lastMonday), end: toISO(lastSunday) };
-    },
-  },
-  {
-    label: "Este mes",
-    range: () => {
-      const t = today();
-      const first = new Date(t.getFullYear(), t.getMonth(), 1);
-      return { start: toISO(first), end: toISO(t) };
-    },
-  },
-  {
-    label: "Últ. mes",
-    range: () => {
-      const t = today();
-      const firstOfThisMonth = new Date(t.getFullYear(), t.getMonth(), 1);
-      const firstOfLastMonth = new Date(t.getFullYear(), t.getMonth() - 1, 1);
-      const lastOfLastMonth = addDays(firstOfThisMonth, -1);
-      return { start: toISO(firstOfLastMonth), end: toISO(lastOfLastMonth) };
     },
   },
   {
@@ -73,24 +58,23 @@ const PRESETS: { label: string; range: () => DateRange | null }[] = [
       return { start: toISO(addDays(t, -30)), end: toISO(t) };
     },
   },
-  {
-    label: "90 d",
-    range: () => {
-      const t = today();
-      return { start: toISO(addDays(t, -90)), end: toISO(t) };
-    },
-  },
-  {
-    label: "Este año",
-    range: () => {
-      const t = today();
-      const first = new Date(t.getFullYear(), 0, 1);
-      return { start: toISO(first), end: toISO(t) };
-    },
-  },
 ];
 
 export function DateRangePicker({ value, onChange }: Props) {
+  const [open, setOpen] = useState(false);
+  const [bounds, setBounds] = useState<{ min: Date; max: Date } | null>(null);
+
+  useEffect(() => {
+    fetch("/api/date-range")
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.min && d.max) {
+          setBounds({ min: parseISO(d.min), max: parseISO(d.max) });
+        }
+      })
+      .catch(() => {});
+  }, []);
+
   const activeLabel = (() => {
     if (!value) return "Todo";
     for (const p of PRESETS) {
@@ -100,6 +84,24 @@ export function DateRangePicker({ value, onChange }: Props) {
     }
     return "";
   })();
+
+  const selected = value
+    ? { from: parseISO(value.start), to: parseISO(value.end) }
+    : undefined;
+
+  const handleSelect = (range: { from?: Date; to?: Date } | undefined) => {
+    if (!range?.from) {
+      onChange(null);
+      return;
+    }
+    const start = toISO(range.from);
+    const end = toISO(range.to ?? range.from);
+    onChange({ start, end });
+  };
+
+  const label = value
+    ? `${format(parseISO(value.start), "MMM d, yyyy")} – ${format(parseISO(value.end), "MMM d, yyyy")}`
+    : "Seleccionar fechas";
 
   return (
     <div className="flex flex-wrap items-center gap-3">
@@ -121,27 +123,30 @@ export function DateRangePicker({ value, onChange }: Props) {
         ))}
       </ToggleGroup>
 
-      <div className="flex items-center gap-1.5">
-        <Input
-          type="date"
-          value={value?.start ?? ""}
-          onChange={(e) => {
-            const start = e.target.value;
-            if (start) onChange({ start, end: value?.end ?? start });
-          }}
-          className="h-8 w-auto text-xs"
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger
+          render={
+            <Button
+              variant="outline"
+              size="sm"
+              className={cn("h-8 gap-2 font-normal", !value && "text-muted-foreground")}
+            >
+              <CalendarIcon className="size-3.5" />
+              {label}
+            </Button>
+          }
         />
-        <span className="text-muted-foreground">→</span>
-        <Input
-          type="date"
-          value={value?.end ?? ""}
-          onChange={(e) => {
-            const end = e.target.value;
-            if (end) onChange({ start: value?.start ?? end, end });
-          }}
-          className="h-8 w-auto text-xs"
-        />
-      </div>
+        <PopoverContent align="start" className="w-auto p-0">
+          <Calendar
+            mode="range"
+            selected={selected}
+            onSelect={handleSelect}
+            numberOfMonths={2}
+            month={selected?.from}
+            disabled={bounds ? { before: bounds.min, after: bounds.max } : undefined}
+          />
+        </PopoverContent>
+      </Popover>
     </div>
   );
 }

@@ -44,18 +44,10 @@ export function Explorer() {
     setPage(1);
   }, []);
 
-  const [activeZones, setActiveZones]           = useState<Set<Zone>>(new Set(["low", "medium", "high"]));
-  const [activeCategories, setActiveCategories] = useState<Set<Category>>(new Set(["protein", "carb", "fat", "mixed"]));
+  const [activeZones, setActiveZones]           = useState<Set<Zone>>(new Set());
+  const [activeCategories, setActiveCategories] = useState<Set<Category>>(new Set());
   const [selected, setSelected] = useState<Food | null>(null);
   const [compareList, setCompareList] = useState<Food[]>([]);
-
-  const toggleZone = useCallback((z: Zone) => {
-    setActiveZones((prev) => { const n = new Set(prev); n.has(z) ? (n.size > 1 && n.delete(z)) : n.add(z); return n; });
-  }, []);
-
-  const toggleCategory = useCallback((c: Category) => {
-    setActiveCategories((prev) => { const n = new Set(prev); n.has(c) ? (n.size > 1 && n.delete(c)) : n.add(c); return n; });
-  }, []);
 
   const toggleCompare = useCallback((food: Food) => {
     setCompareList((prev) => {
@@ -67,19 +59,60 @@ export function Explorer() {
 
   const filtered = useMemo(() => {
     return rawFoods.filter((f) => {
-      if (!activeZones.has(f.zone)) return false;
-      if (!activeCategories.has(f.category)) return false;
+      if (activeZones.size > 0 && !activeZones.has(f.zone)) return false;
+      if (activeCategories.size > 0 && !activeCategories.has(f.category)) return false;
       return true;
     });
   }, [rawFoods, activeZones, activeCategories]);
 
   const stats = useMemo(() => {
+    const totalW = rawFoods.reduce((s, f) => s + f.totalWeight, 0);
     const totalCal = rawFoods.reduce((s, f) => s + f.totalCalories, 0);
-    const totalW   = rawFoods.reduce((s, f) => s + f.totalWeight, 0);
-    return { count: rawFoods.length, totalCal, avgDensity: totalW > 0 ? totalCal / totalW : 0 };
+    return { count: rawFoods.length, avgDensity: totalW > 0 ? totalCal / totalW : 0 };
   }, [rawFoods]);
 
-  const sortedByDensity = useMemo(() => [...rawFoods].sort((a, b) => b.calDensity - a.calDensity), [rawFoods]);
+  const [prevAvgDensity, setPrevAvgDensity] = useState<number | null>(null);
+  useEffect(() => {
+    if (!dateRange) {
+      setPrevAvgDensity(null);
+      return;
+    }
+    const start = new Date(dateRange.start + "T00:00:00");
+    const end = new Date(dateRange.end + "T00:00:00");
+    const durationDays = Math.round((end.getTime() - start.getTime()) / 86400000);
+    const prevEnd = new Date(start);
+    prevEnd.setDate(prevEnd.getDate() - 1);
+    const prevStart = new Date(prevEnd);
+    prevStart.setDate(prevStart.getDate() - durationDays);
+
+    const params = new URLSearchParams({
+      startDate: prevStart.toISOString().slice(0, 10),
+      endDate: prevEnd.toISOString().slice(0, 10),
+      all: "true",
+    });
+
+    const controller = new AbortController();
+    fetch(`/api/foods?${params}`, { signal: controller.signal })
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.error || !d.foods?.length) {
+          setPrevAvgDensity(null);
+          return;
+        }
+        const prevTotalW = d.foods.reduce((s: number, f: Food) => s + f.totalWeight, 0);
+        const prevTotalCal = d.foods.reduce((s: number, f: Food) => s + f.totalCalories, 0);
+        const prevAvg = prevTotalW > 0 ? prevTotalCal / prevTotalW : 0;
+        setPrevAvgDensity(prevAvg > 0 ? prevAvg : null);
+      })
+      .catch(() => setPrevAvgDensity(null));
+
+    return () => controller.abort();
+  }, [dateRange]);
+
+  const trend = useMemo(() => {
+    if (prevAvgDensity === null || stats.avgDensity <= 0 || prevAvgDensity <= 0) return null;
+    return ((stats.avgDensity - prevAvgDensity) / prevAvgDensity) * 100;
+  }, [stats.avgDensity, prevAvgDensity]);
 
   const currentView = VIEWS.find((v) => v.id === view)!;
 
@@ -133,10 +166,10 @@ export function Explorer() {
                 </div>
 
                 {/* Stats cards */}
-                <SectionCards stats={stats} sortedByDensity={sortedByDensity} />
+                <SectionCards stats={stats} trend={trend} />
 
                 <div className="flex flex-col gap-4 px-4 lg:px-6">
-                  <Controls search={search} setSearch={setSearch} activeZones={activeZones} toggleZone={toggleZone} activeCategories={activeCategories} toggleCategory={toggleCategory} />
+                  <Controls search={search} setSearch={setSearch} activeZones={activeZones} setActiveZones={setActiveZones} activeCategories={activeCategories} setActiveCategories={setActiveCategories} />
 
                   {compareList.length > 0 && (
                     <CompareStrip foods={compareList} onClear={() => setCompareList([])} onRemove={(name) => setCompareList((p) => p.filter((f) => f.name !== name))} />
@@ -145,7 +178,7 @@ export function Explorer() {
                   {view === "explorer" && (
                     <>
                       <ExplorerView foods={filtered} compareList={compareList} toggleCompare={toggleCompare} onSelect={setSelected} />
-                      {!debouncedSearch && totalPages > 1 && (
+                      {totalPages > 1 && (
                         <div className="flex items-center justify-center gap-4 text-xs">
                           <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1}
                             className="rounded-md border px-3 py-1.5 disabled:opacity-40">
