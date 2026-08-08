@@ -33,9 +33,9 @@ import { ZONE_META } from "@/lib/types";
 
 const MAX_DENSITY = 8;
 
-const ZONE_BADGE_VARIANT: Record<Zone, "default" | "secondary" | "destructive"> = {
+const ZONE_BADGE_VARIANT: Record<Zone, "default" | "secondary" | "destructive" | "success"> = {
   low: "secondary",
-  medium: "default",
+  medium: "success",
   high: "destructive",
 };
 
