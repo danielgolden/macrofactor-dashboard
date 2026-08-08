@@ -8,10 +8,10 @@ export interface ViewDef {
 }
 
 export const VIEWS: ViewDef[] = [
-  { id: "explorer", label: "Explorador", icon: TableIcon },
-  { id: "scatter", label: "Densidad vs Porción", icon: ChartScatterIcon },
-  { id: "ranking", label: "Ranking Mensual", icon: ChartColumnIcon },
-  { id: "treemap", label: "Mapa de Calorías", icon: LayoutGridIcon },
+  { id: "explorer", label: "Explorer", icon: TableIcon },
+  { id: "scatter", label: "Density vs Portion", icon: ChartScatterIcon },
+  { id: "ranking", label: "Monthly Ranking", icon: ChartColumnIcon },
+  { id: "treemap", label: "Calorie Map", icon: LayoutGridIcon },
 ];
 
 export type ViewId = "explorer" | "scatter" | "ranking" | "treemap";

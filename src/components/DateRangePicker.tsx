@@ -34,16 +34,16 @@ function addDays(d: Date, n: number): Date {
 }
 
 const PRESETS: { label: string; range: () => DateRange | null }[] = [
-  { label: "Todo", range: () => null },
+  { label: "All", range: () => null },
   {
-    label: "Hoy",
+    label: "Today",
     range: () => {
       const t = today();
       return { start: toISO(t), end: toISO(t) };
     },
   },
   {
-    label: "Esta sem.",
+    label: "This week",
     range: () => {
       const t = today();
       const day = t.getDay();
@@ -76,9 +76,9 @@ export function DateRangePicker({ value, onChange }: Props) {
   }, []);
 
   const activeLabel = (() => {
-    if (!value) return "Todo";
+    if (!value) return "All";
     for (const p of PRESETS) {
-      if (p.label === "Todo") continue;
+      if (p.label === "All") continue;
       const r = p.range();
       if (r && r.start === value.start && r.end === value.end) return p.label;
     }
@@ -101,7 +101,7 @@ export function DateRangePicker({ value, onChange }: Props) {
 
   const label = value
     ? `${format(parseISO(value.start), "MMM d, yyyy")} – ${format(parseISO(value.end), "MMM d, yyyy")}`
-    : "Seleccionar fechas";
+    : "Select dates";
 
   return (
     <div className="flex flex-wrap items-center gap-3">

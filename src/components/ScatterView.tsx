@@ -23,16 +23,16 @@ const MAX_DENSITY = 8;
 const MAX_PORTION = 800;
 
 const chartConfig = {
-  low: { label: "Baja", color: ZONE_META.low.fill },
-  medium: { label: "Media", color: ZONE_META.medium.fill },
-  high: { label: "Alta", color: ZONE_META.high.fill },
+  low: { label: "Low", color: ZONE_META.low.fill },
+  medium: { label: "Medium", color: ZONE_META.medium.fill },
+  high: { label: "High", color: ZONE_META.high.fill },
 } satisfies ChartConfig;
 
 const QUADRANTS = [
-  { title: "Calorías ocultas", desc: "Alta densidad, porción pequeña. Mantequilla, gummies, condensed milk." },
-  { title: "Peligro real", desc: "Alta densidad Y porción grande. Los más impactantes de tu dieta." },
-  { title: "Zona segura", desc: "Baja densidad, porción pequeña. Sin preocupación." },
-  { title: "Volumen alto", desc: "Baja densidad pero comes mucho. Sweet Potato, Banana, Greek Yogurt." },
+  { title: "Hidden calories", desc: "High density, small portion. Butter, gummies, condensed milk." },
+  { title: "Real danger", desc: "High density AND large portion. The most impactful in your diet." },
+  { title: "Safe zone", desc: "Low density, small portion. No concern." },
+  { title: "High volume", desc: "Low density but you eat a lot. Sweet Potato, Banana, Greek Yogurt." },
 ];
 
 function ScatterTooltip({
@@ -48,12 +48,12 @@ function ScatterTooltip({
     <div className="grid min-w-44 gap-1 rounded-lg border border-border/50 bg-background px-2.5 py-1.5 text-xs shadow-xl">
       <div className="font-medium">{f.name}</div>
       <div className="text-muted-foreground">
-        {f.calDensity.toFixed(2)} kcal/g · {f.avgPortion.toFixed(0)}g/vez
+        {f.calDensity.toFixed(2)} kcal/g · {f.avgPortion.toFixed(0)}g/serving
       </div>
       <div className="text-muted-foreground">
-        {f.timesEaten}× comido · {f.totalCalories.toLocaleString()} kcal total
+        {f.timesEaten}× eaten · {f.totalCalories.toLocaleString()} kcal total
       </div>
-      <div className="text-muted-foreground/70">Clic para detalle →</div>
+      <div className="text-muted-foreground/70">Click for details →</div>
     </div>
   );
 }
@@ -79,7 +79,7 @@ export function ScatterView({ foods, onSelect }: { foods: Food[]; onSelect: (f: 
             tickCount={9}
             tickLine={false}
             axisLine={false}
-            label={{ value: "PORCIÓN PROMEDIO (g)", position: "insideBottom", offset: -8, fontSize: 10 }}
+            label={{ value: "AVERAGE PORTION (g)", position: "insideBottom", offset: -8, fontSize: 10 }}
           />
           <YAxis
             type="number"
@@ -88,7 +88,7 @@ export function ScatterView({ foods, onSelect }: { foods: Food[]; onSelect: (f: 
             tickCount={9}
             tickLine={false}
             axisLine={false}
-            label={{ value: "DENSIDAD (kcal/g)", angle: -90, position: "insideLeft", fontSize: 10 }}
+            label={{ value: "DENSITY (kcal/g)", angle: -90, position: "insideLeft", fontSize: 10 }}
           />
           <ZAxis type="number" dataKey="timesEaten" range={[60, 400]} />
 
@@ -96,7 +96,7 @@ export function ScatterView({ foods, onSelect }: { foods: Food[]; onSelect: (f: 
 
           {/* Quadrant dividers */}
           <ReferenceLine x={150} stroke="var(--muted-foreground)" strokeOpacity={0.4} strokeDasharray="5 3"
-            label={{ value: "CALORÍAS OCULTAS", position: "insideTopLeft", fontSize: 9, fill: ZONE_META.high.fill }} />
+            label={{ value: "HIDDEN CALORIES", position: "insideTopLeft", fontSize: 9, fill: ZONE_META.high.fill }} />
           <ReferenceLine y={1.5} stroke="var(--muted-foreground)" strokeOpacity={0.4} strokeDasharray="5 3" />
 
           {(Object.keys(ZONE_META) as Zone[]).map((zone) => (
@@ -117,7 +117,7 @@ export function ScatterView({ foods, onSelect }: { foods: Food[]; onSelect: (f: 
       </ChartContainer>
 
       <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
-        <span>● tamaño = frecuencia</span>
+        <span>● size = frequency</span>
         {(Object.entries(ZONE_META) as [Zone, (typeof ZONE_META)[Zone]][]).map(([k, v]) => (
           <span key={k}>
             <span style={{ color: v.fill }}>●</span> {v.label}

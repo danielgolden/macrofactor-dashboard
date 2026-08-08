@@ -118,13 +118,13 @@ export function Explorer() {
 
   if (loading) return (
     <div className="flex min-h-screen items-center justify-center">
-      <p className="text-sm text-muted-foreground">Cargando datos…</p>
+      <p className="text-sm text-muted-foreground">Loading data…</p>
     </div>
   );
 
   if (error) return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-2">
-      <p className="text-lg font-semibold text-destructive">Error cargando datos</p>
+      <p className="text-lg font-semibold text-destructive">Error loading data</p>
       <p className="text-sm text-muted-foreground">{error}</p>
     </div>
   );
@@ -150,9 +150,9 @@ export function Explorer() {
               <div className="px-4 lg:px-6">
                 <Card>
                   <CardContent className="flex flex-col items-center gap-4 py-16 text-center">
-                    <h2 className="text-2xl font-semibold">No hay datos aún</h2>
+                    <h2 className="text-2xl font-semibold">No data yet</h2>
                     <p className="max-w-md text-sm text-muted-foreground">
-                      Importa tu archivo Excel (.xlsx) o CSV de MacroFactor para comenzar.
+                      Import your MacroFactor Excel (.xlsx) or CSV file to get started.
                     </p>
                     <ImportButton onImported={setFoods} />
                   </CardContent>
@@ -182,12 +182,12 @@ export function Explorer() {
                         <div className="flex items-center justify-center gap-4 text-xs">
                           <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1}
                             className="rounded-md border px-3 py-1.5 disabled:opacity-40">
-                            ← anterior
+                            ← prev
                           </button>
-                          <span className="text-muted-foreground">{page} / {totalPages} · {total} alimentos</span>
+                          <span className="text-muted-foreground">{page} / {totalPages} · {total} foods</span>
                           <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages}
                             className="rounded-md border px-3 py-1.5 disabled:opacity-40">
-                            siguiente →
+                            next →
                           </button>
                         </div>
                       )}
@@ -196,8 +196,8 @@ export function Explorer() {
                   {view === "scatter" && (
                     <>
                       <div>
-                        <h2 className="text-lg font-semibold">Densidad calórica vs. porción que comes</h2>
-                        <p className="text-sm text-muted-foreground">Eje Y = densidad (kcal/g) · Eje X = gramos promedio por ocasión · Tamaño = frecuencia</p>
+                        <h2 className="text-lg font-semibold">Caloric density vs. portion you eat</h2>
+                        <p className="text-sm text-muted-foreground">Y-axis = density (kcal/g) · X-axis = average grams per occasion · Size = frequency</p>
                       </div>
                       <ScatterView foods={filtered} onSelect={setSelected} />
                     </>
@@ -205,8 +205,8 @@ export function Explorer() {
                   {view === "ranking" && (
                     <>
                       <div>
-                        <h2 className="text-lg font-semibold">Top 30 · Calorías totales en el mes</h2>
-                        <p className="text-sm text-muted-foreground">Quién <em>realmente</em> domina tu ingesta — no por densidad, sino por volumen total.</p>
+                        <h2 className="text-lg font-semibold">Top 30 · Total calories in the month</h2>
+                        <p className="text-sm text-muted-foreground">What <em>really</em> dominates your intake — not by density, but by total volume.</p>
                       </div>
                       <RankingView foods={filtered} onSelect={setSelected} />
                     </>

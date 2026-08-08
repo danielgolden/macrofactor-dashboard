@@ -12,10 +12,10 @@ import type { Food, Category } from "@/lib/types";
 import { CAT_META } from "@/lib/types";
 
 const chartConfig = {
-  protein: { label: "Proteína", color: CAT_META.protein.color },
-  carb: { label: "Carbo", color: CAT_META.carb.color },
-  fat: { label: "Grasa", color: CAT_META.fat.color },
-  mixed: { label: "Mixto", color: CAT_META.mixed.color },
+  protein: { label: "Protein", color: CAT_META.protein.color },
+  carb: { label: "Carbs", color: CAT_META.carb.color },
+  fat: { label: "Fat", color: CAT_META.fat.color },
+  mixed: { label: "Mixed", color: CAT_META.mixed.color },
 } satisfies ChartConfig;
 
 interface TreemapNodeProps {
@@ -99,13 +99,13 @@ function TreemapTooltip({
   return (
     <div className="grid min-w-44 gap-1 rounded-lg border border-border/50 bg-background px-2.5 py-1.5 text-xs shadow-xl">
       <div className="font-medium">{f.name}</div>
-      <div className="text-muted-foreground">{f.totalCalories.toLocaleString()} kcal totales</div>
-      <div className="text-muted-foreground">{f.pct}% del período</div>
+      <div className="text-muted-foreground">{f.totalCalories.toLocaleString()} total kcal</div>
+      <div className="text-muted-foreground">{f.pct}% of period</div>
       <div className="text-muted-foreground/70">
-        {f.calDensity} kcal/g · ×{f.timesEaten} veces
+        {f.calDensity} kcal/g · ×{f.timesEaten} times
       </div>
       <div className="text-muted-foreground/70">
-        P {f.proteinPct}% · G {f.fatPct}% · C {f.carbPct}%
+        P {f.proteinPct}% · F {f.fatPct}% · C {f.carbPct}%
       </div>
     </div>
   );
@@ -127,9 +127,9 @@ export function TreemapView({ foods, onSelect }: { foods: Food[]; onSelect: (f: 
   return (
     <div className="space-y-3">
       <div>
-        <h2 className="text-lg font-semibold">Mapa de calorías</h2>
+        <h2 className="text-lg font-semibold">Calorie map</h2>
         <p className="text-sm text-muted-foreground">
-          Área proporcional a calorías totales consumidas · Color por categoría · Click para detalle
+          Area proportional to total calories consumed · Color by category · Click for details
         </p>
       </div>
 

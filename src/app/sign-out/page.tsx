@@ -12,7 +12,7 @@ export default function SignOutPage() {
 
   return (
     <div className="flex min-h-screen items-center justify-center text-muted-foreground">
-      Cerrando sesión…
+      Signing out…
     </div>
   );
 }
