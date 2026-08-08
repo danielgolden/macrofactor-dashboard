@@ -8,9 +8,9 @@ export default function SignInPage() {
           MacroFactor Explorer
         </p>
         <h1 className="text-4xl font-bold leading-tight tracking-tight sm:text-5xl">
-          Lo que comes,
+          What you eat,
           <br />
-          <em className="italic text-muted-foreground">en números.</em>
+          <em className="italic text-muted-foreground">in numbers.</em>
         </h1>
       </div>
       <SignIn />

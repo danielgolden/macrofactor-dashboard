@@ -22,7 +22,7 @@ function CompareCard({ food, onRemove }: { food: Food; onRemove: () => void }) {
       <button
         onClick={onRemove}
         className="absolute right-2 top-2 text-muted-foreground hover:text-foreground"
-        aria-label="Quitar"
+        aria-label="Remove"
       >
         <XIcon className="size-4" />
       </button>
@@ -36,8 +36,8 @@ function CompareCard({ food, onRemove }: { food: Food; onRemove: () => void }) {
         <span className="ml-1 text-xs font-normal text-muted-foreground">kcal/g</span>
       </div>
       <div className="mt-1 text-xs text-muted-foreground">
-        P {food.proteinPer100g.toFixed(1)} · C {food.carbPer100g.toFixed(1)} · G {food.fatPer100g.toFixed(1)}{" "}
-        <span className="opacity-70">por 100g</span>
+        P {food.proteinPer100g.toFixed(1)} · C {food.carbPer100g.toFixed(1)} · F {food.fatPer100g.toFixed(1)}{" "}
+        <span className="opacity-70">per 100g</span>
       </div>
       <div className="mt-1 text-xs text-muted-foreground tabular-nums">
         {food.totalCalories.toLocaleString()} kcal · {food.timesEaten}×
@@ -56,9 +56,9 @@ export function CompareStrip({ foods, onClear, onRemove }: Props) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-sm">Comparación</CardTitle>
+        <CardTitle className="text-sm">Comparison</CardTitle>
         <Button variant="outline" size="sm" className="ml-auto h-7 text-xs" onClick={onClear}>
-          Limpiar
+          Clear
         </Button>
       </CardHeader>
       <CardContent>
@@ -68,7 +68,7 @@ export function CompareStrip({ foods, onClear, onRemove }: Props) {
             <>
               <div className="text-center">
                 <div className="text-xl font-bold italic">{ratio!.toFixed(1)}×</div>
-                <div className="text-[10px] uppercase tracking-wide text-muted-foreground">diferencia</div>
+                <div className="text-[10px] uppercase tracking-wide text-muted-foreground">difference</div>
               </div>
               <CompareCard food={b} onRemove={() => onRemove(b.name)} />
             </>
@@ -76,8 +76,8 @@ export function CompareStrip({ foods, onClear, onRemove }: Props) {
         </div>
         {b && heavier && lighter && (
           <div className="mt-4 border-t pt-3 text-sm leading-relaxed text-muted-foreground">
-            Para las calorías de <strong className="text-foreground">100g de {heavier.name}</strong> ({Math.round(heavier.calDensity * 100)} kcal),
-            necesitas <strong className="text-foreground">{Math.round(ratio! * 100)}g de {lighter.name}</strong>.
+            For the calories in <strong className="text-foreground">100g of {heavier.name}</strong> ({Math.round(heavier.calDensity * 100)} kcal),
+            you need <strong className="text-foreground">{Math.round(ratio! * 100)}g of {lighter.name}</strong>.
           </div>
         )}
       </CardContent>

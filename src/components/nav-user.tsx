@@ -27,7 +27,7 @@ export function NavUser() {
 
   if (!user) return null;
 
-  const name = user.fullName ?? "Usuario";
+  const name = user.fullName ?? "User";
   const email = user.primaryEmailAddress?.emailAddress ?? "";
   const initials = name
     .split(" ")
@@ -78,7 +78,7 @@ export function NavUser() {
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => signOut({ redirectUrl: "/sign-in" })}>
               <LogOutIcon />
-              Cerrar sesión
+              Sign out
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

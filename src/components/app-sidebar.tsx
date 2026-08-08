@@ -43,7 +43,7 @@ export function AppSidebar({
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Vistas</SidebarGroupLabel>
+          <SidebarGroupLabel>Views</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {VIEWS.map((item) => (

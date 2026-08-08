@@ -101,12 +101,12 @@ export function Controls({
             {filter.label}
           </ComboboxChip>
         ))}
-        <ComboboxChipsInput placeholder="Buscar alimentos o filtrar por zona/macro…" />
+        <ComboboxChipsInput placeholder="Search foods or filter by zone/macro…" />
       </ComboboxChips>
       <ComboboxContent align="start">
         <ComboboxList>
           <ComboboxGroup>
-            <ComboboxLabel>Zona</ComboboxLabel>
+            <ComboboxLabel>Zone</ComboboxLabel>
             {zoneOptions.map((opt) => (
               <ComboboxItem key={opt.key} value={opt}>
                 {opt.label}

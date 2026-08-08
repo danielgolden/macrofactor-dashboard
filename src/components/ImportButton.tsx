@@ -39,9 +39,9 @@ export function ImportButton({ onImported }: Props) {
   };
 
   const label = {
-    idle: "Importar datos",
-    loading: "Importando…",
-    done: "Importado",
+    idle: "Import data",
+    loading: "Importing…",
+    done: "Imported",
     error: "Error",
   }[status];
 

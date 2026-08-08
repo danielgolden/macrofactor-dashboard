@@ -8,13 +8,13 @@ const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
 export const metadata: Metadata = {
   title: "MacroFactor Explorer",
-  description: "Densidad calórica de lo que comes",
+  description: "Caloric density of what you eat",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <ClerkProvider>
-      <html lang="es" className={cn("font-sans", geist.variable)}>
+      <html lang="en" className={cn("font-sans", geist.variable)}>
         <body>{children}</body>
       </html>
     </ClerkProvider>
