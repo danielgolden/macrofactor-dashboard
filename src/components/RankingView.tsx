@@ -1,46 +1,85 @@
 "use client";
+
 import { useMemo } from "react";
+import { Bar, BarChart, CartesianGrid, Cell, XAxis, YAxis } from "recharts";
+
+import {
+  ChartContainer,
+  ChartTooltip,
+  type ChartConfig,
+} from "@/components/ui/chart";
 import type { Food } from "@/lib/types";
 import { ZONE_META } from "@/lib/types";
 
+const chartConfig = {
+  totalCalories: { label: "kcal totales", color: "var(--chart-1)" },
+} satisfies ChartConfig;
+
+function RankingTooltip({
+  active,
+  payload,
+}: {
+  active?: boolean;
+  payload?: { payload: Food }[];
+}) {
+  if (!active || !payload?.length) return null;
+  const f = payload[0].payload;
+  return (
+    <div className="grid min-w-44 gap-1 rounded-lg border border-border/50 bg-background px-2.5 py-1.5 text-xs shadow-xl">
+      <div className="font-medium">{f.name}</div>
+      <div className="text-muted-foreground">
+        {f.totalCalories.toLocaleString()} kcal totales
+      </div>
+      <div className="text-muted-foreground">
+        {f.avgPortion.toFixed(0)}g/vez · {f.timesEaten}× comido
+      </div>
+      <div className="text-muted-foreground/70">Clic para detalle →</div>
+    </div>
+  );
+}
+
 export function RankingView({ foods, onSelect }: { foods: Food[]; onSelect: (f: Food) => void }) {
-  const top = useMemo(() => [...foods].sort((a, b) => b.totalCalories - a.totalCalories).slice(0, 30), [foods]);
-  const maxCal = top[0]?.totalCalories || 1;
+  const top = useMemo(
+    () => [...foods].sort((a, b) => b.totalCalories - a.totalCalories).slice(0, 30),
+    [foods]
+  );
+
+  const rowHeight = 30;
+  const height = Math.max(240, top.length * rowHeight + 24);
 
   return (
-    <div style={{ maxWidth: 700, margin: "0 auto" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", fontFamily: '"JetBrains Mono", monospace', fontSize: 9, color: "#a8702c", marginBottom: 8, paddingLeft: 220 }}>
-        <span>0</span>
-        <span>{Math.round(maxCal / 2).toLocaleString()}</span>
-        <span>{maxCal.toLocaleString()} kcal</span>
-      </div>
-      {top.map((f, i) => {
-        const barW = (f.totalCalories / maxCal) * 100;
-        const z = ZONE_META[f.zone];
-        return (
-          <div key={f.name} onClick={() => onSelect(f)}
-            style={{ display: "grid", gridTemplateColumns: "26px 188px 1fr 78px", gap: 8, alignItems: "center", padding: "5px 0", borderBottom: "1px solid #ede4d0", cursor: "pointer" }}
-            onMouseEnter={(e) => (e.currentTarget.style.background = "#f5ebd6")}
-            onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
-          >
-            <span style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 10, color: i < 3 ? "#a83c2a" : "#a8702c", textAlign: "right" }}>
-              {String(i + 1).padStart(2, "0")}
-            </span>
-            <span style={{ fontFamily: '"Inter", sans-serif', fontSize: 12, color: "#2a1f1a", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-              {f.name}
-            </span>
-            <div style={{ position: "relative", height: 18, background: "#ede4d0" }}>
-              <div style={{ height: "100%", width: `${barW}%`, background: z.fill }} />
-              <span style={{ position: "absolute", right: 4, top: "50%", transform: "translateY(-50%)", fontFamily: '"JetBrains Mono", monospace', fontSize: 8, color: "#6b4423", opacity: 0.75 }}>
-                {f.avgPortion.toFixed(0)}g · {f.timesEaten}×
-              </span>
-            </div>
-            <span style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 11, color: z.fill, textAlign: "right", fontWeight: 600 }}>
-              {f.totalCalories.toLocaleString()}
-            </span>
-          </div>
-        );
-      })}
-    </div>
+    <ChartContainer
+      config={chartConfig}
+      className="w-full"
+      style={{ height }}
+    >
+      <BarChart data={top} layout="vertical" margin={{ top: 4, right: 16, bottom: 4, left: 0 }}>
+        <CartesianGrid horizontal={false} strokeDasharray="3 3" />
+        <XAxis type="number" tickLine={false} axisLine={false} tickFormatter={(v: number) => v.toLocaleString()} />
+        <YAxis
+          type="category"
+          dataKey="name"
+          width={180}
+          tickLine={false}
+          axisLine={false}
+          interval={0}
+          tick={{ fontSize: 11 }}
+        />
+        <ChartTooltip content={<RankingTooltip />} cursor={{ fill: "var(--muted)", fillOpacity: 0.4 }} />
+        <Bar
+          dataKey="totalCalories"
+          radius={[0, 3, 3, 0]}
+          onClick={(data) => {
+            const food = (data as unknown as { payload?: Food }).payload;
+            if (food) onSelect(food);
+          }}
+          cursor="pointer"
+        >
+          {top.map((f) => (
+            <Cell key={f.name} fill={ZONE_META[f.zone].fill} />
+          ))}
+        </Bar>
+      </BarChart>
+    </ChartContainer>
   );
 }

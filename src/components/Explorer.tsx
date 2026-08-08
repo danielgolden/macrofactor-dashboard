@@ -1,9 +1,13 @@
 "use client";
 import { useState, useMemo, useCallback, useEffect, useRef } from "react";
-import { UserButton } from "@clerk/nextjs";
 import type { Food, Zone, Category } from "@/lib/types";
-import { ZONE_META } from "@/lib/types";
+import { VIEWS, type ViewId } from "@/lib/views";
 import { useFoods } from "@/lib/useFoods";
+import { AppSidebar } from "./app-sidebar";
+import { SiteHeader } from "./site-header";
+import { SectionCards } from "./section-cards";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { Card, CardContent } from "@/components/ui/card";
 import { Controls } from "./Controls";
 import { CompareStrip } from "./CompareStrip";
 import { DetailModal } from "./DetailModal";
@@ -14,20 +18,10 @@ import { ImportButton } from "./ImportButton";
 import { DateRangePicker } from "./DateRangePicker";
 import { TreemapView } from "./TreemapView";
 
-const VIEWS = [
-  { id: "explorer", label: "Explorador" },
-  { id: "scatter",  label: "Densidad vs Porción" },
-  { id: "ranking",  label: "Ranking Mensual" },
-  { id: "treemap",  label: "Mapa de Calorías" },
-] as const;
-
-type ViewId = typeof VIEWS[number]["id"];
-
 export function Explorer() {
   const [view, setView]         = useState<ViewId>("explorer");
   const [search, setSearch]     = useState("");
   const [page, setPage]         = useState(1);
-  const [sortBy, setSortBy]     = useState("density");
   const [dateRange, setDateRange] = useState<{ start: string; end: string } | null>(null);
 
   // Debounce search → reset page when it changes
@@ -72,21 +66,12 @@ export function Explorer() {
   }, []);
 
   const filtered = useMemo(() => {
-    const sorts: Record<string, (a: Food, b: Food) => number> = {
-      density:   (a, b) => b.calDensity - a.calDensity,
-      totalCal:  (a, b) => b.totalCalories - a.totalCalories,
-      portion:   (a, b) => b.avgPortion - a.avgPortion,
-      frequency: (a, b) => b.timesEaten - a.timesEaten,
-      name:      (a, b) => a.name.localeCompare(b.name),
-    };
-    return rawFoods
-      .filter((f) => {
-        if (!activeZones.has(f.zone)) return false;
-        if (!activeCategories.has(f.category)) return false;
-        return true;
-      })
-      .sort(sorts[sortBy] ?? sorts.density);
-  }, [rawFoods, activeZones, activeCategories, sortBy]);
+    return rawFoods.filter((f) => {
+      if (!activeZones.has(f.zone)) return false;
+      if (!activeCategories.has(f.category)) return false;
+      return true;
+    });
+  }, [rawFoods, activeZones, activeCategories]);
 
   const stats = useMemo(() => {
     const totalCal = rawFoods.reduce((s, f) => s + f.totalCalories, 0);
@@ -96,135 +81,114 @@ export function Explorer() {
 
   const sortedByDensity = useMemo(() => [...rawFoods].sort((a, b) => b.calDensity - a.calDensity), [rawFoods]);
 
+  const currentView = VIEWS.find((v) => v.id === view)!;
+
   if (loading) return (
-    <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#faf6ed" }}>
-      <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 12, color: "#a8702c", letterSpacing: 2, textTransform: "uppercase" }}>
-        Cargando datos…
-      </div>
+    <div className="flex min-h-screen items-center justify-center">
+      <p className="text-sm text-muted-foreground">Cargando datos…</p>
     </div>
   );
 
   if (error) return (
-    <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#faf6ed", flexDirection: "column", gap: 16 }}>
-      <div style={{ fontFamily: '"Fraunces", serif', fontSize: 20, color: "#a83c2a" }}>Error cargando datos</div>
-      <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 12, color: "#6b4423" }}>{error}</div>
+    <div className="flex min-h-screen flex-col items-center justify-center gap-2">
+      <p className="text-lg font-semibold text-destructive">Error cargando datos</p>
+      <p className="text-sm text-muted-foreground">{error}</p>
     </div>
   );
 
   return (
-    <div style={{ background: "#faf6ed", minHeight: "100vh" }}>
-      {/* Header */}
-      <header style={{ borderBottom: "2px solid #2a1f1a", padding: "24px 24px 20px" }}>
-        <div style={{ maxWidth: 900, margin: "0 auto", display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: 16 }}>
-          <div>
-            <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 10, letterSpacing: 2, color: "#a8702c", textTransform: "uppercase", marginBottom: 6 }}>
-              MacroFactor · {stats.count} alimentos
-            </div>
-            <h1 style={{ fontFamily: '"Fraunces", serif', fontWeight: 800, fontSize: "clamp(28px,5vw,52px)", color: "#2a1f1a", margin: 0, lineHeight: 0.95, letterSpacing: "-0.02em" }}>
-              Lo que comes,<br />
-              <em style={{ color: "#a83c2a", fontStyle: "italic" }}>en números.</em>
-            </h1>
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <ImportButton onImported={setFoods} />
-            <UserButton />
-          </div>
-        </div>
-      </header>
+    <SidebarProvider
+      style={
+        {
+          "--sidebar-width": "calc(var(--spacing) * 72)",
+          "--header-height": "calc(var(--spacing) * 12)",
+        } as React.CSSProperties
+      }
+    >
+      <AppSidebar variant="inset" view={view} onViewChange={setView} />
+      <SidebarInset>
+        <SiteHeader title={currentView.label}>
+          <ImportButton onImported={setFoods} />
+        </SiteHeader>
 
-      {/* Nav */}
-      <nav style={{ background: "#2a1f1a", padding: "0 24px" }}>
-        <div style={{ maxWidth: 900, margin: "0 auto", display: "flex" }}>
-          {VIEWS.map((v) => (
-            <button key={v.id} onClick={() => setView(v.id)}
-              style={{ padding: "13px 20px", fontSize: 12, border: "none", borderBottom: view === v.id ? "3px solid #a83c2a" : "3px solid transparent", background: "transparent", color: view === v.id ? "#faf6ed" : "#a8702c", fontFamily: '"JetBrains Mono", monospace', letterSpacing: 0.5, textTransform: "uppercase" }}>
-              {v.label}
-            </button>
-          ))}
-        </div>
-      </nav>
-
-      {/* Date range picker */}
-      <div style={{ background: "#faf6ed", borderBottom: "1px solid #e8dcc8", padding: "10px 24px" }}>
-        <div style={{ maxWidth: 900, margin: "0 auto" }}>
-          <DateRangePicker value={dateRange} onChange={handleDateRangeChange} />
-        </div>
-      </div>
-
-      {/* Stats strip */}
-      {rawFoods.length > 0 && (
-        <div style={{ background: "#f5ebd6", borderBottom: "1px solid #d4c4a0", padding: "10px 24px" }}>
-          <div style={{ maxWidth: 900, margin: "0 auto", display: "flex", gap: 24, flexWrap: "wrap", fontFamily: '"JetBrains Mono", monospace', fontSize: 10, color: "#6b4423" }}>
-            <span>+ denso: <strong style={{ color: "#a83c2a" }}>{sortedByDensity[0]?.name} ({sortedByDensity[0]?.calDensity} kcal/g)</strong></span>
-            <span>− denso: <strong style={{ color: "#4a7c2a" }}>{sortedByDensity[sortedByDensity.length - 1]?.name} ({sortedByDensity[sortedByDensity.length - 1]?.calDensity} kcal/g)</strong></span>
-            <span>promedio: <strong>{stats.avgDensity.toFixed(2)} kcal/g</strong></span>
-            <span>total mes: <strong>{stats.totalCal.toLocaleString()} kcal</strong></span>
-          </div>
-        </div>
-      )}
-
-      {/* Main */}
-      <main style={{ maxWidth: 900, margin: "0 auto", padding: "28px 24px 80px" }}>
-        {rawFoods.length === 0 ? (
-          <div style={{ textAlign: "center", padding: "80px 20px" }}>
-            <div style={{ fontFamily: '"Fraunces", serif', fontSize: 28, fontWeight: 600, color: "#2a1f1a", marginBottom: 12 }}>No hay datos aún</div>
-            <p style={{ fontFamily: '"Inter", sans-serif', fontSize: 15, color: "#6b4423", marginBottom: 24, lineHeight: 1.5 }}>
-              Importa tu archivo Excel (.xlsx) o CSV de MacroFactor para comenzar.
-            </p>
-            <ImportButton onImported={setFoods} />
-          </div>
-        ) : (
-          <>
-            <Controls search={search} setSearch={setSearch} activeZones={activeZones} toggleZone={toggleZone} activeCategories={activeCategories} toggleCategory={toggleCategory} />
-
-            {compareList.length > 0 && (
-              <CompareStrip foods={compareList} onClear={() => setCompareList([])} onRemove={(name) => setCompareList((p) => p.filter((f) => f.name !== name))} />
-            )}
-
-            {view === "explorer" && (
+        <div className="flex flex-1 flex-col">
+          <div className="flex flex-1 flex-col gap-4 py-4 md:gap-6 md:py-6">
+            {rawFoods.length === 0 ? (
+              <div className="px-4 lg:px-6">
+                <Card>
+                  <CardContent className="flex flex-col items-center gap-4 py-16 text-center">
+                    <h2 className="text-2xl font-semibold">No hay datos aún</h2>
+                    <p className="max-w-md text-sm text-muted-foreground">
+                      Importa tu archivo Excel (.xlsx) o CSV de MacroFactor para comenzar.
+                    </p>
+                    <ImportButton onImported={setFoods} />
+                  </CardContent>
+                </Card>
+              </div>
+            ) : (
               <>
-                <ExplorerView foods={filtered} compareList={compareList} toggleCompare={toggleCompare} onSelect={setSelected} sortBy={sortBy} setSortBy={setSortBy} />
-                {!debouncedSearch && totalPages > 1 && (
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 16, marginTop: 32, fontFamily: '"JetBrains Mono", monospace', fontSize: 11 }}>
-                    <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1}
-                      style={{ padding: "6px 14px", border: "1px solid #a8702c", background: "transparent", color: page === 1 ? "#c4b49a" : "#a8702c", cursor: page === 1 ? "default" : "pointer" }}>
-                      ← anterior
-                    </button>
-                    <span style={{ color: "#6b4423" }}>{page} / {totalPages} · {total} alimentos</span>
-                    <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages}
-                      style={{ padding: "6px 14px", border: "1px solid #a8702c", background: "transparent", color: page === totalPages ? "#c4b49a" : "#a8702c", cursor: page === totalPages ? "default" : "pointer" }}>
-                      siguiente →
-                    </button>
-                  </div>
-                )}
-              </>
-            )}
-            {view === "scatter" && (
-              <>
-                <div style={{ marginBottom: 18 }}>
-                  <h2 style={{ fontFamily: '"Fraunces", serif', fontSize: 20, fontWeight: 600, color: "#2a1f1a", margin: "0 0 6px" }}>Densidad calórica vs. porción que comes</h2>
-                  <p style={{ fontSize: 13, color: "#6b4423", margin: 0, lineHeight: 1.5 }}>Eje Y = densidad (kcal/g) · Eje X = gramos promedio por ocasión · Tamaño = frecuencia</p>
+                {/* Date range picker */}
+                <div className="px-4 lg:px-6">
+                  <DateRangePicker value={dateRange} onChange={handleDateRangeChange} />
                 </div>
-                <ScatterView foods={filtered} onSelect={setSelected} />
-              </>
-            )}
-            {view === "ranking" && (
-              <>
-                <div style={{ marginBottom: 18 }}>
-                  <h2 style={{ fontFamily: '"Fraunces", serif', fontSize: 20, fontWeight: 600, color: "#2a1f1a", margin: "0 0 6px" }}>Top 30 · Calorías totales en el mes</h2>
-                  <p style={{ fontSize: 13, color: "#6b4423", margin: 0, lineHeight: 1.5 }}>Quién <em>realmente</em> domina tu ingesta — no por densidad, sino por volumen total.</p>
+
+                {/* Stats cards */}
+                <SectionCards stats={stats} sortedByDensity={sortedByDensity} />
+
+                <div className="flex flex-col gap-4 px-4 lg:px-6">
+                  <Controls search={search} setSearch={setSearch} activeZones={activeZones} toggleZone={toggleZone} activeCategories={activeCategories} toggleCategory={toggleCategory} />
+
+                  {compareList.length > 0 && (
+                    <CompareStrip foods={compareList} onClear={() => setCompareList([])} onRemove={(name) => setCompareList((p) => p.filter((f) => f.name !== name))} />
+                  )}
+
+                  {view === "explorer" && (
+                    <>
+                      <ExplorerView foods={filtered} compareList={compareList} toggleCompare={toggleCompare} onSelect={setSelected} />
+                      {!debouncedSearch && totalPages > 1 && (
+                        <div className="flex items-center justify-center gap-4 text-xs">
+                          <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1}
+                            className="rounded-md border px-3 py-1.5 disabled:opacity-40">
+                            ← anterior
+                          </button>
+                          <span className="text-muted-foreground">{page} / {totalPages} · {total} alimentos</span>
+                          <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages}
+                            className="rounded-md border px-3 py-1.5 disabled:opacity-40">
+                            siguiente →
+                          </button>
+                        </div>
+                      )}
+                    </>
+                  )}
+                  {view === "scatter" && (
+                    <>
+                      <div>
+                        <h2 className="text-lg font-semibold">Densidad calórica vs. porción que comes</h2>
+                        <p className="text-sm text-muted-foreground">Eje Y = densidad (kcal/g) · Eje X = gramos promedio por ocasión · Tamaño = frecuencia</p>
+                      </div>
+                      <ScatterView foods={filtered} onSelect={setSelected} />
+                    </>
+                  )}
+                  {view === "ranking" && (
+                    <>
+                      <div>
+                        <h2 className="text-lg font-semibold">Top 30 · Calorías totales en el mes</h2>
+                        <p className="text-sm text-muted-foreground">Quién <em>realmente</em> domina tu ingesta — no por densidad, sino por volumen total.</p>
+                      </div>
+                      <RankingView foods={filtered} onSelect={setSelected} />
+                    </>
+                  )}
+                  {view === "treemap" && (
+                    <TreemapView foods={filtered} onSelect={setSelected} />
+                  )}
                 </div>
-                <RankingView foods={filtered} onSelect={setSelected} />
               </>
             )}
-            {view === "treemap" && (
-              <TreemapView foods={filtered} onSelect={setSelected} />
-            )}
-          </>
-        )}
-      </main>
+          </div>
+        </div>
+      </SidebarInset>
 
       <DetailModal food={selected} onClose={() => setSelected(null)} onCompare={(food) => { toggleCompare(food); setSelected(null); }} inCompare={selected ? compareList.some((f) => f.name === selected.name) : false} />
-    </div>
+    </SidebarProvider>
   );
 }

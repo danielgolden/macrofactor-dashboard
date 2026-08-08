@@ -4,8 +4,17 @@
     "clerk": {
       "name": "Clerk"
     },
+    "posthog": {
+      "name": "PostHog"
+    },
+    "sentry": {
+      "name": "Sentry"
+    },
     "supabase": {
       "name": "Supabase"
+    },
+    "upstash": {
+      "name": "Upstash"
     },
     "vercel": {
       "name": "Vercel"
@@ -26,6 +35,66 @@
       "name": "vercel-project",
       "providerName": "Vercel",
       "serviceId": "project"
+    }
+  },
+  "environments": {
+    "default": {
+      "output": ".env",
+      "resources": [
+        {
+          "resourceName": "clerk-auth"
+        },
+        {
+          "resourceName": "supabase-project"
+        },
+        {
+          "resourceName": "vercel-project"
+        }
+      ],
+      "variables": [
+        {
+          "variableName": "CLERK_SECRET_KEY",
+          "envKey": "CLERK_SECRET_KEY"
+        },
+        {
+          "variableName": "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY",
+          "envKey": "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY"
+        },
+        {
+          "variableName": "NEXT_PUBLIC_SUPABASE_ANON_KEY",
+          "envKey": "NEXT_PUBLIC_SUPABASE_ANON_KEY"
+        },
+        {
+          "variableName": "NEXT_PUBLIC_SUPABASE_URL",
+          "envKey": "NEXT_PUBLIC_SUPABASE_URL"
+        },
+        {
+          "variableName": "SUPABASE_SERVICE_ROLE_KEY",
+          "envKey": "SUPABASE_SERVICE_ROLE_KEY"
+        }
+      ]
+    }
+  },
+  "variables": {
+    "CLERK_SECRET_KEY": {
+      "name": "CLERK_SECRET_KEY",
+      "backendId": "fprjvar_61VBWYf3d9klOrEI316PFSLINLSQpyiX91mGH3E3UL0y"
+    },
+    "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY": {
+      "name": "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY",
+      "backendId": "fprjvar_61VBWYdi0vk1bswqY16PFSLINLSQpyiX91mGH3E3U8Jk"
+    },
+    "NEXT_PUBLIC_SUPABASE_ANON_KEY": {
+      "name": "NEXT_PUBLIC_SUPABASE_ANON_KEY",
+      "backendId": "fprjvar_61VBWg9Psx0VBHAju16PFSLINLSQpyiX91mGH3E3UMau"
+    },
+    "NEXT_PUBLIC_SUPABASE_URL": {
+      "name": "NEXT_PUBLIC_SUPABASE_URL",
+      "backendId": "fprjvar_61VBWYhAABHQ3KYuF16PFSLINLSQpyiX91mGH3E3UWoq"
+    },
+    "SUPABASE_SERVICE_ROLE_KEY": {
+      "name": "SUPABASE_SERVICE_ROLE_KEY",
+      "backendId": "fprjvar_61VBWgBddVizS9NXf16PFSLINLSQpyiX91mGH3E3USkC"
     }
   }
 }
