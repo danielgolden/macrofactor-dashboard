@@ -12,7 +12,7 @@ import type { Food } from "@/lib/types";
 import { ZONE_META } from "@/lib/types";
 
 const chartConfig = {
-  totalCalories: { label: "kcal totales", color: "var(--chart-1)" },
+  totalCalories: { label: "total kcal", color: "var(--chart-1)" },
 } satisfies ChartConfig;
 
 function RankingTooltip({
@@ -28,12 +28,12 @@ function RankingTooltip({
     <div className="grid min-w-44 gap-1 rounded-lg border border-border/50 bg-background px-2.5 py-1.5 text-xs shadow-xl">
       <div className="font-medium">{f.name}</div>
       <div className="text-muted-foreground">
-        {f.totalCalories.toLocaleString()} kcal totales
+        {f.totalCalories.toLocaleString()} total kcal
       </div>
       <div className="text-muted-foreground">
-        {f.avgPortion.toFixed(0)}g/vez · {f.timesEaten}× comido
+        {f.avgPortion.toFixed(0)}g/serving · {f.timesEaten}× eaten
       </div>
-      <div className="text-muted-foreground/70">Clic para detalle →</div>
+      <div className="text-muted-foreground/70">Click for details →</div>
     </div>
   );
 }

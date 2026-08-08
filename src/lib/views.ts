@@ -1,4 +1,4 @@
-import { ChartColumnIcon, ChartScatterIcon, LayoutGridIcon, TableIcon } from "lucide-react";
+import { ChartColumnIcon, ChartScatterIcon, LayoutGridIcon, TableIcon, TrendingUpIcon } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
 export interface ViewDef {
@@ -8,10 +8,11 @@ export interface ViewDef {
 }
 
 export const VIEWS: ViewDef[] = [
-  { id: "explorer", label: "Explorador", icon: TableIcon },
-  { id: "scatter", label: "Densidad vs Porción", icon: ChartScatterIcon },
-  { id: "ranking", label: "Ranking Mensual", icon: ChartColumnIcon },
-  { id: "treemap", label: "Mapa de Calorías", icon: LayoutGridIcon },
+  { id: "explorer", label: "Explorer", icon: TableIcon },
+  { id: "scatter", label: "Density vs Portion", icon: ChartScatterIcon },
+  { id: "ranking", label: "Monthly Ranking", icon: ChartColumnIcon },
+  { id: "treemap", label: "Calorie Map", icon: LayoutGridIcon },
+  { id: "trends", label: "Trends", icon: TrendingUpIcon },
 ];
 
-export type ViewId = "explorer" | "scatter" | "ranking" | "treemap";
+export type ViewId = "explorer" | "scatter" | "ranking" | "treemap" | "trends";

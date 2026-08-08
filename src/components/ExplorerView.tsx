@@ -65,14 +65,14 @@ export function ExplorerView({ foods, compareList, toggleCompare, onSelect }: Pr
       },
       {
         accessorKey: "name",
-        header: "Alimento",
+        header: "Food",
         cell: ({ row }) => (
           <FoodNameCell name={row.original.name} onSelect={() => onSelect(row.original)} />
         ),
       },
       {
         accessorKey: "calDensity",
-        header: "Densidad",
+        header: "Density",
         cell: ({ row }) => {
           const food = row.original;
           const z = ZONE_META[food.zone];
@@ -98,7 +98,7 @@ export function ExplorerView({ foods, compareList, toggleCompare, onSelect }: Pr
         header: () => (
           <span className="inline-flex items-center gap-1">
             <FlameIcon className="size-3" />
-            consumidas
+            consumed
           </span>
         ),
         cell: ({ row }) => (
@@ -107,7 +107,7 @@ export function ExplorerView({ foods, compareList, toggleCompare, onSelect }: Pr
       },
       {
         accessorKey: "zone",
-        header: "Zona",
+        header: "Zone",
         cell: ({ row }) => {
           const z = ZONE_META[row.original.zone];
           return (
@@ -153,7 +153,7 @@ export function ExplorerView({ foods, compareList, toggleCompare, onSelect }: Pr
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <span className="text-sm text-muted-foreground">
-          {foods.length} alimentos
+          {foods.length} foods
         </span>
       </div>
 
@@ -208,7 +208,7 @@ export function ExplorerView({ foods, compareList, toggleCompare, onSelect }: Pr
             ) : (
               <TableRow>
                 <TableCell colSpan={columns.length} className="h-24 text-center text-muted-foreground">
-                  No se encontraron alimentos.
+                  No foods found.
                 </TableCell>
               </TableRow>
             )}

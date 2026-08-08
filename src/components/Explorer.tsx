@@ -17,6 +17,8 @@ import { RankingView } from "./RankingView";
 import { ImportButton } from "./ImportButton";
 import { DateRangePicker } from "./DateRangePicker";
 import { TreemapView } from "./TreemapView";
+import { TrendsView } from "./TrendsView";
+import { CalorieShareDonut } from "./CalorieShareDonut";
 
 export function Explorer() {
   const [view, setView]         = useState<ViewId>("explorer");
@@ -112,15 +114,15 @@ export function Explorer() {
 
   const currentView = VIEWS.find((v) => v.id === view)!;
 
-  if (loading) return (
+  if (loading && view !== "trends") return (
     <div className="flex min-h-screen items-center justify-center">
-      <p className="text-sm text-muted-foreground">Cargando datos…</p>
+      <p className="text-sm text-muted-foreground">Loading data…</p>
     </div>
   );
 
-  if (error) return (
+  if (error && view !== "trends") return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-2">
-      <p className="text-lg font-semibold text-destructive">Error cargando datos</p>
+      <p className="text-lg font-semibold text-destructive">Error loading data</p>
       <p className="text-sm text-muted-foreground">{error}</p>
     </div>
   );
@@ -142,13 +144,17 @@ export function Explorer() {
 
         <div className="flex flex-1 flex-col">
           <div className="flex flex-1 flex-col gap-4 py-4 md:gap-6 md:py-6">
-            {rawFoods.length === 0 ? (
+            {view === "trends" ? (
+              <div className="px-4 lg:px-6">
+                <TrendsView />
+              </div>
+            ) : rawFoods.length === 0 ? (
               <div className="px-4 lg:px-6">
                 <Card>
                   <CardContent className="flex flex-col items-center gap-4 py-16 text-center">
-                    <h2 className="text-2xl font-semibold">No hay datos aún</h2>
+                    <h2 className="text-2xl font-semibold">No data yet</h2>
                     <p className="max-w-md text-sm text-muted-foreground">
-                      Importa tu archivo Excel (.xlsx) o CSV de MacroFactor para comenzar.
+                      Import your MacroFactor Excel (.xlsx) or CSV file to get started.
                     </p>
                     <ImportButton onImported={setFoods} />
                   </CardContent>
@@ -164,6 +170,11 @@ export function Explorer() {
                 {/* Stats cards */}
                 <SectionCards stats={stats} trend={trend} />
 
+                {/* Top foods calorie-share donut */}
+                <div className="px-4 lg:px-6">
+                  <CalorieShareDonut foods={rawFoods} onSelect={setSelected} />
+                </div>
+
                 <div className="flex flex-col gap-4 px-4 lg:px-6">
                   <Controls search={search} setSearch={setSearch} activeZones={activeZones} setActiveZones={setActiveZones} activeCategories={activeCategories} setActiveCategories={setActiveCategories} />
 
@@ -178,12 +189,12 @@ export function Explorer() {
                         <div className="flex items-center justify-center gap-4 text-xs">
                           <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={currentPage === 1}
                             className="rounded-md border px-3 py-1.5 disabled:opacity-40">
-                            ← anterior
+                            ← prev
                           </button>
-                          <span className="text-muted-foreground">{currentPage} / {totalPages} · {filtered.length} alimentos</span>
+                          <span className="text-muted-foreground">{currentPage} / {totalPages} · {filtered.length} foods</span>
                           <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}
                             className="rounded-md border px-3 py-1.5 disabled:opacity-40">
-                            siguiente →
+                            next →
                           </button>
                         </div>
                       )}
@@ -192,8 +203,8 @@ export function Explorer() {
                   {view === "scatter" && (
                     <>
                       <div>
-                        <h2 className="text-lg font-semibold">Densidad calórica vs. porción que comes</h2>
-                        <p className="text-sm text-muted-foreground">Eje Y = densidad (kcal/g) · Eje X = gramos promedio por ocasión · Tamaño = frecuencia</p>
+                        <h2 className="text-lg font-semibold">Caloric density vs. portion you eat</h2>
+                        <p className="text-sm text-muted-foreground">Y-axis = density (kcal/g) · X-axis = average grams per occasion · Size = frequency</p>
                       </div>
                       <ScatterView foods={filtered} onSelect={setSelected} />
                     </>
@@ -201,8 +212,8 @@ export function Explorer() {
                   {view === "ranking" && (
                     <>
                       <div>
-                        <h2 className="text-lg font-semibold">Top 30 · Calorías totales en el mes</h2>
-                        <p className="text-sm text-muted-foreground">Quién <em>realmente</em> domina tu ingesta — no por densidad, sino por volumen total.</p>
+                        <h2 className="text-lg font-semibold">Top 30 · Total calories in the month</h2>
+                        <p className="text-sm text-muted-foreground">What <em>really</em> dominates your intake — not by density, but by total volume.</p>
                       </div>
                       <RankingView foods={filtered} onSelect={setSelected} />
                     </>

@@ -20,7 +20,7 @@ export function SectionCards({ stats, trend }: SectionCardsProps) {
     <div className="grid grid-cols-1 gap-4 px-4 lg:grid-cols-2 lg:px-6">
       <Card>
         <CardHeader>
-          <CardDescription>Total Alimentos</CardDescription>
+          <CardDescription>Total Foods</CardDescription>
           <CardTitle className="text-2xl font-semibold tabular-nums">
             {stats.count}
           </CardTitle>
@@ -29,13 +29,13 @@ export function SectionCards({ stats, trend }: SectionCardsProps) {
           </CardAction>
         </CardHeader>
         <CardFooter className="text-xs text-muted-foreground">
-          en el período seleccionado
+          in the selected period
         </CardFooter>
       </Card>
 
       <Card>
         <CardHeader>
-          <CardDescription>Densidad Promedio</CardDescription>
+          <CardDescription>Average Density</CardDescription>
           <CardTitle className="text-2xl font-semibold tabular-nums">
             {stats.avgDensity.toFixed(2)}{" "}
             <span className="text-sm font-normal text-muted-foreground">kcal/g</span>
@@ -46,7 +46,7 @@ export function SectionCards({ stats, trend }: SectionCardsProps) {
         </CardHeader>
         <CardFooter className="text-xs">
           {trend === null ? (
-            <span className="text-muted-foreground">calorías por gramo</span>
+            <span className="text-muted-foreground">calories per gram</span>
           ) : (
             <span
               className={
@@ -63,7 +63,7 @@ export function SectionCards({ stats, trend }: SectionCardsProps) {
                 <TrendingDownIcon className="size-3" />
               ) : null}
               {trend > 0 ? "+" : ""}
-              {trend.toFixed(1)}% vs período anterior
+              {trend.toFixed(1)}% vs previous period
             </span>
           )}
         </CardFooter>

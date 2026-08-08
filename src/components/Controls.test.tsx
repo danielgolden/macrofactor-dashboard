@@ -34,7 +34,7 @@ describe("Controls combobox", () => {
     const user = userEvent.setup();
     const { setSearch } = renderControls();
 
-    const input = screen.getByPlaceholderText(/buscar alimentos/i);
+    const input = screen.getByPlaceholderText(/search foods/i);
 
     // Type "tee" — doesn't match any zone/category label
     await user.type(input, "tee");
@@ -50,27 +50,27 @@ describe("Controls combobox", () => {
     const user = userEvent.setup();
     const { setSearch } = renderControls();
 
-    const input = screen.getByPlaceholderText(/buscar alimentos/i);
+    const input = screen.getByPlaceholderText(/search foods/i);
 
-    // "alt" matches "Alta" — popup opens
-    await user.type(input, "alt");
-    expect(input).toHaveValue("alt");
+    // "hi" matches "High" — popup opens
+    await user.type(input, "hi");
+    expect(input).toHaveValue("hi");
 
-    // Continue typing "x" — "altx" no longer matches
+    // Continue typing "x" — "hix" no longer matches
     await user.type(input, "x");
 
-    // Input should still contain "altx", not cleared
+    // Input should still contain "hix", not cleared
     await waitFor(() => {
-      expect(input).toHaveValue("altx");
+      expect(input).toHaveValue("hix");
     });
-    expect(setSearch).toHaveBeenLastCalledWith("altx");
+    expect(setSearch).toHaveBeenLastCalledWith("hix");
   });
 
   it("preserves input value when pressing Enter", async () => {
     const user = userEvent.setup();
     const { setSearch } = renderControls();
 
-    const input = screen.getByPlaceholderText(/buscar alimentos/i);
+    const input = screen.getByPlaceholderText(/search foods/i);
 
     await user.type(input, "tee");
     expect(input).toHaveValue("tee");

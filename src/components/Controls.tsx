@@ -151,7 +151,7 @@ export function Controls({
           </ComboboxChip>
         ))}
         <ComboboxChipsInput
-          placeholder="Buscar alimentos o filtrar por zona/macro…"
+          placeholder="Search foods or filter by zone/macro…"
           onKeyDown={(e) => {
             if (e.key === "Enter") {
               e.preventDefault();
@@ -165,7 +165,7 @@ export function Controls({
         <ComboboxList>
           {matchingZones.length > 0 && (
             <ComboboxGroup>
-              <ComboboxLabel>Zona</ComboboxLabel>
+              <ComboboxLabel>Zone</ComboboxLabel>
               {matchingZones.map((opt) => (
                 <ComboboxItem key={opt.key} value={opt}>
                   {opt.label}

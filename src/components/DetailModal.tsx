@@ -34,19 +34,19 @@ export function DetailModal({ food, onClose, onCompare, inCompare }: Props) {
   const gramsFor100 = food.calDensity > 0 ? `${Math.round(100 / food.calDensity)}g` : "∞";
 
   const radarData = [
-    { axis: "Proteína", value: Math.round(food.proteinPct) },
-    { axis: "Densidad", value: Math.round(Math.min(food.calDensity / 8, 1) * 100) },
-    { axis: "Carbos", value: Math.round(food.carbPct) },
-    { axis: "Grasa", value: Math.round(food.fatPct) },
+    { axis: "Protein", value: Math.round(food.proteinPct) },
+    { axis: "Density", value: Math.round(Math.min(food.calDensity / 8, 1) * 100) },
+    { axis: "Carbs", value: Math.round(food.carbPct) },
+    { axis: "Fat", value: Math.round(food.fatPct) },
   ];
 
   const stats: [string, string][] = [
-    ["Para 100 kcal", gramsFor100],
-    ["Porción típica", `${food.avgPortion.toFixed(0)}g`],
-    ["Veces comido", `${food.timesEaten}×`],
-    ["Total mes", `${food.totalCalories.toLocaleString()} kcal`],
-    ["Total consumido", `${Math.round(food.totalWeight)}g`],
-    ["Zona", z.label],
+    ["Per 100 kcal", gramsFor100],
+    ["Typical portion", `${food.avgPortion.toFixed(0)}g`],
+    ["Times eaten", `${food.timesEaten}×`],
+    ["Month total", `${food.totalCalories.toLocaleString()} kcal`],
+    ["Total consumed", `${Math.round(food.totalWeight)}g`],
+    ["Zone", z.label],
   ];
 
   return (
@@ -54,7 +54,7 @@ export function DetailModal({ food, onClose, onCompare, inCompare }: Props) {
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <div className="flex gap-2">
-            <Badge style={{ backgroundColor: z.fill }}>{z.label} densidad</Badge>
+            <Badge style={{ backgroundColor: z.fill }}>{z.label} density</Badge>
             <Badge variant="outline" style={{ color: catColor, borderColor: catColor }}>
               {CAT_META[food.category].label}
             </Badge>
@@ -68,7 +68,7 @@ export function DetailModal({ food, onClose, onCompare, inCompare }: Props) {
           style={{ backgroundColor: z.light, borderColor: z.fill }}
         >
           <div className="text-xs uppercase tracking-wide" style={{ color: z.fill }}>
-            Densidad calórica
+            Caloric density
           </div>
           <div className="text-4xl font-bold tabular-nums">
             {food.calDensity.toFixed(2)}
@@ -89,7 +89,7 @@ export function DetailModal({ food, onClose, onCompare, inCompare }: Props) {
         {/* Macro radar */}
         <div className="rounded-lg border p-3">
           <div className="mb-1 text-center text-xs uppercase tracking-wide text-muted-foreground">
-            Perfil de macros
+            Macro profile
           </div>
           <ChartContainer config={chartConfig} className="mx-auto h-[220px] w-full max-w-[300px]">
             <RadarChart data={radarData} outerRadius="72%">
@@ -107,9 +107,9 @@ export function DetailModal({ food, onClose, onCompare, inCompare }: Props) {
           </ChartContainer>
           <div className="mt-1 flex justify-center gap-4 text-xs text-muted-foreground">
             <span>P {food.proteinPer100g.toFixed(1)}g</span>
-            <span>G {food.fatPer100g.toFixed(1)}g</span>
+            <span>F {food.fatPer100g.toFixed(1)}g</span>
             <span>C {food.carbPer100g.toFixed(1)}g</span>
-            <span>· por 100g</span>
+            <span>· per 100g</span>
           </div>
         </div>
 
@@ -118,7 +118,7 @@ export function DetailModal({ food, onClose, onCompare, inCompare }: Props) {
           variant={inCompare ? "secondary" : "default"}
           onClick={() => { onCompare(food); onClose(); }}
         >
-          {inCompare ? "✓ En comparación" : "+ Agregar a comparación"}
+          {inCompare ? "✓ In comparison" : "+ Add to comparison"}
         </Button>
       </DialogContent>
     </Dialog>
