@@ -7,9 +7,11 @@ import type { Food } from "@/lib/types";
 
 interface Props {
   onImported: (foods: Food[]) => void;
+  size?: "sm" | "lg";
+  className?: string;
 }
 
-export function ImportButton({ onImported }: Props) {
+export function ImportButton({ onImported, size = "sm", className }: Props) {
   const [status, setStatus] = useState<"idle" | "loading" | "done" | "error">("idle");
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -56,9 +58,10 @@ export function ImportButton({ onImported }: Props) {
       />
       <Button
         variant={status === "done" ? "default" : status === "error" ? "destructive" : "outline"}
-        size="sm"
+        size={size}
         disabled={status === "loading"}
         onClick={() => inputRef.current?.click()}
+        className={className}
       >
         {status === "loading" ? (
           <Loader2Icon className="size-4 animate-spin" />
