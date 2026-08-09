@@ -357,54 +357,6 @@ export function TreemapSkeleton() {
 }
 
 /**
- * Skeleton mirroring the Chat view: message bubbles + fixed input bar at the
- * bottom.
- */
-export function ChatSkeleton() {
-  return (
-    <div className="flex h-full flex-col">
-      <LoadingStatus text="Loading chat…" />
-
-      {/* Message bubbles area */}
-      <div className="flex flex-1 flex-col gap-4 px-4 py-6 lg:px-6">
-        {/* Incoming message */}
-        <div className="flex justify-start">
-          <div className="max-w-[70%] space-y-2 rounded-lg border bg-muted/30 px-4 py-3">
-            <Skeleton className="h-4 w-48" />
-            <Skeleton className="h-4 w-36" />
-            <Skeleton className="h-4 w-44" />
-          </div>
-        </div>
-
-        {/* Outgoing message */}
-        <div className="flex justify-end">
-          <div className="max-w-[60%] space-y-2 rounded-lg bg-primary px-4 py-3">
-            <Skeleton className="h-4 w-32" />
-            <Skeleton className="h-4 w-24" />
-          </div>
-        </div>
-
-        {/* Incoming message */}
-        <div className="flex justify-start">
-          <div className="max-w-[70%] space-y-2 rounded-lg border bg-muted/30 px-4 py-3">
-            <Skeleton className="h-4 w-56" />
-            <Skeleton className="h-4 w-40" />
-          </div>
-        </div>
-      </div>
-
-      {/* Input bar (fixed at bottom) */}
-      <div className="border-t px-4 py-3 lg:px-6">
-        <div className="flex items-center gap-2">
-          <Skeleton className="h-10 flex-1" />
-          <Skeleton className="h-10 w-10 rounded-md" />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/**
  * Skeleton mirroring the Trends view layout: average-density area chart +
  * week-over-week delta cards + macro-split line chart + dominant-macro chips +
  * biggest movers grid.

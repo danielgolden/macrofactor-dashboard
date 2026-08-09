@@ -21,7 +21,6 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { ImportButton } from "./ImportButton";
-import { ChatSkeleton } from "./LoadingSkeletons";
 
 const PLACEHOLDER =
   "What might be a nice substitute for some of my lowest calorie density foods?";
@@ -60,7 +59,11 @@ export function ChatView() {
   }, []);
 
   if (loadState === "loading") {
-    return <ChatSkeleton />;
+    return (
+      <div className="flex items-center justify-center py-16">
+        <Loader2Icon className="size-6 animate-spin text-muted-foreground" />
+      </div>
+    );
   }
 
   if (loadState === "error") {
