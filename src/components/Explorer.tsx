@@ -191,12 +191,12 @@ export function Explorer() {
                  wrapped in a strong blur + pointer-events barrier so no dummy
                  values are legible or accessible; the OnboardingModal sits on
                  top as the primary focus. */
-              <div className="relative">
+              <div className="relative flex flex-col gap-4 md:gap-6">
                 <div
                   className={
                     hasRealData
-                      ? undefined
-                      : "pointer-events-none select-none blur-md"
+                      ? "contents"
+                      : "pointer-events-none select-none blur-md flex flex-col gap-4 md:gap-6"
                   }
                 >
                   {/* Date range picker */}

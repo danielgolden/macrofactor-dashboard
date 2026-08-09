@@ -64,7 +64,7 @@ export function ImportDropzone({ onImported }: Props) {
   }[status];
 
   return (
-    <div className="flex flex-col items-center gap-2">
+    <div className="flex h-full flex-col items-center gap-2">
       <input
         ref={inputRef}
         type="file"
@@ -88,7 +88,7 @@ export function ImportDropzone({ onImported }: Props) {
         }}
         onDragLeave={() => setIsDragging(false)}
         onDrop={onDrop}
-        className={`flex w-full cursor-pointer flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed p-8 text-center transition-all ${
+        className={`flex h-full w-full cursor-pointer flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed p-8 text-center transition-all ${
           isDragging
             ? "border-primary bg-primary/5 scale-[1.02]"
             : status === "done"

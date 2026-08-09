@@ -80,7 +80,9 @@ export function OnboardingModal({ open, onImported }: Props) {
                   </p>
                 </div>
               </div>
-              <ImportDropzone onImported={onImported} />
+              <div className="flex flex-1 min-h-0">
+                <ImportDropzone onImported={onImported} />
+              </div>
             </div>
           ) : (
             <div className="flex h-full flex-col gap-3">
