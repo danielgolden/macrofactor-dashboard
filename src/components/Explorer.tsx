@@ -22,7 +22,12 @@ import { TreemapView } from "./TreemapView";
 import { TrendsView } from "./TrendsView";
 import { ChatView } from "./ChatView";
 import { CalorieShareDonut } from "./CalorieShareDonut";
-import { ExplorerSkeleton } from "./LoadingSkeletons";
+import {
+  ExplorerSkeleton,
+  ScatterSkeleton,
+  RankingSkeleton,
+  TreemapSkeleton,
+} from "./LoadingSkeletons";
 
 export function Explorer() {
   const [view, setView]         = useState<ViewId>("explorer");
@@ -138,6 +143,15 @@ export function Explorer() {
   const showLoading = isDataView && (loading || boundsLoading);
   const showError = isDataView && !showLoading && error;
 
+  const skeleton = (() => {
+    switch (view) {
+      case "scatter":   return <ScatterSkeleton />;
+      case "ranking":   return <RankingSkeleton />;
+      case "treemap":   return <TreemapSkeleton />;
+      default:           return <ExplorerSkeleton />;
+    }
+  })();
+
   return (
     <SidebarProvider
       style={
@@ -164,7 +178,7 @@ export function Explorer() {
                 <ChatView />
               </div>
             ) : showLoading ? (
-              <ExplorerSkeleton />
+              <>{skeleton}</>
             ) : showError ? (
               <div className="flex flex-col items-center justify-center gap-2 px-4 py-16 text-center lg:px-6">
                 <p className="text-lg font-semibold text-destructive">Error loading data</p>

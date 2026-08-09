@@ -25,9 +25,8 @@ export function LoadingStatus({ text }: { text: string }) {
 
 /**
  * Skeleton mirroring the Explorer dashboard layout: date picker + stat cards
- * (SectionCards) + calorie-share donut (CalorieShareDonut) + foods table
- * (ExplorerView). Renders gray placeholder blocks in the shape of the real
- * dashboard so the user sees the page "fill in".
+ * (SectionCards) + calorie-share donut (CalorieShareDonut) + controls + foods
+ * table (ExplorerView).
  */
 export function ExplorerSkeleton() {
   return (
@@ -74,7 +73,7 @@ export function ExplorerSkeleton() {
         </Card>
       </div>
 
-      {/* Table (mirrors ExplorerView) */}
+      {/* Controls + Table (mirrors Controls + ExplorerView) */}
       <div className="flex flex-col gap-4 px-4 lg:px-6">
         <Skeleton className="h-9 w-full" />
         <div className="rounded-lg border">
@@ -99,6 +98,306 @@ export function ExplorerSkeleton() {
               <Skeleton className="ml-auto h-7 w-16" />
             </div>
           ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Skeleton mirroring the Scatter view: controls bar + scatter chart with
+ * quadrant labels + quadrant description cards.
+ */
+export function ScatterSkeleton() {
+  return (
+    <div className="flex flex-col gap-4 md:gap-6">
+      <LoadingStatus text="Loading your foods…" />
+
+      {/* Date range picker */}
+      <div className="px-4 lg:px-6">
+        <Skeleton className="h-9 w-full max-w-sm" />
+      </div>
+
+      {/* Stat cards (shared across data views) */}
+      <div className="grid grid-cols-1 gap-4 px-4 lg:grid-cols-2 lg:px-6">
+        {Array.from({ length: 2 }).map((_, i) => (
+          <Card key={i}>
+            <CardHeader>
+              <Skeleton className="h-4 w-28" />
+              <Skeleton className="h-8 w-24" />
+            </CardHeader>
+            <CardFooter>
+              <Skeleton className="h-3 w-40" />
+            </CardFooter>
+          </Card>
+        ))}
+      </div>
+
+      {/* Donut (shared) */}
+      <div className="px-4 lg:px-6">
+        <Card>
+          <CardContent className="pt-4">
+            <div className="mb-2 flex items-baseline justify-between gap-2">
+              <Skeleton className="h-4 w-40" />
+              <Skeleton className="h-3 w-32" />
+            </div>
+            <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-center">
+              <Skeleton className="size-[220px] shrink-0 rounded-full" />
+              <div className="grid w-full grid-cols-1 gap-x-4 gap-y-1.5 sm:grid-cols-2">
+                {Array.from({ length: 8 }).map((_, i) => (
+                  <Skeleton key={i} className="h-4 w-full max-w-[180px]" />
+                ))}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Controls + scatter chart */}
+      <div className="flex flex-col gap-4 px-4 lg:px-6">
+        <Skeleton className="h-9 w-full" />
+
+        {/* Scatter chart heading */}
+        <div>
+          <Skeleton className="h-5 w-64" />
+          <Skeleton className="mt-1 h-4 w-full max-w-lg" />
+        </div>
+
+        {/* Scatter chart */}
+        <Card>
+          <CardContent className="pt-4">
+            <Skeleton className="h-[420px] w-full rounded-md" />
+          </CardContent>
+        </Card>
+
+        {/* Legend */}
+        <div className="flex flex-wrap justify-center gap-x-4 gap-y-1">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Skeleton key={i} className="h-4 w-20" />
+          ))}
+        </div>
+
+        {/* Quadrant description cards */}
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="rounded-lg border p-3">
+              <Skeleton className="h-4 w-28" />
+              <Skeleton className="mt-2 h-3 w-full" />
+              <Skeleton className="mt-1 h-3 w-3/4" />
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Skeleton mirroring the Ranking view: controls bar + heading + horizontal
+ * bar chart with food name labels on the y-axis.
+ */
+export function RankingSkeleton() {
+  return (
+    <div className="flex flex-col gap-4 md:gap-6">
+      <LoadingStatus text="Loading your foods…" />
+
+      {/* Date range picker */}
+      <div className="px-4 lg:px-6">
+        <Skeleton className="h-9 w-full max-w-sm" />
+      </div>
+
+      {/* Stat cards (shared) */}
+      <div className="grid grid-cols-1 gap-4 px-4 lg:grid-cols-2 lg:px-6">
+        {Array.from({ length: 2 }).map((_, i) => (
+          <Card key={i}>
+            <CardHeader>
+              <Skeleton className="h-4 w-28" />
+              <Skeleton className="h-8 w-24" />
+            </CardHeader>
+            <CardFooter>
+              <Skeleton className="h-3 w-40" />
+            </CardFooter>
+          </Card>
+        ))}
+      </div>
+
+      {/* Donut (shared) */}
+      <div className="px-4 lg:px-6">
+        <Card>
+          <CardContent className="pt-4">
+            <div className="mb-2 flex items-baseline justify-between gap-2">
+              <Skeleton className="h-4 w-40" />
+              <Skeleton className="h-3 w-32" />
+            </div>
+            <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-center">
+              <Skeleton className="size-[220px] shrink-0 rounded-full" />
+              <div className="grid w-full grid-cols-1 gap-x-4 gap-y-1.5 sm:grid-cols-2">
+                {Array.from({ length: 8 }).map((_, i) => (
+                  <Skeleton key={i} className="h-4 w-full max-w-[180px]" />
+                ))}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Controls + ranking chart */}
+      <div className="flex flex-col gap-4 px-4 lg:px-6">
+        <Skeleton className="h-9 w-full" />
+
+        {/* Ranking heading */}
+        <div>
+          <Skeleton className="h-5 w-56" />
+          <Skeleton className="mt-1 h-4 w-full max-w-md" />
+        </div>
+
+        {/* Horizontal bar chart (mirrors RankingView) */}
+        <div className="rounded-lg border p-2">
+          {Array.from({ length: 12 }).map((_, i) => (
+            <div key={i} className="flex items-center gap-3 py-1.5">
+              <Skeleton className="h-4 w-32 shrink-0" />
+              <Skeleton className="h-5 flex-1" style={{ maxWidth: `${90 - i * 5}%` }} />
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Skeleton mirroring the Treemap view: controls bar + heading + large treemap
+ * grid + category legend.
+ */
+export function TreemapSkeleton() {
+  return (
+    <div className="flex flex-col gap-4 md:gap-6">
+      <LoadingStatus text="Loading your foods…" />
+
+      {/* Date range picker */}
+      <div className="px-4 lg:px-6">
+        <Skeleton className="h-9 w-full max-w-sm" />
+      </div>
+
+      {/* Stat cards (shared) */}
+      <div className="grid grid-cols-1 gap-4 px-4 lg:grid-cols-2 lg:px-6">
+        {Array.from({ length: 2 }).map((_, i) => (
+          <Card key={i}>
+            <CardHeader>
+              <Skeleton className="h-4 w-28" />
+              <Skeleton className="h-8 w-24" />
+            </CardHeader>
+            <CardFooter>
+              <Skeleton className="h-3 w-40" />
+            </CardFooter>
+          </Card>
+        ))}
+      </div>
+
+      {/* Donut (shared) */}
+      <div className="px-4 lg:px-6">
+        <Card>
+          <CardContent className="pt-4">
+            <div className="mb-2 flex items-baseline justify-between gap-2">
+              <Skeleton className="h-4 w-40" />
+              <Skeleton className="h-3 w-32" />
+            </div>
+            <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-center">
+              <Skeleton className="size-[220px] shrink-0 rounded-full" />
+              <div className="grid w-full grid-cols-1 gap-x-4 gap-y-1.5 sm:grid-cols-2">
+                {Array.from({ length: 8 }).map((_, i) => (
+                  <Skeleton key={i} className="h-4 w-full max-w-[180px]" />
+                ))}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Controls + treemap */}
+      <div className="flex flex-col gap-4 px-4 lg:px-6">
+        <Skeleton className="h-9 w-full" />
+
+        {/* Treemap heading */}
+        <div>
+          <Skeleton className="h-5 w-36" />
+          <Skeleton className="mt-1 h-4 w-full max-w-lg" />
+        </div>
+
+        {/* Treemap grid (mirrors TreemapView h-[520px]) */}
+        <Card>
+          <CardContent className="pt-4">
+            <div className="grid h-[520px] grid-cols-4 grid-rows-4 gap-1">
+              {Array.from({ length: 16 }).map((_, i) => (
+                <Skeleton
+                  key={i}
+                  className="rounded-[2px]"
+                  style={{
+                    gridColumn: i < 4 ? "span 2" : "span 1",
+                    gridRow: i < 2 ? "span 2" : "span 1",
+                  }}
+                />
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Category legend */}
+        <div className="flex flex-wrap gap-x-4 gap-y-1">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="flex items-center gap-1.5">
+              <Skeleton className="size-2.5 rounded-[2px]" />
+              <Skeleton className="h-4 w-16" />
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Skeleton mirroring the Chat view: message bubbles + fixed input bar at the
+ * bottom.
+ */
+export function ChatSkeleton() {
+  return (
+    <div className="flex h-full flex-col">
+      <LoadingStatus text="Loading chat…" />
+
+      {/* Message bubbles area */}
+      <div className="flex flex-1 flex-col gap-4 px-4 py-6 lg:px-6">
+        {/* Incoming message */}
+        <div className="flex justify-start">
+          <div className="max-w-[70%] space-y-2 rounded-lg border bg-muted/30 px-4 py-3">
+            <Skeleton className="h-4 w-48" />
+            <Skeleton className="h-4 w-36" />
+            <Skeleton className="h-4 w-44" />
+          </div>
+        </div>
+
+        {/* Outgoing message */}
+        <div className="flex justify-end">
+          <div className="max-w-[60%] space-y-2 rounded-lg bg-primary px-4 py-3">
+            <Skeleton className="h-4 w-32" />
+            <Skeleton className="h-4 w-24" />
+          </div>
+        </div>
+
+        {/* Incoming message */}
+        <div className="flex justify-start">
+          <div className="max-w-[70%] space-y-2 rounded-lg border bg-muted/30 px-4 py-3">
+            <Skeleton className="h-4 w-56" />
+            <Skeleton className="h-4 w-40" />
+          </div>
+        </div>
+      </div>
+
+      {/* Input bar (fixed at bottom) */}
+      <div className="border-t px-4 py-3 lg:px-6">
+        <div className="flex items-center gap-2">
+          <Skeleton className="h-10 flex-1" />
+          <Skeleton className="h-10 w-10 rounded-md" />
         </div>
       </div>
     </div>
