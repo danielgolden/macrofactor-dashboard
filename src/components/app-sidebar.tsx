@@ -16,6 +16,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  useSidebar,
 } from "@/components/ui/sidebar";
 
 export function AppSidebar({
@@ -26,6 +27,13 @@ export function AppSidebar({
   view: ViewId;
   onViewChange: (view: ViewId) => void;
 }) {
+  const { isMobile, setOpenMobile } = useSidebar();
+
+  const handleViewChange = (id: ViewId) => {
+    onViewChange(id);
+    if (isMobile) setOpenMobile(false);
+  };
+
   return (
     <Sidebar collapsible="offcanvas" {...props}>
       <SidebarHeader>
@@ -51,7 +59,7 @@ export function AppSidebar({
                   <SidebarMenuButton
                     tooltip={item.label}
                     isActive={view === item.id}
-                    onClick={() => onViewChange(item.id as ViewId)}
+                    onClick={() => handleViewChange(item.id as ViewId)}
                   >
                     <item.icon />
                     <span>{item.label}</span>

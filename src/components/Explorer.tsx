@@ -167,14 +167,14 @@ export function Explorer() {
           <ImportButton onImported={setFoods} />
         </SiteHeader>
 
-        <div className="flex flex-1 flex-col">
-          <div className="flex flex-1 flex-col gap-4 py-4 md:gap-6 md:py-6">
+        <div className="flex min-w-0 flex-1 flex-col">
+          <div className="flex min-w-0 flex-1 flex-col gap-4 py-4 lg:gap-6 lg:py-6">
             {view === "trends" ? (
-              <div className="px-4 lg:px-6">
+              <div className="px-4 sm:px-6 lg:px-6">
                 <TrendsView />
               </div>
             ) : view === "chat" ? (
-              <div className="px-4 lg:px-6">
+              <div className="px-4 sm:px-6 lg:px-6">
                 <ChatView />
               </div>
             ) : showLoading ? (
@@ -185,7 +185,7 @@ export function Explorer() {
                 <p className="text-sm text-muted-foreground">{error}</p>
               </div>
             ) : rawFoods.length === 0 ? (
-              <div className="px-4 lg:px-6">
+              <div className="px-4 sm:px-6 lg:px-6">
                 <Card>
                   <CardContent className="flex flex-col items-center gap-4 py-16 text-center">
                     <h2 className="text-2xl font-semibold">No data yet</h2>
@@ -199,7 +199,7 @@ export function Explorer() {
             ) : (
               <>
                 {/* Date range picker */}
-                <div className="px-4 lg:px-6">
+                <div className="px-4 sm:px-6 lg:px-6">
                   <DateRangePicker value={dateRange} onChange={handleDateRangeChange} bounds={bounds} />
                 </div>
 
@@ -211,11 +211,11 @@ export function Explorer() {
                 />
 
                 {/* Top foods calorie-share donut */}
-                <div className="px-4 lg:px-6">
+                <div className="px-4 sm:px-6 lg:px-6">
                   <CalorieShareDonut foods={rawFoods} onSelect={setSelected} />
                 </div>
 
-                <div className="flex flex-col gap-4 px-4 lg:px-6">
+                <div className="flex min-w-0 flex-col gap-4 px-4 sm:px-6 lg:px-6">
                   <Controls search={search} setSearch={setSearch} activeZones={activeZones} setActiveZones={setActiveZones} activeCategories={activeCategories} setActiveCategories={setActiveCategories} />
 
                   {compareList.length > 0 && (
@@ -226,12 +226,12 @@ export function Explorer() {
                     <>
                       <ExplorerView foods={paged} compareList={compareList} toggleCompare={toggleCompare} onSelect={setSelected} />
                       {totalPages > 1 && (
-                        <div className="flex items-center justify-center gap-4 text-xs">
+                        <div className="flex flex-wrap items-center justify-center gap-2 text-xs sm:gap-4">
                           <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={currentPage === 1}
                             className="rounded-md border px-3 py-1.5 disabled:opacity-40">
                             ← prev
                           </button>
-                          <span className="text-muted-foreground">{currentPage} / {totalPages} · {filtered.length} foods</span>
+                          <span className="whitespace-nowrap text-muted-foreground">{currentPage} / {totalPages} · {filtered.length} foods</span>
                           <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}
                             className="rounded-md border px-3 py-1.5 disabled:opacity-40">
                             next →

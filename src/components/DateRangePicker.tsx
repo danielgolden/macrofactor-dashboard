@@ -9,6 +9,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { cn } from "@/lib/utils";
+import { useIsMobile } from "@/hooks/use-mobile";
 import {
   PRESETS,
   isPresetDisabled,
@@ -28,6 +29,7 @@ function toISO(d: Date): string {
 
 export function DateRangePicker({ value, onChange, bounds }: Props) {
   const [open, setOpen] = useState(false);
+  const isMobile = useIsMobile();
 
   const activeLabel = (() => {
     if (!value) return "";
@@ -94,12 +96,12 @@ export function DateRangePicker({ value, onChange, bounds }: Props) {
             </Button>
           }
         />
-        <PopoverContent align="start" className="w-auto p-0">
+        <PopoverContent align="start" className="w-auto max-w-[calc(100vw-1.5rem)] p-0">
           <Calendar
             mode="range"
             selected={selected}
             onSelect={handleSelect}
-            numberOfMonths={2}
+            numberOfMonths={isMobile ? 1 : 2}
             month={selected?.from}
             disabled={bounds ? { before: bounds.min, after: bounds.max } : undefined}
           />

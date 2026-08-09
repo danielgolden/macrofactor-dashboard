@@ -51,7 +51,7 @@ export function DetailModal({ food, onClose, onCompare, inCompare }: Props) {
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="max-w-lg">
+      <DialogContent className="max-w-[calc(100%-1rem)] overflow-y-auto sm:max-w-lg max-h-[calc(100dvh-2rem)]">
         <DialogHeader>
           <div className="flex gap-2">
             <Badge style={{ backgroundColor: z.fill }}>{z.label} density</Badge>
@@ -77,7 +77,7 @@ export function DetailModal({ food, onClose, onCompare, inCompare }: Props) {
         </div>
 
         {/* Stat grid */}
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
           {stats.map(([label, val]) => (
             <div key={label} className="border-t-2 pt-2" style={{ borderColor: z.fill }}>
               <div className="text-[10px] uppercase tracking-wide text-muted-foreground">{label}</div>

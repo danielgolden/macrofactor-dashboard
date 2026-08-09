@@ -309,7 +309,7 @@ export function TrendsView() {
               </span>
             </h2>
           </div>
-          <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+          <div className="grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-4">
             <DeltaCard
               label="Protein"
               value={latest.proteinPct.toFixed(1)}

@@ -79,7 +79,7 @@ export function ExplorerView({ foods, compareList, toggleCompare, onSelect }: Pr
           const widthPct = Math.min(100, (food.calDensity / MAX_DENSITY) * 100);
           return (
             <div className="flex items-center gap-2">
-              <div className="relative h-5 w-28 overflow-hidden rounded-sm bg-muted">
+              <div className="relative h-5 w-20 overflow-hidden rounded-sm bg-muted sm:w-28">
                 <div
                   className="absolute inset-y-0 left-0 rounded-sm"
                   style={{ width: `${widthPct}%`, backgroundColor: z.fill }}
@@ -126,7 +126,7 @@ export function ExplorerView({ foods, compareList, toggleCompare, onSelect }: Pr
             <Button
               variant={inComp ? "default" : "outline"}
               size="sm"
-              className="h-7 px-2 text-xs"
+              className="h-9 px-2 text-xs sm:h-7"
               onClick={() => toggleCompare(row.original)}
             >
               {inComp ? <CheckIcon className="size-3" /> : <PlusIcon className="size-3" />}
@@ -157,13 +157,19 @@ export function ExplorerView({ foods, compareList, toggleCompare, onSelect }: Pr
         </span>
       </div>
 
-      <div className="rounded-lg border">
+      <div className="min-w-0 overflow-hidden rounded-lg border">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((hg) => (
               <TableRow key={hg.id} className="bg-muted/50">
                 {hg.headers.map((header) => (
-                  <TableHead key={header.id}>
+                  <TableHead
+                    key={header.id}
+                    className={cn(
+                      (header.column.id === "index" || header.column.id === "zone") &&
+                        "hidden sm:table-cell"
+                    )}
+                  >
                     {header.isPlaceholder ? null : (
                       <button
                         onClick={header.column.getToggleSortingHandler()}
@@ -194,6 +200,10 @@ export function ExplorerView({ foods, compareList, toggleCompare, onSelect }: Pr
                   {row.getVisibleCells().map((cell) => (
                     <TableCell
                       key={cell.id}
+                      className={cn(
+                        (cell.column.id === "index" || cell.column.id === "zone") &&
+                          "hidden sm:table-cell"
+                      )}
                       onClick={(e) => {
                         if (cell.column.id === "compare" || cell.column.id === "name") {
                           e.stopPropagation();
@@ -232,7 +242,7 @@ function FoodNameCell({ name, onSelect }: { name: string; onSelect: () => void }
     <span
       ref={ref}
       onMouseEnter={handleMouseEnter}
-      className="block max-w-[300px] truncate text-left font-medium"
+      className="block max-w-[140px] truncate text-left font-medium sm:max-w-[300px]"
     >
       {name}
     </span>

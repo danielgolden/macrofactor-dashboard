@@ -21,7 +21,7 @@ function CompareCard({ food, onRemove }: { food: Food; onRemove: () => void }) {
     <div className="relative rounded-lg border p-3">
       <button
         onClick={onRemove}
-        className="absolute right-2 top-2 text-muted-foreground hover:text-foreground"
+        className="absolute right-1.5 top-1.5 flex size-8 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
         aria-label="Remove"
       >
         <XIcon className="size-4" />
