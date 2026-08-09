@@ -1,10 +1,12 @@
+import Image from "next/image";
 import Link from "next/link";
 import {
   ArrowRightIcon,
   FlameIcon,
   LineChartIcon,
-  UploadIcon,
+  MonitorIcon,
   ShieldCheckIcon,
+  UploadIcon,
   UtensilsIcon,
 } from "lucide-react";
 
@@ -95,6 +97,112 @@ export function LandingPage() {
           Get Started
           <ArrowRightIcon className="size-4" />
         </Link>
+      </section>
+
+      {/* UI Showcase */}
+      <section className="mx-auto w-full max-w-6xl px-6 py-16">
+        <div className="mb-12 text-center">
+          <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-border bg-muted/50 px-4 py-1.5 text-xs font-medium text-muted-foreground">
+            <MonitorIcon className="size-3.5" />
+            See it in action
+          </div>
+          <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+            A dashboard that actually shows you what matters
+          </h2>
+          <p className="mx-auto mt-3 max-w-lg text-sm text-muted-foreground sm:text-base">
+            Every view is built to surface insights the MacroFactor app
+            doesn&apos;t — from caloric density scatter plots to top-foods
+            breakdowns and trend lines.
+          </p>
+        </div>
+
+        {/* Browser-frame mockup with screenshot */}
+        <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
+          {/* Browser chrome */}
+          <div className="flex items-center gap-2 border-b border-border bg-muted/50 px-4 py-3">
+            <div className="flex gap-1.5">
+              <div className="size-3 rounded-full bg-red-400/80" />
+              <div className="size-3 rounded-full bg-yellow-400/80" />
+              <div className="size-3 rounded-full bg-green-400/80" />
+            </div>
+            <div className="mx-auto flex items-center gap-2 rounded-md border border-border bg-background px-3 py-1 text-xs text-muted-foreground">
+              <span className="size-3 rounded-full border border-muted-foreground/40" />
+              macrofactor-dashboard.vercel.app
+            </div>
+          </div>
+          {/* Screenshot */}
+          <div className="relative aspect-[16/15] w-full bg-muted/20">
+            <Image
+              src="/showcase/dashboard-1.png"
+              alt="MacroFactor Explorer dashboard showing caloric density scatter plot, food rankings, and donut chart"
+              fill
+              className="object-contain"
+              priority
+              sizes="(max-width: 768px) 100vw, 1024px"
+            />
+          </div>
+        </div>
+
+        {/* Secondary screenshots row */}
+        <div className="mt-6 grid gap-4 sm:grid-cols-2">
+          <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
+            <div className="flex items-center gap-2 border-b border-border bg-muted/50 px-4 py-2.5">
+              <div className="flex gap-1.5">
+                <div className="size-2.5 rounded-full bg-red-400/80" />
+                <div className="size-2.5 rounded-full bg-yellow-400/80" />
+                <div className="size-2.5 rounded-full bg-green-400/80" />
+              </div>
+              <span className="ml-2 text-xs text-muted-foreground">
+                Trends &amp; TDEE
+              </span>
+            </div>
+            <div className="relative aspect-[16/15] w-full bg-muted/20">
+              <Image
+                src="/showcase/dashboard-2.png"
+                alt="MacroFactor Explorer showing trend weight and TDEE charts with green data visualization"
+                fill
+                className="object-contain"
+                sizes="(max-width: 768px) 100vw, 512px"
+              />
+            </div>
+          </div>
+
+          {/* Feature callouts card */}
+          <div className="flex flex-col justify-center gap-5 rounded-xl border border-border bg-card p-6 sm:p-8">
+            <h3 className="text-lg font-semibold">
+              Everything at a glance
+            </h3>
+            <ul className="space-y-4">
+              <li className="flex gap-3">
+                <FlameIcon className="mt-0.5 size-5 shrink-0 text-primary" />
+                <div>
+                  <p className="text-sm font-medium">Caloric density scatter plot</p>
+                  <p className="text-sm text-muted-foreground">
+                    Every food plotted by weight vs. calories — spot outliers instantly.
+                  </p>
+                </div>
+              </li>
+              <li className="flex gap-3">
+                <LineChartIcon className="mt-0.5 size-5 shrink-0 text-primary" />
+                <div>
+                  <p className="text-sm font-medium">Trend weight &amp; adaptive TDEE</p>
+                  <p className="text-sm text-muted-foreground">
+                    See the data MacroFactor syncs to Apple Health but never shows you.
+                  </p>
+                </div>
+              </li>
+              <li className="flex gap-3">
+                <UtensilsIcon className="mt-0.5 size-5 shrink-0 text-primary" />
+                <div>
+                  <p className="text-sm font-medium">Top foods by calories</p>
+                  <p className="text-sm text-muted-foreground">
+                    Interactive donut chart breaking down your calorie sources.
+                  </p>
+                </div>
+              </li>
+            </ul>
+          </div>
+        </div>
       </section>
 
       {/* Features */}
