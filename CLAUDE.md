@@ -39,7 +39,7 @@ Ver `.env.example` para la lista completa.
 Stripe Projects las genera automáticamente con `stripe projects env --pull`.
 
 ## Notas importantes
-- El middleware de Clerk protege todas las rutas excepto `/sign-in`
+- El middleware de Clerk protege todas las rutas excepto `/` (landing pública) y `/sign-in`; la app vive en `/app` y tras el sign-in se redirige a `/app`
 - La tabla `foods` usa RLS — cada usuario solo ve sus propios datos
 - El import de datos va a `/api/import` (POST) con el JSON de MacroFactor procesado
 

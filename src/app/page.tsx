@@ -1,5 +1,5 @@
-import { Explorer } from "@/components/Explorer";
+import { LandingPage } from "@/components/LandingPage";
 
 export default function Home() {
-  return <Explorer />;
+  return <LandingPage />;
 }

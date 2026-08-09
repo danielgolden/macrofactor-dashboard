@@ -1,0 +1,83 @@
+/* Sign-in page layout — shares design tokens from LandingPage.module.css
+   (applied via the wrapping .root element). Hand-written, no Tailwind. */
+
+.page {
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.header {
+  padding: 22px 24px;
+}
+
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 30px;
+  padding: 40px 24px 96px;
+  text-align: center;
+  position: relative;
+}
+
+.copy {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  max-width: 560px;
+  position: relative;
+  z-index: 1;
+}
+
+.h1 {
+  font-size: clamp(2.2rem, 5.5vw, 3.6rem);
+  max-width: 15ch;
+  margin: 0;
+}
+
+.sub {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.55;
+  color: var(--ink-2);
+  max-width: 420px;
+  text-wrap: balance;
+}
+
+.signin {
+  position: relative;
+  z-index: 1;
+}
+
+.glow {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 560px;
+  height: 380px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center, var(--glow-1), transparent 70%);
+  filter: blur(60px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.note {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--ink-3);
+  position: relative;
+  z-index: 1;
+}
+
+.note svg {
+  color: var(--accent-dark);
+}

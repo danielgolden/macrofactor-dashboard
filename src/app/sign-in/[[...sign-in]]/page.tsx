@@ -1,19 +1,54 @@
+import Link from "next/link";
 import { SignIn } from "@clerk/nextjs";
+import { LogInIcon, UtensilsIcon } from "lucide-react";
+
+import { lastik } from "@/lib/fonts";
+import landing from "@/components/LandingPage.module.css";
+import local from "./SignInPage.module.css";
 
 export default function SignInPage() {
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center gap-8 p-6">
-      <div className="text-center">
-        <p className="mb-3 text-xs uppercase tracking-[0.2em] text-muted-foreground">
-          MacroFactor Explorer
+    <div className={`${landing.root} ${lastik.variable} ${local.page}`}>
+      <header className={local.header}>
+        <Link href="/" className={landing.brand}>
+          <span className={landing.brandMark}>
+            <UtensilsIcon size={15} />
+          </span>
+          <span className={landing.brandName}>MacroFactor Explorer</span>
+        </Link>
+      </header>
+
+      <main className={local.main}>
+        <div className={local.glow} aria-hidden />
+
+        <div className={local.copy}>
+          <span className={landing.kicker}>A companion for MacroFactor</span>
+          <h1 className={`${landing.display} ${local.h1}`}>
+            Your food log has <em>more to tell you.</em>
+          </h1>
+          <p className={local.sub}>
+            Sign in to pick up where MacroFactor leaves off — the patterns
+            behind how you eat, in charts and plain language.
+          </p>
+        </div>
+
+        <div className={local.signin}>
+          <SignIn
+            forceRedirectUrl="/app"
+            appearance={{
+              variables: {
+                colorPrimary: "rgb(33, 158, 188)",
+                borderRadius: "0.75rem",
+              },
+            }}
+          />
+        </div>
+
+        <p className={local.note}>
+          <LogInIcon size={14} />
+          One click with Google — no password.
         </p>
-        <h1 className="text-4xl font-bold leading-tight tracking-tight sm:text-5xl">
-          What you eat,
-          <br />
-          <em className="italic text-muted-foreground">in numbers.</em>
-        </h1>
-      </div>
-      <SignIn />
+      </main>
     </div>
   );
 }
