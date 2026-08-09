@@ -1,6 +1,12 @@
 "use client";
 
-import { GaugeIcon, TrendingDownIcon, TrendingUpIcon, TrophyIcon } from "lucide-react";
+import {
+  GaugeIcon,
+  LoaderCircleIcon,
+  TrendingDownIcon,
+  TrendingUpIcon,
+  TrophyIcon,
+} from "lucide-react";
 
 import { Card, CardAction, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 
@@ -10,9 +16,11 @@ interface SectionCardsProps {
     avgDensity: number;
   };
   trend: number | null;
+  /** True while the background previous-period avg-density fetch is in flight. */
+  prevAvgDensityLoading?: boolean;
 }
 
-export function SectionCards({ stats, trend }: SectionCardsProps) {
+export function SectionCards({ stats, trend, prevAvgDensityLoading = false }: SectionCardsProps) {
   const trendUp = trend !== null && trend > 0;
   const trendDown = trend !== null && trend < 0;
 
@@ -45,7 +53,12 @@ export function SectionCards({ stats, trend }: SectionCardsProps) {
           </CardAction>
         </CardHeader>
         <CardFooter className="text-xs">
-          {trend === null ? (
+          {prevAvgDensityLoading ? (
+            <span className="flex items-center gap-1.5 text-muted-foreground">
+              <LoaderCircleIcon className="size-3 animate-spin" />
+              comparing to previous period…
+            </span>
+          ) : trend === null ? (
             <span className="text-muted-foreground">calories per gram</span>
           ) : (
             <span

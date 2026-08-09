@@ -22,6 +22,7 @@ import {
   type ChartConfig,
 } from "@/components/ui/chart";
 import { Card, CardContent } from "@/components/ui/card";
+import { TrendsSkeleton } from "@/components/LoadingSkeletons";
 import type {
   WeekBucket,
   FoodByWeek,
@@ -217,11 +218,7 @@ export function TrendsView() {
   }, [nonZeroWeeks]);
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center py-16">
-        <p className="text-sm text-muted-foreground">Loading weekly trends…</p>
-      </div>
-    );
+    return <TrendsSkeleton />;
   }
 
   if (error) {
