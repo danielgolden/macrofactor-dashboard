@@ -63,18 +63,6 @@ export function OnboardingModal({ open, onImported }: Props) {
           </DialogDescription>
         </DialogHeader>
 
-        {/* Progress circles (no numbers) */}
-        <div className="flex items-center justify-center gap-2 pb-1">
-          {Array.from({ length: totalSteps }).map((_, i) => (
-            <span
-              key={i}
-              className={`size-2.5 rounded-full transition-all ${
-                i === step ? "bg-primary" : "bg-muted-foreground/30"
-              }`}
-            />
-          ))}
-        </div>
-
         {/* Step content */}
         {isLastStep ? (
           <div className="flex flex-col gap-4 py-2">
@@ -123,7 +111,7 @@ export function OnboardingModal({ open, onImported }: Props) {
           </div>
         )}
 
-        {/* Navigation */}
+        {/* Navigation + progress dots */}
         <div className="flex items-center justify-between pt-2">
           <Button
             variant="ghost"
@@ -135,7 +123,17 @@ export function OnboardingModal({ open, onImported }: Props) {
             Back
           </Button>
 
-          <span className="flex-1" />
+          {/* Progress dots — active is wider */}
+          <div className="flex items-center justify-center gap-2">
+            {Array.from({ length: totalSteps }).map((_, i) => (
+              <span
+                key={i}
+                className={`h-1.5 rounded-full transition-all ${
+                  i === step ? "w-6 bg-primary" : "w-1.5 bg-muted-foreground/30"
+                }`}
+              />
+            ))}
+          </div>
 
           {!isLastStep ? (
             <Button
