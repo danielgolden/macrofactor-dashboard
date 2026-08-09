@@ -9,7 +9,6 @@ import { AppSidebar } from "./app-sidebar";
 import { SiteHeader } from "./site-header";
 import { SectionCards } from "./section-cards";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import { Card, CardContent } from "@/components/ui/card";
 import { Controls } from "./Controls";
 import { CompareStrip } from "./CompareStrip";
 import { DetailModal } from "./DetailModal";
@@ -17,6 +16,8 @@ import { ExplorerView } from "./ExplorerView";
 import { ScatterView } from "./ScatterView";
 import { RankingView } from "./RankingView";
 import { ImportButton } from "./ImportButton";
+import { OnboardingModal } from "./OnboardingModal";
+import { dummyFoods } from "@/lib/dummyData";
 import { DateRangePicker } from "./DateRangePicker";
 import { TreemapView } from "./TreemapView";
 import { TrendsView } from "./TrendsView";
@@ -44,6 +45,13 @@ export function Explorer() {
 
   const { foods: rawFoods, loading, error, setFoods } = useFoods(dateRange);
 
+  // When the user has no real data yet, render the dashboard with static
+  // dummy foods behind a blur overlay (see the empty-state branch below).
+  // The moment real data is imported, `hasRealData` flips true and the
+  // dummy data / blur / onboarding modal are discarded.
+  const hasRealData = rawFoods.length > 0;
+  const displayFoods = hasRealData ? rawFoods : dummyFoods;
+
   useEffect(() => { setPage(1); }, [search]);
 
   const handleDateRangeChange = useCallback((range: DateRange | null) => {
@@ -66,19 +74,19 @@ export function Explorer() {
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    return rawFoods.filter((f) => {
+    return displayFoods.filter((f) => {
       if (q && !f.name.toLowerCase().includes(q)) return false;
       if (activeZones.size > 0 && !activeZones.has(f.zone)) return false;
       if (activeCategories.size > 0 && !activeCategories.has(f.category)) return false;
       return true;
     });
-  }, [rawFoods, search, activeZones, activeCategories]);
+  }, [displayFoods, search, activeZones, activeCategories]);
 
   const stats = useMemo(() => {
-    const totalW = rawFoods.reduce((s, f) => s + f.totalWeight, 0);
-    const totalCal = rawFoods.reduce((s, f) => s + f.totalCalories, 0);
-    return { count: rawFoods.length, avgDensity: totalW > 0 ? totalCal / totalW : 0 };
-  }, [rawFoods]);
+    const totalW = displayFoods.reduce((s, f) => s + f.totalWeight, 0);
+    const totalCal = displayFoods.reduce((s, f) => s + f.totalCalories, 0);
+    return { count: displayFoods.length, avgDensity: totalW > 0 ? totalCal / totalW : 0 };
+  }, [displayFoods]);
 
   const PAGE_SIZE = 100;
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
@@ -177,98 +185,103 @@ export function Explorer() {
               <div className="px-4 sm:px-6 lg:px-6">
                 <ChatView />
               </div>
-            ) : showLoading ? (
-              <>{skeleton}</>
-            ) : showError ? (
-              <div className="flex flex-col items-center justify-center gap-2 px-4 py-16 text-center lg:px-6">
-                <p className="text-lg font-semibold text-destructive">Error loading data</p>
-                <p className="text-sm text-muted-foreground">{error}</p>
-              </div>
-            ) : rawFoods.length === 0 ? (
-              <div className="px-4 sm:px-6 lg:px-6">
-                <Card>
-                  <CardContent className="flex flex-col items-center gap-4 py-16 text-center">
-                    <h2 className="text-2xl font-semibold">No data yet</h2>
-                    <p className="max-w-md text-sm text-muted-foreground">
-                      Import your MacroFactor Excel (.xlsx) or CSV file to get started.
-                    </p>
-                    <ImportButton onImported={setFoods} />
-                  </CardContent>
-                </Card>
-              </div>
             ) : (
-              <>
-                {/* Date range picker */}
-                <div className="px-4 sm:px-6 lg:px-6">
-                  <DateRangePicker value={dateRange} onChange={handleDateRangeChange} bounds={bounds} />
-                </div>
+              /* Full dashboard renders in both states. When the user has no
+                 real data, the dashboard is populated with dummy foods and
+                 wrapped in a strong blur + pointer-events barrier so no dummy
+                 values are legible or accessible; the OnboardingModal sits on
+                 top as the primary focus. */
+              <div className="relative">
+                <div
+                  className={
+                    hasRealData
+                      ? undefined
+                      : "pointer-events-none select-none blur-md"
+                  }
+                >
+                  {/* Date range picker */}
+                  <div className="px-4 lg:px-6">
+                    <DateRangePicker value={dateRange} onChange={handleDateRangeChange} bounds={bounds} />
+                  </div>
 
-                {/* Stats cards */}
-                <SectionCards
-                  stats={stats}
-                  trend={trend}
-                  prevAvgDensityLoading={prevAvgDensityLoading}
-                />
+                  {/* Stats cards */}
+                  <SectionCards stats={stats} trend={trend} />
 
-                {/* Top foods calorie-share donut */}
-                <div className="px-4 sm:px-6 lg:px-6">
-                  <CalorieShareDonut foods={rawFoods} onSelect={setSelected} />
-                </div>
+                  {/* Top foods calorie-share donut */}
+                  <div className="px-4 lg:px-6">
+                    <CalorieShareDonut foods={displayFoods} onSelect={setSelected} />
+                  </div>
 
-                <div className="flex min-w-0 flex-col gap-4 px-4 sm:px-6 lg:px-6">
-                  <Controls search={search} setSearch={setSearch} activeZones={activeZones} setActiveZones={setActiveZones} activeCategories={activeCategories} setActiveCategories={setActiveCategories} />
+                  <div className="flex flex-col gap-4 px-4 lg:px-6">
+                    <Controls search={search} setSearch={setSearch} activeZones={activeZones} setActiveZones={setActiveZones} activeCategories={activeCategories} setActiveCategories={setActiveCategories} />
 
-                  {compareList.length > 0 && (
-                    <CompareStrip foods={compareList} onClear={() => setCompareList([])} onRemove={(name) => setCompareList((p) => p.filter((f) => f.name !== name))} />
-                  )}
+                    {compareList.length > 0 && (
+                      <CompareStrip foods={compareList} onClear={() => setCompareList([])} onRemove={(name) => setCompareList((p) => p.filter((f) => f.name !== name))} />
+                    )}
 
-                  {view === "explorer" && (
-                    <>
-                      <ExplorerView foods={paged} compareList={compareList} toggleCompare={toggleCompare} onSelect={setSelected} />
-                      {totalPages > 1 && (
-                        <div className="flex flex-wrap items-center justify-center gap-2 text-xs sm:gap-4">
-                          <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={currentPage === 1}
-                            className="rounded-md border px-3 py-1.5 disabled:opacity-40">
-                            ← prev
-                          </button>
-                          <span className="whitespace-nowrap text-muted-foreground">{currentPage} / {totalPages} · {filtered.length} foods</span>
-                          <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}
-                            className="rounded-md border px-3 py-1.5 disabled:opacity-40">
-                            next →
-                          </button>
+                    {view === "explorer" && (
+                      <>
+                        <ExplorerView foods={paged} compareList={compareList} toggleCompare={toggleCompare} onSelect={setSelected} />
+                        {totalPages > 1 && (
+                          <div className="flex items-center justify-center gap-4 text-xs">
+                            <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={currentPage === 1}
+                              className="rounded-md border px-3 py-1.5 disabled:opacity-40">
+                              ← prev
+                            </button>
+                            <span className="text-muted-foreground">{currentPage} / {totalPages} · {filtered.length} foods</span>
+                            <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}
+                              className="rounded-md border px-3 py-1.5 disabled:opacity-40">
+                              next →
+                            </button>
+                          </div>
+                        )}
+                      </>
+                    )}
+                    {view === "scatter" && (
+                      <>
+                        <div>
+                          <h2 className="text-lg font-semibold">Caloric density vs. portion you eat</h2>
+                          <p className="text-sm text-muted-foreground">Y-axis = density (kcal/g) · X-axis = average grams per occasion · Size = frequency</p>
                         </div>
-                      )}
-                    </>
-                  )}
-                  {view === "scatter" && (
-                    <>
-                      <div>
-                        <h2 className="text-lg font-semibold">Caloric density vs. portion you eat</h2>
-                        <p className="text-sm text-muted-foreground">Y-axis = density (kcal/g) · X-axis = average grams per occasion · Size = frequency</p>
-                      </div>
-                      <ScatterView foods={filtered} onSelect={setSelected} />
-                    </>
-                  )}
-                  {view === "ranking" && (
-                    <>
-                      <div>
-                        <h2 className="text-lg font-semibold">Top 30 · Total calories in the month</h2>
-                        <p className="text-sm text-muted-foreground">What <em>really</em> dominates your intake — not by density, but by total volume.</p>
-                      </div>
-                      <RankingView foods={filtered} onSelect={setSelected} />
-                    </>
-                  )}
-                  {view === "treemap" && (
-                    <TreemapView foods={filtered} onSelect={setSelected} />
-                  )}
+                        <ScatterView foods={filtered} onSelect={setSelected} />
+                      </>
+                    )}
+                    {view === "ranking" && (
+                      <>
+                        <div>
+                          <h2 className="text-lg font-semibold">Top 30 · Total calories in the month</h2>
+                          <p className="text-sm text-muted-foreground">What <em>really</em> dominates your intake — not by density, but by total volume.</p>
+                        </div>
+                        <RankingView foods={filtered} onSelect={setSelected} />
+                      </>
+                    )}
+                    {view === "treemap" && (
+                      <TreemapView foods={filtered} onSelect={setSelected} />
+                    )}
+                  </div>
                 </div>
-              </>
+
+                {/* Subtle tint over the blurred preview — a hard visual barrier
+                    so no dummy values can be read. pointer-events-none so it
+                    never blocks the modal's ImportButton (modal is z-50 via
+                    its own portal). */}
+                {!hasRealData && (
+                  <div
+                    className="pointer-events-none absolute inset-0 z-30 bg-background/20"
+                    aria-hidden="true"
+                  />
+                )}
+              </div>
             )}
           </div>
         </div>
       </SidebarInset>
 
       <DetailModal food={selected} onClose={() => setSelected(null)} onCompare={(food) => { toggleCompare(food); setSelected(null); }} inCompare={selected ? compareList.some((f) => f.name === selected.name) : false} />
+
+      {/* First-run onboarding: centered walkthrough modal over the blurred
+          dashboard. Dismissed automatically once real data is imported. */}
+      <OnboardingModal open={!hasRealData} onImported={setFoods} />
     </SidebarProvider>
   );
 }
