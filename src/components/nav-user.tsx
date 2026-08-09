@@ -80,12 +80,16 @@ export function NavUser({ onClearData }: { onClearData?: () => void }) {
               <DropdownMenuItem
                 variant="destructive"
                 onClick={onClearData}
+                className="px-2 py-2"
               >
                 <Trash2Icon />
                 Clear my data
               </DropdownMenuItem>
             )}
-            <DropdownMenuItem onClick={() => signOut({ redirectUrl: "/sign-in" })}>
+            <DropdownMenuItem
+              onClick={() => signOut({ redirectUrl: "/sign-in" })}
+              className="px-2 py-2"
+            >
               <LogOutIcon />
               Sign out
             </DropdownMenuItem>
