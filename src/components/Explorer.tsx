@@ -20,6 +20,7 @@ import { ImportButton } from "./ImportButton";
 import { DateRangePicker } from "./DateRangePicker";
 import { TreemapView } from "./TreemapView";
 import { TrendsView } from "./TrendsView";
+import { ChatView } from "./ChatView";
 import { CalorieShareDonut } from "./CalorieShareDonut";
 
 export function Explorer() {
@@ -123,19 +124,19 @@ export function Explorer() {
 
   const currentView = VIEWS.find((v) => v.id === view)!;
 
-  if (loading && view !== "trends") return (
+  if (loading && view !== "trends" && view !== "chat") return (
     <div className="flex min-h-screen items-center justify-center">
       <p className="text-sm text-muted-foreground">Loading data…</p>
     </div>
   );
 
-  if (boundsLoading && view !== "trends") return (
+  if (boundsLoading && view !== "trends" && view !== "chat") return (
     <div className="flex min-h-screen items-center justify-center">
       <p className="text-sm text-muted-foreground">Loading data…</p>
     </div>
   );
 
-  if (error && view !== "trends") return (
+  if (error && view !== "trends" && view !== "chat") return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-2">
       <p className="text-lg font-semibold text-destructive">Error loading data</p>
       <p className="text-sm text-muted-foreground">{error}</p>
@@ -162,6 +163,10 @@ export function Explorer() {
             {view === "trends" ? (
               <div className="px-4 lg:px-6">
                 <TrendsView />
+              </div>
+            ) : view === "chat" ? (
+              <div className="px-4 lg:px-6">
+                <ChatView />
               </div>
             ) : rawFoods.length === 0 ? (
               <div className="px-4 lg:px-6">
