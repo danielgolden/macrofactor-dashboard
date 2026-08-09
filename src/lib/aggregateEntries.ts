@@ -8,6 +8,12 @@ export interface LogEntry {
   fatG: number;
   carbsG: number;
   proteinG: number;
+  /**
+   * SHA-256 hash of the row content (date + foodName + macros + weight).
+   * Used for deduplication when merging imports — two entries with the same
+   * hash are considered identical and only the first is kept.
+   */
+  rowHash: string;
 }
 
 function classifyZone(density: number): Zone {

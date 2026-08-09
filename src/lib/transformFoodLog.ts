@@ -1,4 +1,5 @@
 import * as XLSX from "xlsx";
+import { createHash } from "crypto";
 import type { Food } from "./types";
 import { aggregateEntries, type LogEntry } from "./aggregateEntries";
 
@@ -71,14 +72,27 @@ export function transformFoodLog(buffer: Buffer, filename = ""): { foods: Food[]
 
     if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) continue;
 
+    const calories = Number(row["Calories (kcal)"]) || 0;
+    const fatG = Number(row["Fat (g)"]) || 0;
+    const carbsG = Number(row["Carbs (g)"]) || 0;
+    const proteinG = Number(row["Protein (g)"]) || 0;
+
+    // Compute a stable hash of the row content for deduplication.
+    // Re-importing the same file (or an overlapping all-time export) will
+    // produce identical hashes, so duplicate entries are skipped on insert.
+    const rowHash = createHash("sha256")
+      .update(`${date}|${name}|${portionWeight}|${calories}|${fatG}|${carbsG}|${proteinG}`)
+      .digest("hex");
+
     entries.push({
       date,
       foodName: name,
       weightG: portionWeight,
-      calories: Number(row["Calories (kcal)"]) || 0,
-      fatG: Number(row["Fat (g)"]) || 0,
-      carbsG: Number(row["Carbs (g)"]) || 0,
-      proteinG: Number(row["Protein (g)"]) || 0,
+      calories,
+      fatG,
+      carbsG,
+      proteinG,
+      rowHash,
     });
   }
 

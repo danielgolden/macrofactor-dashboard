@@ -1,7 +1,13 @@
 "use client";
 
+import { useState } from "react";
 import { useClerk, useUser } from "@clerk/nextjs";
-import { EllipsisVerticalIcon, LogOutIcon, Trash2Icon } from "lucide-react";
+import {
+  EllipsisVerticalIcon,
+  LogOutIcon,
+  Trash2Icon,
+  Loader2Icon,
+} from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -14,6 +20,15 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
@@ -25,6 +40,10 @@ export function NavUser({ onClearData }: { onClearData?: () => void }) {
   const { user } = useUser();
   const { signOut } = useClerk();
 
+  const [clearOpen, setClearOpen] = useState(false);
+  const [clearing, setClearing] = useState(false);
+  const [clearError, setClearError] = useState<string | null>(null);
+
   if (!user) return null;
 
   const name = user.fullName ?? "User";
@@ -35,6 +54,26 @@ export function NavUser({ onClearData }: { onClearData?: () => void }) {
     .slice(0, 2)
     .join("")
     .toUpperCase();
+
+  const handleClearData = async () => {
+    setClearing(true);
+    setClearError(null);
+    try {
+      const res = await fetch("/api/data", { method: "DELETE" });
+      const data = await res.json();
+      if (!res.ok || data.error) {
+        throw new Error(data.error ?? `Request failed (${res.status})`);
+      }
+      setClearOpen(false);
+      // Reload so the UI reflects the cleared state (foods, charts, etc.)
+      window.location.reload();
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      setClearError(msg);
+    } finally {
+      setClearing(false);
+    }
+  };
 
   return (
     <SidebarMenu>
@@ -76,26 +115,60 @@ export function NavUser({ onClearData }: { onClearData?: () => void }) {
               </DropdownMenuLabel>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            {onClearData && (
-              <DropdownMenuItem
-                variant="destructive"
-                onClick={onClearData}
-                className="px-2 py-2"
-              >
-                <Trash2Icon />
-                Clear my data
-              </DropdownMenuItem>
-            )}
             <DropdownMenuItem
-              onClick={() => signOut({ redirectUrl: "/sign-in" })}
-              className="px-2 py-2"
+              variant="destructive"
+              onClick={() => setClearOpen(true)}
             >
+              <Trash2Icon />
+              Clear all data
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => signOut({ redirectUrl: "/sign-in" })}>
               <LogOutIcon />
               Sign out
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </SidebarMenuItem>
+
+      {/* Confirmation dialog for clearing all data */}
+      <Dialog open={clearOpen} onOpenChange={setClearOpen}>
+        <DialogContent showCloseButton={!clearing}>
+          <DialogHeader>
+            <DialogTitle>Clear all your data?</DialogTitle>
+            <DialogDescription>
+              This permanently deletes every imported food log entry and
+              aggregated food for your account. This cannot be undone. You can
+              always re-import your MacroFactor export afterwards.
+            </DialogDescription>
+          </DialogHeader>
+          {clearError && (
+            <p className="text-sm text-destructive">{clearError}</p>
+          )}
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setClearOpen(false)}
+              disabled={clearing}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleClearData}
+              disabled={clearing}
+            >
+              {clearing ? (
+                <>
+                  <Loader2Icon className="size-4 animate-spin" />
+                  Clearing…
+                </>
+              ) : (
+                "Delete everything"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </SidebarMenu>
   );
 }
