@@ -1,10 +1,30 @@
 "use client";
 import { useState, useMemo, useCallback, useEffect } from "react";
+import {
+  DndContext,
+  DragOverlay,
+  KeyboardSensor,
+  PointerSensor,
+  TouchSensor,
+  closestCenter,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+  type DragStartEvent,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  arrayMove,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { restrictToVerticalAxis, restrictToParentElement } from "@dnd-kit/modifiers";
 import type { Food, Zone, Category } from "@/lib/types";
 import { VIEWS, type ViewId } from "@/lib/views";
 import { useFoods } from "@/lib/useFoods";
 import { useDateRangeBounds } from "@/lib/useDateRangeBounds";
 import { computeInitialRange, type DateRange } from "@/lib/dateRange";
+import { useExplorerLayout, type ExplorerBlockId, BLOCK_LABELS } from "@/lib/useExplorerLayout";
 import { AppSidebar } from "./app-sidebar";
 import { SiteHeader } from "./site-header";
 import { SectionCards } from "./section-cards";
@@ -22,6 +42,7 @@ import { TreemapView } from "./TreemapView";
 import { TrendsView } from "./TrendsView";
 import { ChatView } from "./ChatView";
 import { CalorieShareDonut } from "./CalorieShareDonut";
+import { SortableBlock } from "./SortableBlock";
 
 export function Explorer() {
   const [view, setView]         = useState<ViewId>("explorer");
@@ -124,6 +145,133 @@ export function Explorer() {
 
   const currentView = VIEWS.find((v) => v.id === view)!;
 
+  // --- Drag-and-drop layout ---
+  const { layout, setLayout } = useExplorerLayout();
+
+  const [activeId, setActiveId] = useState<ExplorerBlockId | null>(null);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(TouchSensor, {
+      activationConstraint: { delay: 250, tolerance: 8 },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  const dndModifiers = useMemo(
+    () => [restrictToVerticalAxis, restrictToParentElement],
+    []
+  );
+
+  const handleDragStart = useCallback((event: DragStartEvent) => {
+    setActiveId(event.active.id as ExplorerBlockId);
+  }, []);
+
+  const handleDragEnd = useCallback(
+    (event: DragEndEvent) => {
+      setActiveId(null);
+      const { active, over } = event;
+      if (!over || active.id === over.id) return;
+      setLayout((prev) => {
+        const oldIndex = prev.indexOf(active.id as ExplorerBlockId);
+        const newIndex = prev.indexOf(over.id as ExplorerBlockId);
+        if (oldIndex === -1 || newIndex === -1) return prev;
+        return arrayMove(prev, oldIndex, newIndex);
+      });
+    },
+    [setLayout]
+  );
+
+  const handleDragCancel = useCallback(() => {
+    setActiveId(null);
+  }, []);
+
+  /** Render the content for a given block id. */
+  const renderBlock = useCallback(
+    (blockId: ExplorerBlockId) => {
+      switch (blockId) {
+        case "stats":
+          return <SectionCards stats={stats} trend={trend} />;
+        case "donut":
+          return (
+            <div className="px-4 lg:px-6">
+              <CalorieShareDonut foods={rawFoods} onSelect={setSelected} />
+            </div>
+          );
+        case "controls":
+          return (
+            <div className="px-4 lg:px-6">
+              <Controls
+                search={search}
+                setSearch={setSearch}
+                activeZones={activeZones}
+                setActiveZones={setActiveZones}
+                activeCategories={activeCategories}
+                setActiveCategories={setActiveCategories}
+              />
+            </div>
+          );
+        case "table":
+          return (
+            <div className="flex flex-col gap-4 px-4 lg:px-6">
+              {compareList.length > 0 && (
+                <CompareStrip
+                  foods={compareList}
+                  onClear={() => setCompareList([])}
+                  onRemove={(name) =>
+                    setCompareList((p) => p.filter((f) => f.name !== name))
+                  }
+                />
+              )}
+              <ExplorerView
+                foods={paged}
+                compareList={compareList}
+                toggleCompare={toggleCompare}
+                onSelect={setSelected}
+              />
+              {totalPages > 1 && (
+                <div className="flex items-center justify-center gap-4 text-xs">
+                  <button
+                    onClick={() => setPage((p) => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
+                    className="rounded-md border px-3 py-1.5 disabled:opacity-40"
+                  >
+                    ← prev
+                  </button>
+                  <span className="text-muted-foreground">
+                    {currentPage} / {totalPages} · {filtered.length} foods
+                  </span>
+                  <button
+                    onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                    disabled={currentPage === totalPages}
+                    className="rounded-md border px-3 py-1.5 disabled:opacity-40"
+                  >
+                    next →
+                  </button>
+                </div>
+              )}
+            </div>
+          );
+      }
+    },
+    [
+      stats,
+      trend,
+      rawFoods,
+      search,
+      activeZones,
+      activeCategories,
+      compareList,
+      paged,
+      toggleCompare,
+      totalPages,
+      currentPage,
+      filtered.length,
+    ]
+  );
+
   if (loading && view !== "trends" && view !== "chat") return (
     <div className="flex min-h-screen items-center justify-center">
       <p className="text-sm text-muted-foreground">Loading data…</p>
@@ -182,66 +330,80 @@ export function Explorer() {
               </div>
             ) : (
               <>
-                {/* Date range picker */}
+                {/* Date range picker — pinned at top, not draggable */}
                 <div className="px-4 lg:px-6">
                   <DateRangePicker value={dateRange} onChange={handleDateRangeChange} bounds={bounds} />
                 </div>
 
-                {/* Stats cards */}
-                <SectionCards stats={stats} trend={trend} />
-
-                {/* Top foods calorie-share donut */}
-                <div className="px-4 lg:px-6">
-                  <CalorieShareDonut foods={rawFoods} onSelect={setSelected} />
-                </div>
-
-                <div className="flex flex-col gap-4 px-4 lg:px-6">
-                  <Controls search={search} setSearch={setSearch} activeZones={activeZones} setActiveZones={setActiveZones} activeCategories={activeCategories} setActiveCategories={setActiveCategories} />
-
-                  {compareList.length > 0 && (
-                    <CompareStrip foods={compareList} onClear={() => setCompareList([])} onRemove={(name) => setCompareList((p) => p.filter((f) => f.name !== name))} />
-                  )}
-
-                  {view === "explorer" && (
-                    <>
-                      <ExplorerView foods={paged} compareList={compareList} toggleCompare={toggleCompare} onSelect={setSelected} />
-                      {totalPages > 1 && (
-                        <div className="flex items-center justify-center gap-4 text-xs">
-                          <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={currentPage === 1}
-                            className="rounded-md border px-3 py-1.5 disabled:opacity-40">
-                            ← prev
-                          </button>
-                          <span className="text-muted-foreground">{currentPage} / {totalPages} · {filtered.length} foods</span>
-                          <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}
-                            className="rounded-md border px-3 py-1.5 disabled:opacity-40">
-                            next →
-                          </button>
+                {view === "explorer" ? (
+                  /* ── Drag-and-drop rearrangeable layout (explorer view) ── */
+                  <DndContext
+                    sensors={sensors}
+                    collisionDetection={closestCenter}
+                    modifiers={dndModifiers}
+                    onDragStart={handleDragStart}
+                    onDragEnd={handleDragEnd}
+                    onDragCancel={handleDragCancel}
+                  >
+                    <SortableContext
+                      items={layout}
+                      strategy={verticalListSortingStrategy}
+                    >
+                      {layout.map((blockId) => (
+                        <SortableBlock key={blockId} id={blockId}>
+                          {renderBlock(blockId)}
+                        </SortableBlock>
+                      ))}
+                    </SortableContext>
+                    <DragOverlay dropAnimation={{ duration: 200, easing: "ease" }}>
+                      {activeId ? (
+                        <div className="rounded-md border bg-background px-4 py-2 text-sm font-medium shadow-lg">
+                          {BLOCK_LABELS[activeId]}
                         </div>
+                      ) : null}
+                    </DragOverlay>
+                  </DndContext>
+                ) : (
+                  /* ── Fixed layout for scatter / ranking / treemap views ── */
+                  <>
+                    <SectionCards stats={stats} trend={trend} />
+
+                    {/* Top foods calorie-share donut */}
+                    <div className="px-4 lg:px-6">
+                      <CalorieShareDonut foods={rawFoods} onSelect={setSelected} />
+                    </div>
+
+                    <div className="flex flex-col gap-4 px-4 lg:px-6">
+                      <Controls search={search} setSearch={setSearch} activeZones={activeZones} setActiveZones={setActiveZones} activeCategories={activeCategories} setActiveCategories={setActiveCategories} />
+
+                      {compareList.length > 0 && (
+                        <CompareStrip foods={compareList} onClear={() => setCompareList([])} onRemove={(name) => setCompareList((p) => p.filter((f) => f.name !== name))} />
                       )}
-                    </>
-                  )}
-                  {view === "scatter" && (
-                    <>
-                      <div>
-                        <h2 className="text-lg font-semibold">Caloric density vs. portion you eat</h2>
-                        <p className="text-sm text-muted-foreground">Y-axis = density (kcal/g) · X-axis = average grams per occasion · Size = frequency</p>
-                      </div>
-                      <ScatterView foods={filtered} onSelect={setSelected} />
-                    </>
-                  )}
-                  {view === "ranking" && (
-                    <>
-                      <div>
-                        <h2 className="text-lg font-semibold">Top 30 · Total calories in the month</h2>
-                        <p className="text-sm text-muted-foreground">What <em>really</em> dominates your intake — not by density, but by total volume.</p>
-                      </div>
-                      <RankingView foods={filtered} onSelect={setSelected} />
-                    </>
-                  )}
-                  {view === "treemap" && (
-                    <TreemapView foods={filtered} onSelect={setSelected} />
-                  )}
-                </div>
+
+                      {view === "scatter" && (
+                        <>
+                          <div>
+                            <h2 className="text-lg font-semibold">Caloric density vs. portion you eat</h2>
+                            <p className="text-sm text-muted-foreground">Y-axis = density (kcal/g) · X-axis = average grams per occasion · Size = frequency</p>
+                          </div>
+                          <ScatterView foods={filtered} onSelect={setSelected} />
+                        </>
+                      )}
+                      {view === "ranking" && (
+                        <>
+                          <div>
+                            <h2 className="text-lg font-semibold">Top 30 · Total calories in the month</h2>
+                            <p className="text-sm text-muted-foreground">What <em>really</em> dominates your intake — not by density, but by total volume.</p>
+                          </div>
+                          <RankingView foods={filtered} onSelect={setSelected} />
+                        </>
+                      )}
+                      {view === "treemap" && (
+                        <TreemapView foods={filtered} onSelect={setSelected} />
+                      )}
+                    </div>
+                  </>
+                )}
               </>
             )}
           </div>
