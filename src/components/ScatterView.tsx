@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import {
   CartesianGrid,
   ReferenceArea,
@@ -20,7 +21,6 @@ import type { Food, Zone } from "@/lib/types";
 import { ZONE_META } from "@/lib/types";
 
 const MAX_DENSITY = 8;
-const MAX_PORTION = 800;
 
 const chartConfig = {
   low: { label: "Low", color: ZONE_META.low.fill },
@@ -61,21 +61,26 @@ function ScatterTooltip({
 export function ScatterView({ foods, onSelect }: { foods: Food[]; onSelect: (f: Food) => void }) {
   const byZone = (zone: Zone) => foods.filter((f) => f.zone === zone);
 
+  const maxPortion = useMemo(() => {
+    const peak = foods.reduce((max, f) => (f.avgPortion > max ? f.avgPortion : max), 0);
+    return Math.max(160, Math.ceil(peak / 50) * 50);
+  }, [foods]);
+
   return (
     <div className="space-y-4">
       <ChartContainer config={chartConfig} className="h-[420px] w-full">
         <ScatterChart margin={{ top: 24, right: 24, bottom: 16, left: 0 }}>
           {/* Quadrant backgrounds */}
           <ReferenceArea x1={0} x2={150} y1={1.5} y2={MAX_DENSITY} fill={ZONE_META.high.fill} fillOpacity={0.08} />
-          <ReferenceArea x1={150} x2={MAX_PORTION} y1={1.5} y2={MAX_DENSITY} fill={ZONE_META.high.fill} fillOpacity={0.16} />
+          <ReferenceArea x1={150} x2={maxPortion} y1={1.5} y2={MAX_DENSITY} fill={ZONE_META.high.fill} fillOpacity={0.16} />
           <ReferenceArea x1={0} x2={150} y1={0} y2={1.5} fill={ZONE_META.low.fill} fillOpacity={0.08} />
-          <ReferenceArea x1={150} x2={MAX_PORTION} y1={0} y2={1.5} fill={ZONE_META.medium.fill} fillOpacity={0.08} />
+          <ReferenceArea x1={150} x2={maxPortion} y1={0} y2={1.5} fill={ZONE_META.medium.fill} fillOpacity={0.08} />
 
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis
             type="number"
             dataKey="avgPortion"
-            domain={[0, MAX_PORTION]}
+            domain={[0, maxPortion]}
             tickCount={9}
             tickLine={false}
             axisLine={false}

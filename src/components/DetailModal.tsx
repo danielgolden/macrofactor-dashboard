@@ -1,10 +1,10 @@
 "use client";
 
-import { PolarAngleAxis, PolarGrid, Radar, RadarChart } from "recharts";
+import { PolarAngleAxis, PolarGrid, PolarRadiusAxis, Radar, RadarChart } from "recharts";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ChartContainer, type ChartConfig } from "@/components/ui/chart";
+import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart";
 import {
   Dialog,
   DialogContent,
@@ -95,13 +95,15 @@ export function DetailModal({ food, onClose, onCompare, inCompare }: Props) {
             <RadarChart data={radarData} outerRadius="72%">
               <PolarGrid />
               <PolarAngleAxis dataKey="axis" tick={{ fontSize: 10 }} />
+              <PolarRadiusAxis domain={[0, 100]} tick={false} axisLine={false} />
+              <ChartTooltip content={<ChartTooltipContent />} />
               <Radar
                 dataKey="value"
                 fill={catColor}
-                fillOpacity={0.3}
+                fillOpacity={0.4}
                 stroke={catColor}
                 strokeWidth={2}
-                dot={{ r: 3, fill: catColor }}
+                dot={{ r: 4, fillOpacity: 1, fill: catColor, stroke: catColor }}
               />
             </RadarChart>
           </ChartContainer>
