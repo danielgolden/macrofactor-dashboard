@@ -18,16 +18,13 @@ import {
 import type { Food } from "@/lib/types";
 
 const PALETTE = [
-  "#3a7c3a",
-  "#2a5a8a",
-  "#a83c2a",
-  "#a8702c",
-  "#6a3c8a",
-  "#3a8a7c",
-  "#8a3c6a",
-  "#7a5a3a",
-  "#4a6a8a",
-  "#8a8a3a",
+  "#8ecae6",
+  "#219ebc",
+  "#126782",
+  "#023047",
+  "#ffb703",
+  "#fd9e02",
+  "#fb8500",
 ];
 
 const OTHER_COLOR = "var(--muted-foreground)";

@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 import {
+  Area,
+  AreaChart,
   CartesianGrid,
   Line,
   LineChart,
@@ -13,6 +15,8 @@ import { ArrowDownIcon, ArrowUpIcon, MinusIcon } from "lucide-react";
 
 import {
   ChartContainer,
+  ChartLegend,
+  ChartLegendContent,
   ChartTooltip,
   ChartTooltipContent,
   type ChartConfig,
@@ -257,7 +261,13 @@ export function TrendsView() {
         <Card>
           <CardContent className="pt-4">
             <ChartContainer config={densityConfig} className="w-full" style={{ height: 260 }}>
-              <LineChart data={weeks} margin={{ top: 8, right: 16, bottom: 4, left: 0 }}>
+              <AreaChart data={weeks} margin={{ top: 8, right: 16, bottom: 4, left: 0 }}>
+                <defs>
+                  <linearGradient id="fill-avgDensity" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="var(--color-avgDensity)" stopOpacity={0.8} />
+                    <stop offset="95%" stopColor="var(--color-avgDensity)" stopOpacity={0.1} />
+                  </linearGradient>
+                </defs>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="weekLabel" tickLine={false} axisLine={false} tick={{ fontSize: 11 }} />
                 <YAxis
@@ -275,16 +285,17 @@ export function TrendsView() {
                   strokeDasharray="4 4"
                   strokeOpacity={0.5}
                 />
-                <Line
+                <Area
                   type="monotone"
                   dataKey="avgDensity"
                   stroke="var(--color-avgDensity)"
                   strokeWidth={2}
+                  fill="url(#fill-avgDensity)"
                   dot={{ r: 3, strokeWidth: 0 }}
                   activeDot={{ r: 5 }}
                   connectNulls
                 />
-              </LineChart>
+              </AreaChart>
             </ChartContainer>
           </CardContent>
         </Card>
@@ -366,6 +377,7 @@ export function TrendsView() {
                   tickFormatter={(v: number) => `${v}%`}
                 />
                 <ChartTooltip content={<ChartTooltipContent />} />
+                <ChartLegend content={<ChartLegendContent />} />
                 <Line type="monotone" dataKey="proteinPct" stroke="var(--color-proteinPct)" strokeWidth={2} dot={false} connectNulls />
                 <Line type="monotone" dataKey="fatPct" stroke="var(--color-fatPct)" strokeWidth={2} dot={false} connectNulls />
                 <Line type="monotone" dataKey="carbPct" stroke="var(--color-carbPct)" strokeWidth={2} dot={false} connectNulls />
