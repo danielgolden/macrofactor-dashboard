@@ -121,6 +121,18 @@
     --sidebar-ring: oklch(0.556 0 0);
 }
 
+/* ── Billow.so design tokens ── */
+:root {
+    --billow-bg: #FCFDFF;
+    --billow-white: #FFFFFF;
+    --billow-ink: #001C2E;
+    --billow-slate: #446278;
+    --billow-cta-gradient: linear-gradient(135deg, #287DFA 0%, #0001B3 100%);
+    --billow-hero-gradient: linear-gradient(180deg, #FCFDFF 24%, #FFFFFF 100%);
+    --billow-card-radius: 20px;
+    --billow-section-radius: 32px;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
@@ -144,4 +156,241 @@
   [data-slot="button"]:disabled {
     cursor: not-allowed;
     }
+}
+
+/* ── Landing page styles (billow.so clone) ── */
+.landing-page {
+    background: var(--billow-bg);
+    color: var(--billow-ink);
+    font-family: var(--font-sans), Inter, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Display headings — matches billow's Lastik Variable */
+.lp-display {
+    font-size: clamp(40px, 7vw, 72px);
+    font-weight: 400;
+    letter-spacing: -0.05em;
+    line-height: 1.05;
+    color: var(--billow-ink);
+}
+.lp-display-sm {
+    font-size: clamp(32px, 5vw, 56px);
+    font-weight: 400;
+    letter-spacing: -0.05em;
+    line-height: 1.1;
+    color: var(--billow-ink);
+}
+.lp-h3 {
+    font-size: 24px;
+    font-weight: 400;
+    letter-spacing: -0.03em;
+    line-height: 1.2;
+    color: var(--billow-ink);
+}
+.lp-h3-lg {
+    font-size: clamp(28px, 4vw, 44px);
+    font-weight: 400;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+    color: var(--billow-ink);
+}
+
+/* Body text — matches billow's Open Runde */
+.lp-body {
+    font-size: 17px;
+    font-weight: 400;
+    line-height: 1.5;
+    letter-spacing: -0.01em;
+    color: var(--billow-slate);
+}
+.lp-body-sm {
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.55;
+    letter-spacing: -0.01em;
+    color: var(--billow-slate);
+}
+
+/* Eyebrow / section label */
+.lp-eyebrow {
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    color: var(--billow-slate);
+}
+
+/* CTA pill — gradient with glow */
+.lp-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    border-radius: 999px;
+    padding: 10px 18px 10px 24px;
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    background: var(--billow-cta-gradient);
+    color: #000;
+    text-decoration: none;
+    box-shadow:
+        rgba(0, 64, 255, 0.22) 0px 0.7px 2.7px -1.2px,
+        rgba(0, 64, 255, 0.19) 0px 2.7px 10.4px -2.3px,
+        rgba(0, 64, 255, 0.1) 0px 12px 45.6px -3.5px;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+.lp-cta:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+}
+
+/* CTA pill — light/outline variant */
+.lp-cta-light {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    border-radius: 999px;
+    padding: 10px 18px 10px 24px;
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    background: rgba(255, 255, 255, 0.33);
+    color: var(--billow-ink);
+    border: 1px solid rgba(0, 28, 46, 0.08);
+    text-decoration: none;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+.lp-cta-light:hover {
+    background: rgba(255, 255, 255, 0.8);
+}
+
+/* Section layouts */
+.lp-section {
+    padding: 80px 24px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+.lp-section-white {
+    background: var(--billow-white);
+}
+.lp-section-bg {
+    background: var(--billow-bg);
+}
+.lp-section-hero-gradient {
+    background: var(--billow-hero-gradient);
+}
+
+/* Card */
+.lp-card {
+    background: var(--billow-bg);
+    border-radius: var(--billow-card-radius);
+    overflow: hidden;
+}
+.lp-card-white {
+    background: var(--billow-white);
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+/* Browser frame mockup */
+.lp-browser-frame {
+    border-radius: 13px;
+    background: rgba(255, 255, 255, 0.2);
+    overflow: hidden;
+}
+.lp-browser-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px;
+}
+.lp-browser-dot {
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+}
+
+/* FAQ accordion */
+.lp-faq-item {
+    border-radius: 14px;
+    overflow: hidden;
+    transition: background 0.2s ease;
+}
+.lp-faq-item[open] {
+    background: rgba(252, 253, 255, 0.5);
+}
+.lp-faq-summary {
+    cursor: pointer;
+    list-style: none;
+    padding: 20px 24px;
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--billow-ink);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.lp-faq-summary::-webkit-details-marker {
+    display: none;
+}
+.lp-faq-content {
+    padding: 0 24px 20px;
+    font-size: 14px;
+    line-height: 1.55;
+    color: var(--billow-slate);
+}
+
+/* Feature pill */
+.lp-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    border-radius: 999px;
+    background: var(--billow-white);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--billow-ink);
+    box-shadow: 0 1px 3px rgba(0, 28, 46, 0.04);
+}
+
+/* Icon badge */
+.lp-icon-badge {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    background: #F1F5F9;
+    flex-shrink: 0;
+}
+
+/* Nav */
+.lp-nav {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+/* CTA banner */
+.lp-cta-banner {
+    border-radius: var(--billow-section-radius);
+    background: linear-gradient(135deg, #001C2E 0%, #0A2540 100%);
+    padding: 64px 32px;
+    text-align: center;
+    color: #fff;
+}
+
+/* Screenshot container */
+.lp-screenshot {
+    position: relative;
+    width: 100%;
+    background: #FAFBFC;
 }
