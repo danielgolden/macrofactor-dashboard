@@ -13,7 +13,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { ImportButton } from "@/components/ImportButton";
+import { ImportDropzone } from "@/components/ImportDropzone";
 import type { Food } from "@/lib/types";
 
 interface Props {
@@ -77,24 +77,21 @@ export function OnboardingModal({ open, onImported }: Props) {
 
         {/* Step content */}
         {isLastStep ? (
-          <div className="flex flex-col items-center gap-4 py-4">
-            <div className="flex size-16 items-center justify-center rounded-full bg-primary/10">
-              <span className="text-2xl">📥</span>
+          <div className="flex flex-col gap-4 py-2">
+            <div className="flex items-start gap-3">
+              <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-semibold tabular-nums">
+                {STEPS.length + 1}
+              </span>
+              <div className="flex flex-1 flex-col gap-1">
+                <span className="text-sm font-medium">Import your data</span>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  Drop the file you just exported from MacroFactor below, or
+                  click to browse. The blur clears and your real dashboard
+                  appears.
+                </p>
+              </div>
             </div>
-            <div className="text-center">
-              <h3 className="text-sm font-semibold">Import your data</h3>
-              <p className="mt-1 text-xs text-muted-foreground leading-relaxed">
-                Click the button below and pick the file you just exported from
-                MacroFactor. The blur clears and your real dashboard appears.
-              </p>
-            </div>
-            {/* Big emphasized import button */}
-            <div className="flex flex-col items-center gap-1.5 pt-2">
-              <ImportButton onImported={onImported} size="lg" className="h-12 px-8 text-base font-semibold shadow-lg" />
-              <p className="text-[11px] text-muted-foreground">
-                Supports .xlsx and .csv exports from MacroFactor.
-              </p>
-            </div>
+            <ImportDropzone onImported={onImported} />
           </div>
         ) : (
           <div className="flex flex-col gap-3">
