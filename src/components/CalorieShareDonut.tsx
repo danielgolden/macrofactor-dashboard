@@ -2,8 +2,16 @@
 
 import { useMemo, type MouseEvent } from "react";
 import { Cell, Label, Pie, PieChart } from "recharts";
+import { PieChartIcon } from "lucide-react";
 
-import { Card, CardContent } from "@/components/ui/card";
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+} from "@/components/ui/card";
 import {
   ChartContainer,
   ChartTooltip,
@@ -104,14 +112,13 @@ export function CalorieShareDonut({ foods, onSelect }: Props) {
 
   return (
     <Card>
+      <CardHeader>
+        <CardDescription>Top foods by calories</CardDescription>
+        <CardAction>
+          <PieChartIcon className="size-4 text-muted-foreground" />
+        </CardAction>
+      </CardHeader>
       <CardContent className="pt-4">
-        <div className="mb-2 flex items-baseline justify-between gap-2">
-          <h2 className="text-sm font-semibold">Top foods by calories</h2>
-          <span className="text-xs text-muted-foreground">
-            {topCount} of {foods.length} foods · {Math.round(grandTotal).toLocaleString()} kcal total
-          </span>
-        </div>
-
         <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-center">
           {/* Donut chart */}
           <ChartContainer
@@ -201,6 +208,9 @@ export function CalorieShareDonut({ foods, onSelect }: Props) {
           </TooltipProvider>
         </div>
       </CardContent>
+      <CardFooter className="text-xs text-muted-foreground">
+        {topCount} of {foods.length} foods · share of total calories in period
+      </CardFooter>
     </Card>
   );
 }

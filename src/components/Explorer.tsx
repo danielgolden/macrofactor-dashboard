@@ -71,7 +71,7 @@ export function Explorer() {
   const stats = useMemo(() => {
     const totalW = rawFoods.reduce((s, f) => s + f.totalWeight, 0);
     const totalCal = rawFoods.reduce((s, f) => s + f.totalCalories, 0);
-    return { count: rawFoods.length, avgDensity: totalW > 0 ? totalCal / totalW : 0 };
+    return { avgDensity: totalW > 0 ? totalCal / totalW : 0 };
   }, [rawFoods]);
 
   const PAGE_SIZE = 100;
@@ -187,11 +187,9 @@ export function Explorer() {
                   <DateRangePicker value={dateRange} onChange={handleDateRangeChange} bounds={bounds} />
                 </div>
 
-                {/* Stats cards */}
-                <SectionCards stats={stats} trend={trend} />
-
-                {/* Top foods calorie-share donut */}
-                <div className="px-4 lg:px-6">
+                {/* Average Density + Top foods by calories (50/50 on lg) */}
+                <div className="grid grid-cols-1 gap-4 px-4 lg:grid-cols-2 lg:px-6">
+                  <SectionCards stats={stats} trend={trend} />
                   <CalorieShareDonut foods={rawFoods} onSelect={setSelected} />
                 </div>
 
