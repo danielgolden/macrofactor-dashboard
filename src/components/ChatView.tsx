@@ -11,7 +11,7 @@ import {
   StopCircleIcon,
   WrenchIcon,
 } from "lucide-react";
-import ReactMarkdown from "react-markdown";
+import ReactMarkdown, { type Components } from "react-markdown";
 import remarkGfm from "remark-gfm";
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -32,6 +32,33 @@ interface ToolPartInfo {
   toolName?: string;
   state?: string;
 }
+
+/**
+ * Maps markdown elements to the app's design system so LLM output — especially
+ * GFM tables — matches the shadcn/ui Table component styling used elsewhere.
+ */
+const markdownComponents: Components = {
+  table: ({ children }) => (
+    <div className="my-2 w-full overflow-x-auto">
+      <table className="w-full caption-bottom text-sm">{children}</table>
+    </div>
+  ),
+  thead: ({ children }) => <thead className="[&_tr]:border-b">{children}</thead>,
+  tbody: ({ children }) => (
+    <tbody className="[&_tr:last-child]:border-0">{children}</tbody>
+  ),
+  tr: ({ children }) => (
+    <tr className="border-b transition-colors hover:bg-muted/50">{children}</tr>
+  ),
+  th: ({ children }) => (
+    <th className="h-10 px-3 text-left align-middle font-medium whitespace-nowrap text-foreground">
+      {children}
+    </th>
+  ),
+  td: ({ children }) => (
+    <td className="p-3 align-middle whitespace-nowrap">{children}</td>
+  ),
+};
 
 export function ChatView() {
   const [history, setHistory] = useState<UIMessage[] | null>(null);
@@ -243,9 +270,12 @@ function MessageBubble({ message }: { message: UIMessage }) {
             ) : (
               <div
                 key={i}
-                className="prose prose-sm max-w-none break-words rounded-2xl rounded-tl-sm bg-muted px-3.5 py-2.5 dark:prose-invert"
+                className="max-w-none break-words rounded-2xl rounded-tl-sm bg-muted px-3.5 py-2.5 text-sm leading-relaxed md:text-base"
               >
-                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                <ReactMarkdown
+                  remarkPlugins={[remarkGfm]}
+                  components={markdownComponents}
+                >
                   {part.text}
                 </ReactMarkdown>
               </div>
