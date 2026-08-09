@@ -16,18 +16,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import type { Food } from "@/lib/types";
-
-const PALETTE = [
-  "#8ecae6",
-  "#219ebc",
-  "#126782",
-  "#023047",
-  "#ffb703",
-  "#fd9e02",
-  "#fb8500",
-];
-
-const OTHER_COLOR = "var(--muted-foreground)";
+import { PALETTE, OTHER_COLOR } from "@/lib/colors";
 
 interface Segment {
   key: string;

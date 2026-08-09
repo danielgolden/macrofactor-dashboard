@@ -28,16 +28,11 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
-import type { Food, Zone } from "@/lib/types";
+import type { Food } from "@/lib/types";
 import { ZONE_META } from "@/lib/types";
+import { ZONE_BADGE_VARIANT } from "@/lib/colors";
 
 const MAX_DENSITY = 8;
-
-const ZONE_BADGE_VARIANT: Record<Zone, "default" | "secondary" | "destructive" | "success"> = {
-  low: "secondary",
-  medium: "success",
-  high: "destructive",
-};
 
 interface Props {
   foods: Food[];

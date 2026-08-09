@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import type { Food } from "@/lib/types";
 import { ZONE_META, CAT_META } from "@/lib/types";
+import { ZONE_BADGE_VARIANT, CAT_BADGE_COLOR } from "@/lib/colors";
 
 interface Props {
   food: Food | null;
@@ -31,6 +32,7 @@ export function DetailModal({ food, onClose, onCompare, inCompare }: Props) {
 
   const z = ZONE_META[food.zone];
   const catColor = CAT_META[food.category].color;
+  const catBadgeColor = CAT_BADGE_COLOR[food.category];
   const gramsFor100 = food.calDensity > 0 ? `${Math.round(100 / food.calDensity)}g` : "∞";
 
   const radarData = [
@@ -54,8 +56,8 @@ export function DetailModal({ food, onClose, onCompare, inCompare }: Props) {
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <div className="flex gap-2">
-            <Badge style={{ backgroundColor: z.fill }}>{z.label} density</Badge>
-            <Badge variant="outline" style={{ color: catColor, borderColor: catColor }}>
+            <Badge variant={ZONE_BADGE_VARIANT[food.zone]}>{z.label} density</Badge>
+            <Badge variant="outline" style={{ color: catBadgeColor, borderColor: catBadgeColor }}>
               {CAT_META[food.category].label}
             </Badge>
           </div>
@@ -67,7 +69,7 @@ export function DetailModal({ food, onClose, onCompare, inCompare }: Props) {
           className="rounded-lg border-l-4 p-4"
           style={{ backgroundColor: z.light, borderColor: z.fill }}
         >
-          <div className="text-xs uppercase tracking-wide" style={{ color: z.fill }}>
+          <div className="text-xs uppercase tracking-wide" style={{ color: z.textFill }}>
             Caloric density
           </div>
           <div className="text-4xl font-bold tabular-nums">
@@ -79,7 +81,7 @@ export function DetailModal({ food, onClose, onCompare, inCompare }: Props) {
         {/* Stat grid */}
         <div className="grid grid-cols-3 gap-3">
           {stats.map(([label, val]) => (
-            <div key={label} className="border-t-2 pt-2" style={{ borderColor: z.fill }}>
+            <div key={label} className="border-t-2 pt-2" style={{ borderColor: z.textFill }}>
               <div className="text-[10px] uppercase tracking-wide text-muted-foreground">{label}</div>
               <div className="text-sm font-semibold tabular-nums">{val}</div>
             </div>
