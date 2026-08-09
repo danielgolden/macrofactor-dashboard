@@ -137,11 +137,18 @@
   [data-slot="combobox-trigger"],
   [data-slot="combobox-item"],
   [data-slot="toggle-group-item"],
-  [data-slot="sidebar-menu-button"] {
+  [data-slot="sidebar-menu-button"],
+  [data-slot="dropdown-menu-item"],
+  [data-slot="dropdown-menu-sub-trigger"],
+  [data-slot="dropdown-menu-checkbox-item"],
+  [data-slot="dropdown-menu-radio-item"] {
     cursor: pointer;
     }
   button:disabled,
-  [data-slot="button"]:disabled {
+  [data-slot="button"]:disabled,
+  [data-slot="dropdown-menu-item"][data-disabled],
+  [data-slot="dropdown-menu-checkbox-item"][data-disabled],
+  [data-slot="dropdown-menu-radio-item"][data-disabled] {
     cursor: not-allowed;
     }
 }
