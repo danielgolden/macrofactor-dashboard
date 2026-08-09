@@ -58,7 +58,7 @@ export function Explorer() {
       const res = await fetch("/api/foods", { method: "DELETE" });
       if (!res.ok) throw new Error("Failed to clear data");
       setFoods([]);
-      toast.success("Your data has been cleared.");
+      toast.success("Your data has been removed.");
     } catch (e) {
       console.error(e);
       toast.error("Failed to clear data. Please try again.");
