@@ -22,6 +22,12 @@ import { TreemapView } from "./TreemapView";
 import { TrendsView } from "./TrendsView";
 import { ChatView } from "./ChatView";
 import { CalorieShareDonut } from "./CalorieShareDonut";
+import {
+  ExplorerSkeleton,
+  ScatterSkeleton,
+  RankingSkeleton,
+  TreemapSkeleton,
+} from "./LoadingSkeletons";
 
 export function Explorer() {
   const [view, setView]         = useState<ViewId>("explorer");
@@ -80,11 +86,15 @@ export function Explorer() {
   const paged = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
   const [prevAvgDensity, setPrevAvgDensity] = useState<number | null>(null);
+  const [prevAvgDensityLoading, setPrevAvgDensityLoading] = useState(false);
   useEffect(() => {
     if (!dateRange) {
       setPrevAvgDensity(null);
+      setPrevAvgDensityLoading(false);
       return;
     }
+    setPrevAvgDensityLoading(true);
+
     const start = new Date(dateRange.start + "T00:00:00");
     const end = new Date(dateRange.end + "T00:00:00");
     const durationDays = Math.round((end.getTime() - start.getTime()) / 86400000);
@@ -112,7 +122,8 @@ export function Explorer() {
         const prevAvg = prevTotalW > 0 ? prevTotalCal / prevTotalW : 0;
         setPrevAvgDensity(prevAvg > 0 ? prevAvg : null);
       })
-      .catch(() => setPrevAvgDensity(null));
+      .catch(() => setPrevAvgDensity(null))
+      .finally(() => setPrevAvgDensityLoading(false));
 
     return () => controller.abort();
   }, [dateRange]);
@@ -124,24 +135,22 @@ export function Explorer() {
 
   const currentView = VIEWS.find((v) => v.id === view)!;
 
-  if (loading && view !== "trends" && view !== "chat") return (
-    <div className="flex min-h-screen items-center justify-center">
-      <p className="text-sm text-muted-foreground">Loading data…</p>
-    </div>
-  );
+  // The sidebar + header chrome is always mounted; loading/error/empty states
+  // are scoped to the content area below so the nav never disappears.
+  // Trends and Chat views manage their own loading state, so they bypass the
+  // foods loading/error branches entirely.
+  const isDataView = view !== "trends" && view !== "chat";
+  const showLoading = isDataView && (loading || boundsLoading);
+  const showError = isDataView && !showLoading && error;
 
-  if (boundsLoading && view !== "trends" && view !== "chat") return (
-    <div className="flex min-h-screen items-center justify-center">
-      <p className="text-sm text-muted-foreground">Loading data…</p>
-    </div>
-  );
-
-  if (error && view !== "trends" && view !== "chat") return (
-    <div className="flex min-h-screen flex-col items-center justify-center gap-2">
-      <p className="text-lg font-semibold text-destructive">Error loading data</p>
-      <p className="text-sm text-muted-foreground">{error}</p>
-    </div>
-  );
+  const skeleton = (() => {
+    switch (view) {
+      case "scatter":   return <ScatterSkeleton />;
+      case "ranking":   return <RankingSkeleton />;
+      case "treemap":   return <TreemapSkeleton />;
+      default:           return <ExplorerSkeleton />;
+    }
+  })();
 
   return (
     <SidebarProvider
@@ -168,6 +177,13 @@ export function Explorer() {
               <div className="px-4 lg:px-6">
                 <ChatView />
               </div>
+            ) : showLoading ? (
+              <>{skeleton}</>
+            ) : showError ? (
+              <div className="flex flex-col items-center justify-center gap-2 px-4 py-16 text-center lg:px-6">
+                <p className="text-lg font-semibold text-destructive">Error loading data</p>
+                <p className="text-sm text-muted-foreground">{error}</p>
+              </div>
             ) : rawFoods.length === 0 ? (
               <div className="px-4 lg:px-6">
                 <Card>
@@ -188,7 +204,11 @@ export function Explorer() {
                 </div>
 
                 {/* Stats cards */}
-                <SectionCards stats={stats} trend={trend} />
+                <SectionCards
+                  stats={stats}
+                  trend={trend}
+                  prevAvgDensityLoading={prevAvgDensityLoading}
+                />
 
                 {/* Top foods calorie-share donut */}
                 <div className="px-4 lg:px-6">

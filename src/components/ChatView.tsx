@@ -61,7 +61,7 @@ export function ChatView() {
   if (loadState === "loading") {
     return (
       <div className="flex items-center justify-center py-16">
-        <Loader2Icon className="size-5 animate-spin text-muted-foreground" />
+        <Loader2Icon className="size-6 animate-spin text-muted-foreground" />
       </div>
     );
   }
