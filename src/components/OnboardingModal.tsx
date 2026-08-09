@@ -55,7 +55,7 @@ export function OnboardingModal({ open, onImported }: Props) {
       >
         <DialogHeader>
           <DialogTitle className="text-lg font-semibold">
-            Get your MacroFactor data in
+            Import your data to get started.
           </DialogTitle>
           <DialogDescription>
             Here&apos;s how to export from MacroFactor and import it here. It takes
@@ -63,53 +63,55 @@ export function OnboardingModal({ open, onImported }: Props) {
           </DialogDescription>
         </DialogHeader>
 
-        {/* Step content */}
-        {isLastStep ? (
-          <div className="flex flex-col gap-4 py-2">
-            <div className="flex items-start gap-3">
-              <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-semibold tabular-nums">
-                {STEPS.length + 1}
-              </span>
-              <div className="flex flex-1 flex-col gap-1">
-                <span className="text-sm font-medium">Import your data</span>
-                <p className="text-xs text-muted-foreground leading-relaxed">
-                  Drop the file you just exported from MacroFactor below, or
-                  click to browse. The blur clears and your real dashboard
-                  appears.
-                </p>
-              </div>
-            </div>
-            <ImportDropzone onImported={onImported} />
-          </div>
-        ) : (
-          <div className="flex flex-col gap-3">
-            {/* Step number + title + description */}
-            <div className="flex items-start gap-3">
-              <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-semibold tabular-nums">
-                {step + 1}
-              </span>
-              <div className="flex flex-1 flex-col gap-1">
-                <span className="text-sm font-medium">
-                  {STEPS[step].title}
+        {/* Step content — fixed height so the modal doesn't jump between steps */}
+        <div className="min-h-[22rem]">
+          {isLastStep ? (
+            <div className="flex h-full flex-col gap-4 py-2">
+              <div className="flex items-start gap-3">
+                <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-semibold tabular-nums">
+                  {STEPS.length + 1}
                 </span>
-                <p className="text-xs text-muted-foreground leading-relaxed">
-                  {STEPS[step].body}
-                </p>
+                <div className="flex flex-1 flex-col gap-1">
+                  <span className="text-sm font-medium">Import your data</span>
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    Drop the file you just exported from MacroFactor below, or
+                    click to browse. The blur clears and your real dashboard
+                    appears.
+                  </p>
+                </div>
+              </div>
+              <ImportDropzone onImported={onImported} />
+            </div>
+          ) : (
+            <div className="flex h-full flex-col gap-3">
+              {/* Step number + title + description */}
+              <div className="flex items-start gap-3">
+                <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-semibold tabular-nums">
+                  {step + 1}
+                </span>
+                <div className="flex flex-1 flex-col gap-1">
+                  <span className="text-sm font-medium">
+                    {STEPS[step].title}
+                  </span>
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    {STEPS[step].body}
+                  </p>
+                </div>
+              </div>
+
+              {/* Step image */}
+              <div className="flex flex-1 items-center overflow-hidden rounded-lg border border-border/60 bg-muted/30">
+                <Image
+                  src={STEPS[step].image}
+                  alt={STEPS[step].title}
+                  width={300}
+                  height={400}
+                  className="mx-auto max-h-64 w-auto object-contain"
+                />
               </div>
             </div>
-
-            {/* Step image */}
-            <div className="overflow-hidden rounded-lg border border-border/60 bg-muted/30">
-              <Image
-                src={STEPS[step].image}
-                alt={STEPS[step].title}
-                width={300}
-                height={400}
-                className="mx-auto max-h-72 w-auto object-contain"
-              />
-            </div>
-          </div>
-        )}
+          )}
+        </div>
 
         {/* Navigation + progress dots */}
         <div className="flex items-center justify-between pt-2">
