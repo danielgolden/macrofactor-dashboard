@@ -117,7 +117,7 @@ export function CalorieShareDonut({ foods, onSelect }: Props) {
           <ChartContainer
             config={chartConfig}
             className="shrink-0"
-            style={{ height: 220, width: 220 }}
+            style={{ height: 220, width: "min(220px, 100%)" }}
           >
             <PieChart>
               <ChartTooltip content={<DonutTooltip />} />

@@ -25,7 +25,7 @@ export function SectionCards({ stats, trend, prevAvgDensityLoading = false }: Se
   const trendDown = trend !== null && trend < 0;
 
   return (
-    <div className="grid grid-cols-1 gap-4 px-4 lg:grid-cols-2 lg:px-6">
+    <div className="grid grid-cols-1 gap-4 px-4 sm:px-6 lg:grid-cols-2 lg:px-6">
       <Card>
         <CardHeader>
           <CardDescription>Total Foods</CardDescription>

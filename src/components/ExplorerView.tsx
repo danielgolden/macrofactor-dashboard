@@ -157,7 +157,7 @@ export function ExplorerView({ foods, compareList, toggleCompare, onSelect }: Pr
         </span>
       </div>
 
-      <div className="rounded-lg border">
+      <div className="min-w-0 overflow-hidden rounded-lg border">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((hg) => (
