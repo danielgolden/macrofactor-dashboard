@@ -34,9 +34,9 @@ interface WeeklyData {
 }
 
 const MACRO_COLORS = {
-  protein: "#3a7c3a",
-  fat: "#2a5a8a",
-  carbs: "#a83c2a",
+  protein: "var(--cat-protein)",
+  fat: "var(--cat-fat)",
+  carbs: "var(--cat-carb)",
 };
 
 const densityConfig = {
@@ -402,7 +402,7 @@ export function TrendsView() {
                 <div
                   key={d.weekLabel}
                   className="flex flex-col items-center gap-1 rounded-md border px-3 py-2"
-                  style={{ borderColor: MACRO_COLORS[d.macro] + "55" }}
+                  style={{ borderColor: `color-mix(in srgb, ${MACRO_COLORS[d.macro]} 33%, transparent)` }}
                 >
                   <span className="text-xs text-muted-foreground">{d.weekLabel}</span>
                   <span

@@ -19,15 +19,15 @@ export interface Food {
   impactScore: number;
 }
 
-export const ZONE_META: Record<Zone, { fill: string; light: string; label: string; range: string }> = {
-  low:    { fill: "#4a7c2a", light: "#e8f1e4", label: "Low",    range: "< 1.5 kcal/g" },
-  medium: { fill: "#a8702c", light: "#f5ebd6", label: "Medium", range: "1.5–4 kcal/g"  },
-  high:   { fill: "#a83c2a", light: "#f0d4cc", label: "High",   range: "> 4 kcal/g"    },
+export const ZONE_META: Record<Zone, { fill: string; light: string; textFill: string; label: string; range: string }> = {
+  low:    { fill: "#8ecae6", light: "#e6f4fa", textFill: "#126782", label: "Low",    range: "< 1.5 kcal/g" },
+  medium: { fill: "#ffb703", light: "#fff5e0", textFill: "#fd9e02", label: "Medium", range: "1.5–4 kcal/g"  },
+  high:   { fill: "#fb8500", light: "#fde8d6", textFill: "#fb8500", label: "High",   range: "> 4 kcal/g"    },
 };
 
 export const CAT_META: Record<Category, { label: string; color: string }> = {
-  protein: { label: "Protein", color: "#3a7c3a" },
-  carb:    { label: "Carbs",   color: "#a83c2a" },
-  fat:     { label: "Fat",     color: "#2a5a8a" },
-  mixed:   { label: "Mixed",   color: "#7a5a3a" },
+  protein: { label: "Protein", color: "#8ecae6" },
+  carb:    { label: "Carbs",   color: "#023047" },
+  fat:     { label: "Fat",     color: "#fb8500" },
+  mixed:   { label: "Mixed",   color: "#ffb703" },
 };

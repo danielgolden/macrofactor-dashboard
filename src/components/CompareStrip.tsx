@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { Food } from "@/lib/types";
 import { ZONE_META, CAT_META } from "@/lib/types";
+import { ZONE_BADGE_VARIANT, CAT_BADGE_COLOR } from "@/lib/colors";
 
 interface Props {
   foods: Food[];
@@ -27,8 +28,8 @@ function CompareCard({ food, onRemove }: { food: Food; onRemove: () => void }) {
         <XIcon className="size-4" />
       </button>
       <div className="mb-1 flex gap-1.5">
-        <Badge variant="secondary" style={{ backgroundColor: z.fill, color: "#fff" }}>{z.label}</Badge>
-        <Badge variant="outline" style={{ color: cat.color, borderColor: cat.color }}>{cat.label}</Badge>
+        <Badge variant={ZONE_BADGE_VARIANT[food.zone]}>{z.label}</Badge>
+        <Badge variant="outline" style={{ color: CAT_BADGE_COLOR[food.category], borderColor: CAT_BADGE_COLOR[food.category] }}>{cat.label}</Badge>
       </div>
       <div className="mb-2 pr-6 text-sm font-semibold leading-tight">{food.name}</div>
       <div className="text-2xl font-bold tabular-nums">

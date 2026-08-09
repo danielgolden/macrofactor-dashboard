@@ -18,6 +18,21 @@ const chartConfig = {
   mixed: { label: "Mixed", color: CAT_META.mixed.color },
 } satisfies ChartConfig;
 
+/**
+ * Returns a readable text color (dark or white) for a given hex fill,
+ * based on relative luminance. Used for treemap cell labels that sit
+ * on top of category-colored fills.
+ */
+function readableTextColor(hex: string): string {
+  const m = hex.match(/^#?([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i);
+  if (!m) return "#fff";
+  const [, r, g, b] = m;
+  const [ri, gi, bi] = [parseInt(r, 16), parseInt(g, 16), parseInt(b, 16)];
+  // Relative luminance (sRGB) per WCAG
+  const lum = (0.2126 * ri + 0.7152 * gi + 0.0722 * bi) / 255;
+  return lum > 0.55 ? "#023047" : "#fff";
+}
+
 interface TreemapNodeProps {
   x?: number;
   y?: number;
@@ -40,6 +55,7 @@ function TreemapNode(props: TreemapNodeProps) {
 
   const showName = width > 72 && height > 28;
   const showCals = width > 72 && height > 48;
+  const textColor = readableTextColor(fill ?? "#fff");
 
   return (
     <g
@@ -61,9 +77,9 @@ function TreemapNode(props: TreemapNodeProps) {
           x={x + 6}
           y={y + height - (showCals ? 22 : 10)}
           fontSize={Math.min(11, Math.max(8, width / 12))}
-          fill="#fff"
+          fill={textColor}
           fontWeight={600}
-          style={{ pointerEvents: "none", textShadow: "0 1px 3px rgba(0,0,0,0.5)" }}
+          style={{ pointerEvents: "none", textShadow: textColor === "#fff" ? "0 1px 3px rgba(0,0,0,0.5)" : "none" }}
         >
           {payload.name.length * 6.5 > width - 12
             ? payload.name.slice(0, Math.max(3, Math.floor((width - 12) / 6.5))) + "…"
@@ -75,7 +91,7 @@ function TreemapNode(props: TreemapNodeProps) {
           x={x + 6}
           y={y + height - 8}
           fontSize={Math.min(10, Math.max(7, width / 14))}
-          fill="rgba(255,255,255,0.8)"
+          fill={textColor === "#fff" ? "rgba(255,255,255,0.8)" : "rgba(2,48,71,0.7)"}
           style={{ pointerEvents: "none" }}
         >
           {payload.totalCalories.toLocaleString()} kcal{pct ? ` · ${pct}%` : ""}
