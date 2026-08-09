@@ -126,7 +126,7 @@ function ChatInner({ initialMessages }: { initialMessages: UIMessage[] }) {
   };
 
   return (
-    <div className="mx-auto flex h-[calc(100vh-6rem)] w-full max-w-3xl flex-col gap-4">
+    <div className="mx-auto flex h-[calc(100dvh-6rem)] w-full max-w-3xl flex-col gap-4">
       {/* Transcript */}
       {messages.length === 0 ? (
         <EmptyTranscript />
@@ -145,7 +145,7 @@ function ChatInner({ initialMessages }: { initialMessages: UIMessage[] }) {
       )}
 
       {/* Composer */}
-      <div className="sticky bottom-0">
+      <div className="sticky bottom-0 bg-background pb-2 pt-1">
         <div className="relative">
           <Textarea
             value={input}
@@ -236,14 +236,14 @@ function MessageBubble({ message }: { message: UIMessage }) {
             return isUser ? (
               <div
                 key={i}
-                className="rounded-2xl rounded-tr-sm bg-primary px-3.5 py-2 text-sm text-primary-foreground"
+                className="break-words rounded-2xl rounded-tr-sm bg-primary px-3.5 py-2 text-sm text-primary-foreground"
               >
                 {part.text}
               </div>
             ) : (
               <div
                 key={i}
-                className="prose prose-sm max-w-none rounded-2xl rounded-tl-sm bg-muted px-3.5 py-2.5 dark:prose-invert"
+                className="prose prose-sm max-w-none break-words rounded-2xl rounded-tl-sm bg-muted px-3.5 py-2.5 dark:prose-invert"
               >
                 <ReactMarkdown remarkPlugins={[remarkGfm]}>
                   {part.text}

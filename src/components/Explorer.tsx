@@ -226,12 +226,12 @@ export function Explorer() {
                     <>
                       <ExplorerView foods={paged} compareList={compareList} toggleCompare={toggleCompare} onSelect={setSelected} />
                       {totalPages > 1 && (
-                        <div className="flex items-center justify-center gap-4 text-xs">
+                        <div className="flex flex-wrap items-center justify-center gap-2 text-xs sm:gap-4">
                           <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={currentPage === 1}
                             className="rounded-md border px-3 py-1.5 disabled:opacity-40">
                             ← prev
                           </button>
-                          <span className="text-muted-foreground">{currentPage} / {totalPages} · {filtered.length} foods</span>
+                          <span className="whitespace-nowrap text-muted-foreground">{currentPage} / {totalPages} · {filtered.length} foods</span>
                           <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}
                             className="rounded-md border px-3 py-1.5 disabled:opacity-40">
                             next →
