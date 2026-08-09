@@ -52,6 +52,15 @@ export function Explorer() {
   const hasRealData = rawFoods.length > 0;
   const displayFoods = hasRealData ? rawFoods : dummyFoods;
 
+  const handleClearData = useCallback(async () => {
+    const res = await fetch("/api/foods", { method: "DELETE" });
+    if (!res.ok) {
+      console.error("Failed to clear data");
+      return;
+    }
+    setFoods([]);
+  }, [setFoods]);
+
   useEffect(() => { setPage(1); }, [search]);
 
   const handleDateRangeChange = useCallback((range: DateRange | null) => {
@@ -169,7 +178,7 @@ export function Explorer() {
         } as React.CSSProperties
       }
     >
-      <AppSidebar variant="inset" view={view} onViewChange={setView} />
+      <AppSidebar variant="inset" view={view} onViewChange={setView} onClearData={handleClearData} />
       <SidebarInset>
         <SiteHeader title={currentView.label}>
           <ImportButton onImported={setFoods} />
