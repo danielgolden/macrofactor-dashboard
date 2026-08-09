@@ -18,6 +18,7 @@ import { RankingView } from "./RankingView";
 import { ImportButton } from "./ImportButton";
 import { OnboardingModal } from "./OnboardingModal";
 import { dummyFoods } from "@/lib/dummyData";
+import { toast } from "sonner";
 import { DateRangePicker } from "./DateRangePicker";
 import { TreemapView } from "./TreemapView";
 import { TrendsView } from "./TrendsView";
@@ -53,12 +54,15 @@ export function Explorer() {
   const displayFoods = hasRealData ? rawFoods : dummyFoods;
 
   const handleClearData = useCallback(async () => {
-    const res = await fetch("/api/foods", { method: "DELETE" });
-    if (!res.ok) {
-      console.error("Failed to clear data");
-      return;
+    try {
+      const res = await fetch("/api/foods", { method: "DELETE" });
+      if (!res.ok) throw new Error("Failed to clear data");
+      setFoods([]);
+      toast.success("Your data has been cleared.");
+    } catch (e) {
+      console.error(e);
+      toast.error("Failed to clear data. Please try again.");
     }
-    setFoods([]);
   }, [setFoods]);
 
   useEffect(() => { setPage(1); }, [search]);

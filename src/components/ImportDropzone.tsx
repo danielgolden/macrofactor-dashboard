@@ -64,7 +64,7 @@ export function ImportDropzone({ onImported }: Props) {
   }[status];
 
   return (
-    <div className="flex h-full flex-col items-center gap-2">
+    <div className="flex h-full w-full flex-col gap-2">
       <input
         ref={inputRef}
         type="file"
