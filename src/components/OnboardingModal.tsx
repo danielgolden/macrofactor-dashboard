@@ -63,13 +63,13 @@ export function OnboardingModal({ open, onImported }: Props) {
           </DialogDescription>
         </DialogHeader>
 
-        {/* Progress dots */}
+        {/* Progress circles (no numbers) */}
         <div className="flex items-center justify-center gap-2 pb-1">
           {Array.from({ length: totalSteps }).map((_, i) => (
             <span
               key={i}
-              className={`h-1.5 rounded-full transition-all ${
-                i === step ? "w-6 bg-primary" : "w-1.5 bg-muted-foreground/30"
+              className={`size-2.5 rounded-full transition-all ${
+                i === step ? "bg-primary" : "bg-muted-foreground/30"
               }`}
             />
           ))}
@@ -98,18 +98,7 @@ export function OnboardingModal({ open, onImported }: Props) {
           </div>
         ) : (
           <div className="flex flex-col gap-3">
-            {/* Step image */}
-            <div className="overflow-hidden rounded-lg border border-border/60 bg-muted/30">
-              <Image
-                src={STEPS[step].image}
-                alt={STEPS[step].title}
-                width={300}
-                height={400}
-                className="mx-auto max-h-72 w-auto object-contain"
-              />
-            </div>
-
-            {/* Step text */}
+            {/* Step number + title + description */}
             <div className="flex items-start gap-3">
               <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-semibold tabular-nums">
                 {step + 1}
@@ -122,6 +111,17 @@ export function OnboardingModal({ open, onImported }: Props) {
                   {STEPS[step].body}
                 </p>
               </div>
+            </div>
+
+            {/* Step image */}
+            <div className="overflow-hidden rounded-lg border border-border/60 bg-muted/30">
+              <Image
+                src={STEPS[step].image}
+                alt={STEPS[step].title}
+                width={300}
+                height={400}
+                className="mx-auto max-h-72 w-auto object-contain"
+              />
             </div>
           </div>
         )}
@@ -138,9 +138,7 @@ export function OnboardingModal({ open, onImported }: Props) {
             Back
           </Button>
 
-          <span className="text-xs text-muted-foreground tabular-nums">
-            {step + 1} / {totalSteps}
-          </span>
+          <span className="flex-1" />
 
           {!isLastStep ? (
             <Button
