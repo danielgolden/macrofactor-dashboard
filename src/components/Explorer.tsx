@@ -198,6 +198,13 @@ export function Explorer() {
               <div className="px-4 sm:px-6 lg:px-6">
                 <ChatView />
               </div>
+            ) : showLoading ? (
+              skeleton
+            ) : showError ? (
+              <div className="flex flex-col items-center justify-center gap-2 py-16">
+                <p className="text-lg font-semibold text-destructive">Error loading foods</p>
+                <p className="text-sm text-muted-foreground">{error}</p>
+              </div>
             ) : (
               /* Full dashboard renders in both states. When the user has no
                  real data, the dashboard is populated with dummy foods and
@@ -293,8 +300,15 @@ export function Explorer() {
       <DetailModal food={selected} onClose={() => setSelected(null)} onCompare={(food) => { toggleCompare(food); setSelected(null); }} inCompare={selected ? compareList.some((f) => f.name === selected.name) : false} />
 
       {/* First-run onboarding: centered walkthrough modal over the blurred
-          dashboard. Dismissed automatically once real data is imported. */}
-      <OnboardingModal open={!hasRealData} onImported={setFoods} />
+          dashboard. Only mounted once loading is complete AND the user has no
+          data — never during a fetch, so a user with data that simply hasn't
+          finished loading won't see it. Unmounts immediately once data is
+          imported (hasRealData flips true). Conditionally mounted (not just
+          open={false}) so the Dialog's useId calls don't shift the sidebar
+          tooltip IDs during SSR hydration. */}
+      {!loading && !boundsLoading && !error && !hasRealData && (
+        <OnboardingModal open onImported={setFoods} />
+      )}
     </SidebarProvider>
   );
 }
