@@ -1,7 +1,7 @@
 "use client";
 
 import { useClerk, useUser } from "@clerk/nextjs";
-import { EllipsisVerticalIcon, LogOutIcon } from "lucide-react";
+import { EllipsisVerticalIcon, LogOutIcon, Trash2Icon } from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -20,7 +20,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 
-export function NavUser() {
+export function NavUser({ onClearData }: { onClearData?: () => void }) {
   const { isMobile } = useSidebar();
   const { user } = useUser();
   const { signOut } = useClerk();
@@ -76,7 +76,20 @@ export function NavUser() {
               </DropdownMenuLabel>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => signOut({ redirectUrl: "/sign-in" })}>
+            {onClearData && (
+              <DropdownMenuItem
+                variant="destructive"
+                onClick={onClearData}
+                className="px-2 py-2"
+              >
+                <Trash2Icon />
+                Clear my data
+              </DropdownMenuItem>
+            )}
+            <DropdownMenuItem
+              onClick={() => signOut({ redirectUrl: "/sign-in" })}
+              className="px-2 py-2"
+            >
               <LogOutIcon />
               Sign out
             </DropdownMenuItem>

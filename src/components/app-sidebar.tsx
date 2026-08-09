@@ -22,10 +22,12 @@ import {
 export function AppSidebar({
   view,
   onViewChange,
+  onClearData,
   ...props
 }: React.ComponentProps<typeof Sidebar> & {
   view: ViewId;
   onViewChange: (view: ViewId) => void;
+  onClearData?: () => void;
 }) {
   const { isMobile, setOpenMobile } = useSidebar();
 
@@ -71,7 +73,7 @@ export function AppSidebar({
         </SidebarGroup>
       </SidebarContent>
       <SidebarFooter>
-        <NavUser />
+        <NavUser onClearData={onClearData} />
       </SidebarFooter>
     </Sidebar>
   );

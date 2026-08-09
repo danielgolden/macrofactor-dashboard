@@ -107,3 +107,32 @@ export async function GET(req: NextRequest) {
 
   return NextResponse.json({ foods, total, page, totalPages });
 }
+
+export async function DELETE() {
+  const { userId } = await auth();
+  if (!userId) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const supabase = createServerClient();
+
+  const { error: entriesError } = await supabase
+    .from("food_log_entries")
+    .delete()
+    .eq("user_id", userId);
+
+  if (entriesError) {
+    return NextResponse.json({ error: entriesError.message }, { status: 500 });
+  }
+
+  const { error: foodsError } = await supabase
+    .from("foods")
+    .delete()
+    .eq("user_id", userId);
+
+  if (foodsError) {
+    return NextResponse.json({ error: foodsError.message }, { status: 500 });
+  }
+
+  return NextResponse.json({ success: true });
+}
