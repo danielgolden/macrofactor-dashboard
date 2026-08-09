@@ -26,6 +26,7 @@ export async function GET() {
     fatG: Number(r.fat_g),
     carbsG: Number(r.carbs_g),
     proteinG: Number(r.protein_g),
+    rowHash: "",
   }));
 
   const weeks = bucketByWeek(entries);

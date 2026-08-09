@@ -44,6 +44,7 @@ export async function GET(req: NextRequest) {
       fatG: Number(r.fat_g),
       carbsG: Number(r.carbs_g),
       proteinG: Number(r.protein_g),
+      rowHash: r.row_hash ?? "",
     }));
 
     const foods = aggregateEntries(entries);

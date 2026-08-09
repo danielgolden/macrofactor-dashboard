@@ -48,7 +48,7 @@ export function OnboardingModal({ open, onImported }: Props) {
   const isLastStep = step === totalSteps - 1;
 
   return (
-    <Dialog open={open}>
+    <Dialog open={open} onOpenChange={() => {}}>
       <DialogContent
         showCloseButton={false}
         className="sm:max-w-md"
