@@ -69,6 +69,33 @@ supabase/migration.sql
    ```
 3. En la app, click en **↑ Importar datos** y selecciona `foods.json`
 
+### Por qué no hay importación automática (agosto 2026)
+
+MacroFactor no expone una API pública. Investigamos todas las vías de
+acceso programático conocidas y ninguna es viable para una
+sincronización automatizada:
+
+- **Sin API oficial** — la documentación solo menciona Apple Health
+  (iOS) y Health Connect (Android); sin OAuth, claves de API, ni
+  acceso para partners.
+- **Clientes reverse-engineered de Firestore rotos** — en mayo de 2026
+  Stronger By Science activó Firebase App Check, así que todo cliente
+  de terceros que hablaba directamente con Firestore ahora recibe
+  `401` (ver `benthecarman/macro-factor-rs` y `sjawhar/macrofactor`,
+  este último archivado por esa razón).
+- **El puente con iOS Shortcuts no resuelve la lectura** — automatiza
+  las *escrituras* (`Log by JSON`), pero las *lecturas* siguen
+  requiriendo exportación manual. La variante que reintenta Firestore
+  con un App Check token relayado desde el iPhone es especulativa:
+  App Attest solo puede emitir tokens desde la app oficial.
+- **Apple Health es insuficiente** — MacroFactor sincroniza calorías,
+  macros, micros y peso, pero **no** el trend weight, el TDEE adaptativo
+  ni los datos de coaching, que son los valores centrales de este
+  dashboard.
+
+Mientras no exista una API oficial, el flujo manual de exportar → subir
+es la única vía confiable (ver issue #8 para el seguimiento).
+
 ---
 
 ## Deploy
