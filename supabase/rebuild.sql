@@ -2,7 +2,7 @@
 -- Run this ONCE in the Supabase SQL Editor against a fresh (empty) project.
 -- Rebuilds the full schema after the previous project was deleted.
 --
--- Tables: foods, food_log_entries (with row_hash), chat_messages, user_preferences
+-- Tables: foods, food_log_entries (with row_hash), chat_messages
 -- Idempotent: safe to re-run. No data is dropped.
 -- No pgcrypto needed: row_hash is computed in the app (src/lib/transformFoodLog.ts),
 -- not in SQL, so no backfill / extension is required for a clean project.
@@ -117,27 +117,3 @@ create policy "Users insert own chat messages" on chat_messages
 drop policy if exists "Users delete own chat messages" on chat_messages;
 create policy "Users delete own chat messages" on chat_messages
   for delete using (auth.jwt() ->> 'sub' = user_id);
-
--- ─────────────────────────────────────────────────────────────────────────────
--- user_preferences — per-user theme preference (light/dark/system)
--- Syncs across devices via /api/preferences API route.
--- ─────────────────────────────────────────────────────────────────────────────
-create table if not exists user_preferences (
-  user_id    text primary key,                       -- Clerk user ID
-  theme      text not null default 'system' check (theme in ('light', 'dark', 'system')),
-  updated_at timestamptz not null default now()
-);
-
-alter table user_preferences enable row level security;
-
-drop policy if exists "Users see own preferences" on user_preferences;
-create policy "Users see own preferences" on user_preferences
-  for select using (auth.jwt() ->> 'sub' = user_id);
-
-drop policy if exists "Users upsert own preferences" on user_preferences;
-create policy "Users upsert own preferences" on user_preferences
-  for insert with check (auth.jwt() ->> 'sub' = user_id);
-
-drop policy if exists "Users update own preferences" on user_preferences;
-create policy "Users update own preferences" on user_preferences
-  for update using (auth.jwt() ->> 'sub' = user_id);

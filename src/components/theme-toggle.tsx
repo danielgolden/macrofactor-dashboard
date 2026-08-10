@@ -9,11 +9,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useThemeSync } from "@/lib/useThemeSync";
 
 export function ThemeToggle() {
   const { setTheme } = useTheme();
-  useThemeSync();
 
   return (
     <DropdownMenu>
