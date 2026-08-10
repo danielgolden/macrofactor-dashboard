@@ -42,7 +42,7 @@ function getOpenRouterModel() {
       "X-Title": "MacroFactor Explorer",
     },
   });
-  return openrouter(MODEL);
+  return openrouter.chat(MODEL);
 }
 
 async function userHasData(supabase: ReturnType<typeof createServerClient>, userId: string) {
@@ -138,7 +138,16 @@ export async function POST(req: Request) {
     },
   });
 
-  return result.toUIMessageStreamResponse();
+  return result.toUIMessageStreamResponse({
+    onError: (error) =>
+      error == null
+        ? "unknown error"
+        : typeof error === "string"
+          ? error
+          : error instanceof Error
+            ? error.message
+            : JSON.stringify(error),
+  });
 }
 
 export async function GET() {
