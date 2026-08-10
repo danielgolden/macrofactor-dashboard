@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useChat, type UIMessage } from "@ai-sdk/react";
+import { useUser } from "@clerk/nextjs";
 import {
   ArrowUpIcon,
   BotIcon,
@@ -18,6 +19,14 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { ImportButton } from "./ImportButton";
@@ -32,6 +41,80 @@ interface ToolPartInfo {
   toolName?: string;
   state?: string;
 }
+
+const markdownComponents = {
+  table: (props: React.ComponentProps<"table">) => (
+    <div className="my-2 w-full overflow-x-auto rounded-lg border">
+      <Table {...props} />
+    </div>
+  ),
+  thead: (props: React.ComponentProps<"thead">) => <TableHeader {...props} />,
+  tbody: (props: React.ComponentProps<"tbody">) => <TableBody {...props} />,
+  tr: (props: React.ComponentProps<"tr">) => <TableRow {...props} />,
+  th: (props: React.ComponentProps<"th">) => (
+    <TableHead className="font-bold" {...props} />
+  ),
+  td: (props: React.ComponentProps<"td">) => (
+    <TableCell className="whitespace-normal" {...props} />
+  ),
+  a: ({ href, ...props }: React.ComponentProps<"a">) => {
+    const safe =
+      typeof href === "string" &&
+      (href.startsWith("http://") || href.startsWith("https://"));
+    if (!safe) return <span {...props} />;
+    return (
+      <a
+        href={href}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="font-medium text-primary underline underline-offset-2 hover:opacity-80"
+        {...props}
+      />
+    );
+  },
+  code: (props: React.ComponentProps<"code">) => {
+    const isBlock = (props.className ?? "").includes("language-");
+    return isBlock ? (
+      <code
+        className="block overflow-x-auto rounded-md bg-background/60 p-3 text-xs font-mono"
+        {...props}
+      />
+    ) : (
+      <code
+        className="rounded bg-background/60 px-1 py-0.5 text-xs font-mono"
+        {...props}
+      />
+    );
+  },
+  pre: (props: React.ComponentProps<"pre">) => <pre {...props} />,
+  ul: (props: React.ComponentProps<"ul">) => (
+    <ul className="ml-4 list-disc space-y-1" {...props} />
+  ),
+  ol: (props: React.ComponentProps<"ol">) => (
+    <ol className="ml-4 list-decimal space-y-1" {...props} />
+  ),
+  p: (props: React.ComponentProps<"p">) => (
+    <p className="leading-relaxed" {...props} />
+  ),
+  h1: (props: React.ComponentProps<"h1">) => (
+    <h1 className="text-base font-semibold" {...props} />
+  ),
+  h2: (props: React.ComponentProps<"h2">) => (
+    <h2 className="text-sm font-semibold" {...props} />
+  ),
+  h3: (props: React.ComponentProps<"h3">) => (
+    <h3 className="text-sm font-semibold" {...props} />
+  ),
+  blockquote: (props: React.ComponentProps<"blockquote">) => (
+    <blockquote
+      className="border-l-2 border-border pl-3 italic text-muted-foreground"
+      {...props}
+    />
+  ),
+  hr: (props: React.ComponentProps<"hr">) => (
+    <hr className="border-border" {...props} />
+  ),
+};
 
 export function ChatView() {
   const [history, setHistory] = useState<UIMessage[] | null>(null);
@@ -131,7 +214,7 @@ function ChatInner({ initialMessages }: { initialMessages: UIMessage[] }) {
       {messages.length === 0 ? (
         <EmptyTranscript />
       ) : (
-        <div ref={scrollRef} className="flex-1 space-y-4 overflow-y-auto pr-1">
+        <div ref={scrollRef} className="min-h-0 flex-1 space-y-4 overflow-y-auto pr-1">
           {messages.map((m) => (
             <MessageBubble key={m.id} message={m} />
           ))}
@@ -213,6 +296,15 @@ function EmptyTranscript() {
 
 function MessageBubble({ message }: { message: UIMessage }) {
   const isUser = message.role === "user";
+  const { user } = useUser();
+  const initials = user?.fullName
+    ? user.fullName
+        .split(" ")
+        .map((p) => p[0])
+        .slice(0, 2)
+        .join("")
+        .toUpperCase()
+    : "U";
   return (
     <div
       className={cn(
@@ -222,7 +314,7 @@ function MessageBubble({ message }: { message: UIMessage }) {
     >
       <Avatar size="sm" className="mt-0.5 shrink-0">
         <AvatarFallback>
-          {isUser ? "You" : <BotIcon className="size-3.5" />}
+          {isUser ? initials : <BotIcon className="size-3.5" />}
         </AvatarFallback>
       </Avatar>
       <div
@@ -243,9 +335,12 @@ function MessageBubble({ message }: { message: UIMessage }) {
             ) : (
               <div
                 key={i}
-                className="prose prose-sm max-w-none break-words rounded-2xl rounded-tl-sm bg-muted px-3.5 py-2.5 dark:prose-invert"
+                className="max-w-none space-y-3 rounded-2xl rounded-tl-sm bg-muted px-3.5 py-2.5 text-sm"
               >
-                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                <ReactMarkdown
+                  remarkPlugins={[remarkGfm]}
+                  components={markdownComponents}
+                >
                   {part.text}
                 </ReactMarkdown>
               </div>
