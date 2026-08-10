@@ -65,8 +65,19 @@ export function DateRangePicker({ value, onChange, bounds }: Props) {
         size="sm"
         value={activeLabel ? [activeLabel] : []}
         onValueChange={(vals) => {
+          // Base UI fires onValueChange([] when the active toggle is clicked
+          // again (deselect). In that case `vals` is empty and we must NOT
+          // bail — otherwise the toggle visually turns off while the actual
+          // date range stays the same, leaving the two out of sync.
+          if (vals.length === 0) {
+            // Re-select the previously active preset so the toggle stays on.
+            if (activeLabel) {
+              const preset = PRESETS.find((p) => p.label === activeLabel);
+              if (preset) onChange(preset.range());
+            }
+            return;
+          }
           const val = vals[0];
-          if (!val) return;
           const preset = PRESETS.find((p) => p.label === val);
           if (preset) onChange(preset.range());
         }}
