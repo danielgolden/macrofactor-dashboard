@@ -1,6 +1,5 @@
 .next/
 node_modules/
-.projects/state.local.json
 *.log
 .DS_Store
 

@@ -1,0 +1,119 @@
+{
+  "version": 1,
+  "project": {
+    "catalog": "prod",
+    "initializedAt": "2026-08-09T23:13:43.889Z",
+    "merchantDisplayName": "Daniel Golden",
+    "merchantId": "acct_1LaMKRE7rX4S3gIc",
+    "projectId": "project_61UdUquqAbFgRkU9716PFSLINLSQpyiX91mGH3E3URIW",
+    "projectName": "macrofactor-explorer"
+  },
+  "providers": {
+    "clerk": {
+      "accountRequestId": "fprvcnn_61UdUrAA7IiGLaAUx16PFSLINLSQpyiX91mGH3E3U5Ki",
+      "configuration": {},
+      "linkedAt": "2026-05-06T14:58:08.678Z",
+      "providerId": "prvdr_61UGOeSW4e0T9Etwn537w",
+      "providerName": "Clerk",
+      "redirectUrl": null,
+      "requestedAt": "2026-05-06T14:58:08.678Z",
+      "status": "complete"
+    },
+    "posthog": {
+      "accountRequestId": "fprvcnn_61Un2peprLNimPQWz16PFSLINLSQpyiX91mGH3E3UIIi",
+      "configuration": {},
+      "linkedAt": "2026-06-01T23:04:02.241Z",
+      "providerId": "prvdr_61UGMHNyOleb3A55m5Pg8",
+      "providerName": "PostHog",
+      "redirectUrl": null,
+      "requestedAt": "2026-06-01T23:04:02.241Z",
+      "status": "complete"
+    },
+    "sentry": {
+      "accountRequestId": "fprvcnn_61Un2pwICMSu3evN216PFSLINLSQpyiX91mGH3E3UCaO",
+      "configuration": {},
+      "linkedAt": "2026-06-01T23:04:20.233Z",
+      "providerId": "prvdr_61UWhMpOMGYc7qQhs53su",
+      "providerName": "Sentry",
+      "redirectUrl": null,
+      "requestedAt": "2026-06-01T23:04:20.233Z",
+      "status": "complete"
+    },
+    "supabase": {
+      "accountRequestId": "fprvcnn_61VC2etvzSNflrUD316PFSLINLSQpyiX91mGH3E3U2Mi",
+      "configuration": {},
+      "linkedAt": "2026-08-09T21:56:15.086Z",
+      "providerId": "prvdr_61UIXYHdsyF69pZbG52n2",
+      "providerName": "Supabase",
+      "redirectUrl": null,
+      "requestedAt": "2026-08-09T21:56:15.086Z",
+      "status": "complete"
+    },
+    "upstash": {
+      "accountRequestId": "fprvcnn_61Un2qJfHFAWov8Ot16PFSLINLSQpyiX91mGH3E3UOQS",
+      "configuration": {},
+      "linkedAt": null,
+      "providerId": "prvdr_61UVa3kQyvSOEnWgd5Naa",
+      "providerName": "Upstash",
+      "redirectUrl": null,
+      "requestedAt": "2026-06-01T23:04:43.676Z",
+      "status": "expired"
+    },
+    "vercel": {
+      "accountRequestId": "fprvcnn_61VBWeRNhEm1WkP8y16PFSLINLSQpyiX91mGH3E3UJTU",
+      "configuration": {},
+      "linkedAt": "2026-08-08T11:45:39.475Z",
+      "providerId": "prvdr_61ULUAr4zlQgZkvXY5LsG",
+      "providerName": "Vercel",
+      "redirectUrl": null,
+      "requestedAt": "2026-08-08T11:45:39.475Z",
+      "status": "complete"
+    }
+  },
+  "resources": {
+    "clerk-auth": {
+      "configuration": {},
+      "createdAt": "2026-05-06T14:58:10.808Z",
+      "lastRevealedAt": null,
+      "lastStatus": "complete",
+      "name": "clerk-auth",
+      "providerId": "prvdr_61UGOeSW4e0T9Etwn537w",
+      "providerName": "Clerk",
+      "resourceId": "fres_61UdUrBj9rM1jcyPF16PFSLINLSQpyiX91mGH3E3U9PU",
+      "serviceId": "auth"
+    },
+    "supabase-plan": {
+      "configuration": {},
+      "createdAt": "2026-08-09T22:35:35.574Z",
+      "lastRevealedAt": null,
+      "lastStatus": "complete",
+      "name": "supabase-plan",
+      "providerId": "prvdr_61UIXYHdsyF69pZbG52n2",
+      "providerName": "Supabase",
+      "resourceId": "fres_61VC3GwOVQxz4XD0416PFSLINLSQpyiX91mGH3E3U8GO",
+      "serviceId": "free"
+    },
+    "supabase-project": {
+      "configuration": {},
+      "createdAt": "2026-08-09T22:36:06.036Z",
+      "lastRevealedAt": null,
+      "lastStatus": "complete",
+      "name": "supabase-project",
+      "providerId": "prvdr_61UIXYHdsyF69pZbG52n2",
+      "providerName": "Supabase",
+      "resourceId": "fres_61VC3HQZuvXm7MWVn16PFSLINLSQpyiX91mGH3E3UTiS",
+      "serviceId": "project"
+    },
+    "vercel-project": {
+      "configuration": {},
+      "createdAt": "2026-05-06T15:14:46.044Z",
+      "lastRevealedAt": null,
+      "lastStatus": "complete",
+      "name": "vercel-project",
+      "providerId": "prvdr_61ULUAr4zlQgZkvXY5LsG",
+      "providerName": "Vercel",
+      "resourceId": "fres_61UdV7FvPuSDIy49s16PFSLINLSQpyiX91mGH3E3UDJQ",
+      "serviceId": "project"
+    }
+  }
+}
