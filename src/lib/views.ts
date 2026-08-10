@@ -9,10 +9,10 @@ export interface ViewDef {
 
 export const VIEWS: ViewDef[] = [
   { id: "explorer", label: "Explorer", icon: TableIcon },
+  { id: "trends", label: "Trends", icon: TrendingUpIcon },
   { id: "scatter", label: "Density vs Portion", icon: ChartScatterIcon },
   { id: "ranking", label: "Monthly Ranking", icon: ChartColumnIcon },
   { id: "treemap", label: "Calorie Map", icon: LayoutGridIcon },
-  { id: "trends", label: "Trends", icon: TrendingUpIcon },
   { id: "chat", label: "Chat", icon: MessageSquareIcon },
 ];
 

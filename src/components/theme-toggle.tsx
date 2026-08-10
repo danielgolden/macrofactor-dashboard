@@ -1,7 +1,7 @@
 "use client";
 
 import { useTheme } from "next-themes";
-import { Moon, Sun, Monitor } from "lucide-react";
+import { Check, Moon, Sun, Monitor } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -11,7 +11,13 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 export function ThemeToggle() {
-  const { setTheme } = useTheme();
+  const { theme, setTheme } = useTheme();
+
+  const options = [
+    { value: "light", label: "Claro", Icon: Sun },
+    { value: "dark", label: "Oscuro", Icon: Moon },
+    { value: "system", label: "Sistema", Icon: Monitor },
+  ] as const;
 
   return (
     <DropdownMenu>
@@ -23,18 +29,23 @@ export function ThemeToggle() {
         <span className="sr-only">Cambiar tema</span>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={() => setTheme("light")}>
-          <Sun className="mr-2 h-4 w-4" />
-          Claro
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("dark")}>
-          <Moon className="mr-2 h-4 w-4" />
-          Oscuro
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("system")}>
-          <Monitor className="mr-2 h-4 w-4" />
-          Sistema
-        </DropdownMenuItem>
+        {options.map(({ value, label, Icon }) => (
+          <DropdownMenuItem
+            key={value}
+            onClick={() => setTheme(value)}
+            className="gap-2"
+          >
+            <Icon className="h-4 w-4" />
+            <span className="flex-1">{label}</span>
+            <Check
+              className={
+                theme === value
+                  ? "ml-auto h-4 w-4 opacity-100"
+                  : "ml-auto h-4 w-4 opacity-0"
+              }
+            />
+          </DropdownMenuItem>
+        ))}
       </DropdownMenuContent>
     </DropdownMenu>
   );

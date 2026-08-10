@@ -224,13 +224,17 @@ export function Explorer() {
                     <DateRangePicker value={dateRange} onChange={handleDateRangeChange} bounds={bounds} />
                   </div>
 
-                  {/* Stats cards */}
-                  <SectionCards stats={stats} trend={trend} />
+                  {/* Stats cards — only in Explorer view */}
+                  {view === "explorer" && (
+                    <>
+                      <SectionCards stats={stats} trend={trend} />
 
-                  {/* Top foods calorie-share donut */}
-                  <div className="px-4 lg:px-6">
-                    <CalorieShareDonut foods={displayFoods} onSelect={setSelected} />
-                  </div>
+                      {/* Top foods calorie-share donut */}
+                      <div className="px-4 lg:px-6">
+                        <CalorieShareDonut foods={displayFoods} onSelect={setSelected} />
+                      </div>
+                    </>
+                  )}
 
                   <div className="flex flex-col gap-4 px-4 lg:px-6">
                     <Controls search={search} setSearch={setSearch} activeZones={activeZones} setActiveZones={setActiveZones} activeCategories={activeCategories} setActiveCategories={setActiveCategories} />
