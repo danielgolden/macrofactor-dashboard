@@ -62,15 +62,16 @@ export function DetailModal({ food, onClose, onCompare, inCompare }: Props) {
           <DialogTitle className="text-xl">{food.name}</DialogTitle>
         </DialogHeader>
 
-        {/* Density hero */}
+        {/* Density hero — uses a muted background that adapts to light/dark mode
+            instead of the raw zone "light" tint, which is too bright in dark mode. */}
         <div
-          className="rounded-lg border-l-4 p-4"
-          style={{ backgroundColor: z.light, borderColor: z.fill }}
+          className="rounded-lg border-l-4 p-4 bg-muted/50"
+          style={{ borderColor: z.fill }}
         >
           <div className="text-xs uppercase tracking-wide" style={{ color: z.fill }}>
             Caloric density
           </div>
-          <div className="text-4xl font-bold tabular-nums">
+          <div className="text-4xl font-bold tabular-nums text-foreground">
             {food.calDensity.toFixed(2)}
             <span className="ml-1.5 text-base font-normal text-muted-foreground">kcal/g</span>
           </div>

@@ -26,12 +26,10 @@ export const PRESETS: { label: string; range: () => DateRange }[] = [
     },
   },
   {
-    label: "This week",
+    label: "7 d",
     range: () => {
       const t = todayDate();
-      const day = t.getDay();
-      const monday = addDays(t, day === 0 ? -6 : 1 - day);
-      return { start: toISO(monday), end: toISO(t) };
+      return { start: toISO(addDays(t, -6)), end: toISO(t) };
     },
   },
   {
@@ -59,14 +57,14 @@ export function isPresetDisabled(
 
 /**
  * Pick the initial date range for the Explorer view.
- * Priority: This week → Today → most recent available day in bounds.
+ * Priority: Last 7 days → Today → most recent available day in bounds.
  * Returns null when the user has no data (no bounds).
  */
 export function computeInitialRange(bounds: DateBounds | null): DateRange | null {
   if (!bounds) return null;
 
-  const thisWeek = PRESETS.find((p) => p.label === "This week")!.range();
-  if (rangeOverlapsBounds(thisWeek, bounds)) return thisWeek;
+  const sevenDays = PRESETS.find((p) => p.label === "7 d")!.range();
+  if (rangeOverlapsBounds(sevenDays, bounds)) return sevenDays;
 
   const today = PRESETS.find((p) => p.label === "Today")!.range();
   if (rangeOverlapsBounds(today, bounds)) return today;
