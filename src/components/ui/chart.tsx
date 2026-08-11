@@ -116,6 +116,15 @@ ${colorConfig
 
 const ChartTooltip = RechartsPrimitive.Tooltip
 
+/**
+ * Shared props applied to every <ChartTooltip /> site in the app.
+ *
+ * `isAnimationActive={false}` stops Recharts' default 400ms ease on the
+ * `.recharts-tooltip-wrapper` transform — without this the tooltip
+ * interpolates from its previous coordinates on each new hover. See #47.
+ */
+export const CHART_TOOLTIP_DEFAULTS = { isAnimationActive: false } as const
+
 function ChartTooltipContent({
   active,
   payload,

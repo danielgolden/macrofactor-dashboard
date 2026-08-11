@@ -1,12 +1,13 @@
 "use client";
 
 import { useMemo, type MouseEvent } from "react";
-import { Cell, Label, Pie, PieChart } from "recharts";
+import { Cell, Pie, PieChart } from "recharts";
 
 import { Card, CardContent } from "@/components/ui/card";
 import {
   ChartContainer,
   ChartTooltip,
+  CHART_TOOLTIP_DEFAULTS,
   type ChartConfig,
 } from "@/components/ui/chart";
 import {
@@ -113,55 +114,65 @@ export function CalorieShareDonut({ foods, onSelect }: Props) {
         </div>
 
         <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-center">
-          {/* Donut chart */}
-          <ChartContainer
-            config={chartConfig}
-            className="shrink-0"
+          {/* Donut chart. The center figure is an HTML overlay (sibling of
+           * ChartContainer) rather than an SVG <Label>, because earlier
+           * attempts at centering in SVG via dominant-baseline + em-relative
+           * dy drifted whenever type sizes or digit counts changed.
+           * `flex flex-col items-center justify-center` under a
+           * `relative shrink-0` wrapper keeps the text concentric with the
+           * ring at any font size. See issue #48. */}
+          <div
+            className="relative shrink-0"
             style={{ height: 220, width: "min(220px, 100%)" }}
           >
-            <PieChart>
-              <ChartTooltip content={<DonutTooltip />} />
-              <Pie
-                data={segments}
-                dataKey="calories"
-                nameKey="name"
-                innerRadius={62}
-                outerRadius={88}
-                paddingAngle={2}
-                stroke="none"
-                onClick={(data: unknown) => {
-                  const seg = (data as unknown as { payload?: Segment }).payload;
-                  if (seg?.food) onSelect(seg.food);
-                }}
-                cursor="pointer"
-              >
-                {segments.map((s) => (
-                  <Cell key={s.key} fill={s.fill} />
-                ))}
-                <Label
-                  content={({ viewBox }) => {
-                    if (viewBox && "cx" in viewBox && "cy" in viewBox) {
-                      return (
-                        <text x={viewBox.cx} y={viewBox.cy} textAnchor="middle" dominantBaseline="middle">
-                          <tspan x={viewBox.cx} dy="-0.5em" className="fill-foreground text-2xl font-semibold">
-                            {Math.round(grandTotal).toLocaleString()}
-                          </tspan>
-                          <tspan x={viewBox.cx} dy="1.4em" className="fill-muted-foreground text-xs">
-                            total kcal
-                          </tspan>
-                        </text>
-                      );
-                    }
-                    return null;
+            <ChartContainer
+              config={chartConfig}
+              className="h-full w-full"
+            >
+              <PieChart>
+                <ChartTooltip content={<DonutTooltip />} {...CHART_TOOLTIP_DEFAULTS} />
+                <Pie
+                  data={segments}
+                  dataKey="calories"
+                  nameKey="name"
+                  innerRadius={62}
+                  outerRadius={88}
+                  paddingAngle={2}
+                  stroke="none"
+                  onClick={(data: unknown) => {
+                    const seg = (data as unknown as { payload?: Segment }).payload;
+                    if (seg?.food) onSelect(seg.food);
                   }}
-                />
-              </Pie>
-            </PieChart>
-          </ChartContainer>
+                  cursor="pointer"
+                >
+                  {segments.map((s) => (
+                    <Cell key={s.key} fill={s.fill} />
+                  ))}
+                </Pie>
+              </PieChart>
+            </ChartContainer>
+            <div
+              className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center"
+              aria-hidden="true"
+            >
+              <div className="text-2xl font-semibold tabular-nums">
+                {Math.round(grandTotal).toLocaleString()}
+              </div>
+              <div className="text-xs text-muted-foreground">total kcal</div>
+            </div>
+          </div>
 
-          {/* Legend */}
+          {/* Legend. Each row is `items-start` and the swatch is `mt-[3px]`
+           * so a wrapped name (very common: MacroFactor lists "Brand ·
+           * Preparation") does not drag the swatch off the first line of
+           * text. The name spans the available width with `min-w-0 flex-1`,
+           * the percentage column is `shrink-0 tabular-nums`, and names
+           * with `break-words` instead of a hard truncate at 140px, so
+           * long names wrap onto two lines on narrow columns and never
+           * lose characters unnecessarily. The hover <Tooltip> remains
+           * for the rare wide legend where wrap still doesn't fit. */}
           <TooltipProvider delay={200}>
-            <div className="grid w-full grid-cols-1 gap-x-4 gap-y-1.5 sm:grid-cols-2">
+            <div className="grid w-full grid-cols-1 items-start gap-x-4 gap-y-1.5 sm:grid-cols-2">
               {segments.map((s) => (
                 <Tooltip key={s.key}>
                   <TooltipTrigger
@@ -171,16 +182,16 @@ export function CalorieShareDonut({ foods, onSelect }: Props) {
                           e.stopPropagation();
                           if (s.food) onSelect(s.food);
                         }}
-                        className={`flex items-center gap-1.5 ${s.food ? "cursor-pointer" : "cursor-default"}`}
+                        className={`flex w-full items-start gap-1.5 text-left ${s.food ? "cursor-pointer" : "cursor-default"}`}
                       >
                         <span
-                          className="h-2.5 w-2.5 shrink-0 rounded-[2px]"
+                          className="mt-[3px] h-2.5 w-2.5 shrink-0 rounded-[2px]"
                           style={{ backgroundColor: s.fill }}
                         />
-                        <span className="max-w-[140px] truncate text-xs text-muted-foreground">
+                        <span className="min-w-0 flex-1 break-words text-xs text-muted-foreground">
                           {s.name}
                         </span>
-                        <span className="ml-auto text-xs font-medium tabular-nums">
+                        <span className="shrink-0 text-xs font-medium tabular-nums">
                           {s.pct.toFixed(1)}%
                         </span>
                       </button>
