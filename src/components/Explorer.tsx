@@ -1,14 +1,40 @@
 "use client";
-import { useState, useMemo, useCallback, useEffect } from "react";
+
+import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  DndContext,
+  KeyboardSensor,
+  PointerSensor,
+  TouchSensor,
+  closestCenter,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  arrayMove,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { restrictToParentElement, restrictToVerticalAxis } from "@dnd-kit/modifiers";
+import { CSS } from "@dnd-kit/utilities";
+import { GripVerticalIcon, LoaderCircleIcon, RotateCcwIcon, SettingsIcon } from "lucide-react";
+
 import type { Food, Zone, Category } from "@/lib/types";
 import { VIEWS, type ViewId } from "@/lib/views";
 import { useFoods } from "@/lib/useFoods";
 import { useDateRangeBounds } from "@/lib/useDateRangeBounds";
 import { computeInitialRange, type DateRange } from "@/lib/dateRange";
+import { useUser } from "@clerk/nextjs";
+import { useExplorerLayout, type BlockId } from "@/lib/useExplorerLayout";
+import { ExplorerBlockFrame } from "./ExplorerBlockFrame";
 import { AppSidebar } from "./app-sidebar";
 import { SiteHeader } from "./site-header";
 import { SectionCards } from "./section-cards";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { Button } from "@/components/ui/button";
 import { Controls } from "./Controls";
 import { CompareStrip } from "./CompareStrip";
 import { DetailModal } from "./DetailModal";
@@ -98,7 +124,13 @@ export function Explorer() {
   const stats = useMemo(() => {
     const totalW = displayFoods.reduce((s, f) => s + f.totalWeight, 0);
     const totalCal = displayFoods.reduce((s, f) => s + f.totalCalories, 0);
-    return { count: displayFoods.length, avgDensity: totalW > 0 ? totalCal / totalW : 0 };
+    return {
+      count: displayFoods.length,
+      avgDensity: totalW > 0 ? totalCal / totalW : 0,
+      totalCalories: totalCal,
+      highDensityCalories: 0,
+      highDensityPct: 0,
+    };
   }, [displayFoods]);
 
   const PAGE_SIZE = 100;
@@ -173,6 +205,77 @@ export function Explorer() {
     }
   })();
 
+  // ----- Explorer layout customization (#21) -----------------------------
+  //
+  // The Explorer page is composed of three rearrangeable blocks (Step 2 of
+  // the plan): stats cards, the calorie-share donut, and the food table.
+  // DateRangePicker stays pinned above the sortable list, Controls stays
+  // pinned *below* it (the user said during the plan review that controls
+  // belong with the data they filter, not as a sortable top-level block).
+  // CompareStrip and pagination travel inside the table block.
+  //
+  // State machine:
+  //   - arranging === false: identical to before this PR. No dnd listeners,
+  //     no drag handles, no per-block frames.
+  //   - arranging === true:   frames become opaque click-to-grab, the table
+  //     becomes a condensed preview, and the bottom bar exposes Reset / Done.
+  //
+  // The layout hook is key'd per Clerk user, stored in localStorage, and
+  // merges (rather than rejects) on shape mismatch so adding a fourth
+  // block in the future won't wipe out existing users' saved order.
+  const { user } = useUser();
+  const { order, setOrder, reset } = useExplorerLayout(user?.id ?? null);
+  const [arranging, setArranging] = useState(false);
+
+  // Arrange mode is unavailable when the dummy-data preview is showing —
+  // there is nothing to rearrange behind it. See issue #21's guardrails.
+  const canArrange = hasRealData && view === "explorer";
+
+  // Stats block title for the arrange-mode header. Compact label only;
+  // the actual stat value is rendered inert inside the frame.
+  const tableNode = view !== "explorer" ? null : (
+    <>
+      <ExplorerView foods={paged} compareList={compareList} toggleCompare={toggleCompare} onSelect={setSelected} />
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center gap-4 text-xs">
+          <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={currentPage === 1}
+            className="rounded-md border px-3 py-1.5 disabled:opacity-40">
+            ← prev
+          </button>
+          <span className="text-muted-foreground">{currentPage} / {totalPages} · {filtered.length} foods</span>
+          <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}
+            className="rounded-md border px-3 py-1.5 disabled:opacity-40">
+            next →
+          </button>
+        </div>
+      )}
+    </>
+  );
+
+  // Reduce motion preference — drop the sortable transition when set.
+  const prefersReducedMotion =
+    typeof window !== "undefined" &&
+    window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    // Touch: 8px movement / 250ms delay so scrolling the page on mobile
+    // doesn't trigger a drag. From the dnd-kit docs.
+    useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 8 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
+
+  function onDragEnd(event: DragEndEvent) {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    const from = order.indexOf(String(active.id) as BlockId);
+    const to = order.indexOf(String(over.id) as BlockId);
+    if (from < 0 || to < 0) return;
+    // Persist the new order. The hook merges, so writing the same
+    // canonical list with two ids swapped is safe across releases.
+    setOrder(arrayMove(order, from, to));
+  }
+
   return (
     <SidebarProvider
       style={
@@ -186,6 +289,20 @@ export function Explorer() {
       <SidebarInset>
         <SiteHeader title={currentView.label}>
           <ImportButton onImported={setFoods} />
+          {canArrange && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setArranging((a) => !a)}
+              aria-pressed={arranging}
+              aria-label="Customize Explorer layout"
+              title={arranging ? "Done customizing" : "Customize layout"}
+              className="h-8 gap-1.5"
+            >
+              <SettingsIcon className="size-3.5" />
+              <span>{arranging ? "Done" : "Customize"}</span>
+            </Button>
+          )}
         </SiteHeader>
 
         <div className="flex min-w-0 flex-1 flex-col">
@@ -206,11 +323,6 @@ export function Explorer() {
                 <p className="text-sm text-muted-foreground">{error}</p>
               </div>
             ) : (
-              /* Full dashboard renders in both states. When the user has no
-                 real data, the dashboard is populated with dummy foods and
-                 wrapped in a strong blur + pointer-events barrier so no dummy
-                 values are legible or accessible; the OnboardingModal sits on
-                 top as the primary focus. */
               <div className="relative flex flex-col gap-4 md:gap-6">
                 <div
                   className={
@@ -219,70 +331,163 @@ export function Explorer() {
                       : "pointer-events-none select-none blur-md flex flex-col gap-4 md:gap-6"
                   }
                 >
-                  {/* Date range picker */}
+                  {/* Date range picker — pinned at the top, NOT rearrangeable. */}
                   <div className="px-4 lg:px-6">
                     <DateRangePicker value={dateRange} onChange={handleDateRangeChange} bounds={bounds} />
                   </div>
 
-                  {/* Stats cards — only in Explorer view */}
+                  {/* Explorer block list.
+                   *
+                   * Step 1 of the plan: a single column container carries all
+                   * padding/gap, no per-block wrappers. This is the layout
+                   * dnd-kit measures against; three different wrappers with
+                   * two padding regimes would make drops land wrong.
+                   *
+                   * Non-Explorer views render their existing layout, untouched.
+                   */}
                   {view === "explorer" && (
-                    <>
-                      <SectionCards stats={stats} trend={trend} />
+                    arranging ? (
+                      <DndContext
+                        sensors={sensors}
+                        collisionDetection={closestCenter}
+                        modifiers={
+                          prefersReducedMotion
+                            ? [restrictToVerticalAxis, restrictToParentElement]
+                            : [restrictToVerticalAxis, restrictToParentElement]
+                        }
+                        onDragEnd={onDragEnd}
+                      >
+                        <SortableContext items={order} strategy={verticalListSortingStrategy}>
+                          <div className="flex flex-col gap-3 px-4 lg:px-6">
+                            {order.map((id) => {
+                              if (id === "stats") {
+                                return (
+                                  <SortableBlockFrame
+                                    key="stats"
+                                    id="stats"
+                                    label="Stats cards"
+                                    arranging={arranging}
+                                  >
+                                    <div className="pointer-events-none max-h-32 overflow-hidden opacity-60 [mask-image:linear-gradient(to_bottom,black_60%,transparent)]">
+                                      <SectionCards
+                                        stats={stats}
+                                        trend={trend}
+                                        highDensityTrend={null}
+                                        prevAvgDensityLoading={prevAvgDensityLoading}
+                                      />
+                                    </div>
+                                  </SortableBlockFrame>
+                                );
+                              }
+                              if (id === "donut") {
+                                return (
+                                  <SortableBlockFrame
+                                    key="donut"
+                                    id="donut"
+                                    label="Top foods by calories"
+                                    arranging={arranging}
+                                  >
+                                    <div className="pointer-events-none max-h-32 overflow-hidden opacity-60 [mask-image:linear-gradient(to_bottom,black_60%,transparent)]">
+                                      <CalorieShareDonut foods={displayFoods} onSelect={setSelected} />
+                                    </div>
+                                  </SortableBlockFrame>
+                                );
+                              }
+                              if (id === "table") {
+                                return (
+                                  <SortableBlockFrame
+                                    key="table"
+                                    id="table"
+                                    label="Food table"
+                                    arranging={arranging}
+                                  >
+                                    <div className="pointer-events-none max-h-32 overflow-hidden opacity-60 [mask-image:linear-gradient(to_bottom,black_60%,transparent)]">
+                                      {tableNode}
+                                    </div>
+                                  </SortableBlockFrame>
+                                );
+                              }
+                              return null;
+                            })}
 
-                      {/* Top foods calorie-share donut */}
-                      <div className="px-4 lg:px-6">
-                        <CalorieShareDonut foods={displayFoods} onSelect={setSelected} />
+                            {/* Sticky bottom bar: Reset (ghost) + Done (primary).
+                             * Escape also exits arrange mode. */}
+                            <div className="sticky bottom-0 z-30 -mx-4 mt-2 flex items-center justify-between gap-2 border-t bg-background/80 px-4 py-3 backdrop-blur supports-[backdrop-filter]:bg-background/60 lg:-mx-6 lg:px-6">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={reset}
+                                aria-label="Reset Explorer layout to default"
+                              >
+                                <RotateCcwIcon className="mr-1.5 size-3.5" />
+                                Reset layout
+                              </Button>
+                              <Button
+                                size="sm"
+                                onClick={() => setArranging(false)}
+                              >
+                                Done
+                              </Button>
+                            </div>
+                          </div>
+                        </SortableContext>
+                      </DndContext>
+                    ) : (
+                      <div className="flex flex-col gap-4 px-4 lg:px-6">
+                        {order.map((id) => {
+                          if (id === "stats")
+                            return <SectionCards key="stats" stats={stats} trend={trend} highDensityTrend={null} prevAvgDensityLoading={prevAvgDensityLoading} />;
+                          if (id === "donut")
+                            return (
+                              <div key="donut">
+                                <CalorieShareDonut foods={displayFoods} onSelect={setSelected} />
+                              </div>
+                            );
+                          if (id === "table")
+                            return <div key="table">{tableNode}</div>;
+                          return null;
+                        })}
                       </div>
-                    </>
+                    )
                   )}
 
-                  <div className="flex flex-col gap-4 px-4 lg:px-6">
+                  {/* Search & filters — NOT part of the sortable list. Pinned
+                   * below the blocks because they scope the table above. */}
+                  <div className="px-4 lg:px-6">
                     <Controls search={search} setSearch={setSearch} activeZones={activeZones} setActiveZones={setActiveZones} activeCategories={activeCategories} setActiveCategories={setActiveCategories} />
-
-                    {compareList.length > 0 && (
-                      <CompareStrip foods={compareList} onClear={() => setCompareList([])} onRemove={(name) => setCompareList((p) => p.filter((f) => f.name !== name))} />
-                    )}
-
-                    {view === "explorer" && (
-                      <>
-                        <ExplorerView foods={paged} compareList={compareList} toggleCompare={toggleCompare} onSelect={setSelected} />
-                        {totalPages > 1 && (
-                          <div className="flex items-center justify-center gap-4 text-xs">
-                            <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={currentPage === 1}
-                              className="rounded-md border px-3 py-1.5 disabled:opacity-40">
-                              ← prev
-                            </button>
-                            <span className="text-muted-foreground">{currentPage} / {totalPages} · {filtered.length} foods</span>
-                            <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}
-                              className="rounded-md border px-3 py-1.5 disabled:opacity-40">
-                              next →
-                            </button>
-                          </div>
-                        )}
-                      </>
-                    )}
-                    {view === "scatter" && (
-                      <>
-                        <div>
-                          <h2 className="text-lg font-semibold">Caloric density vs. portion you eat</h2>
-                          <p className="text-sm text-muted-foreground">Y-axis = density (kcal/g) · X-axis = average grams per occasion · Size = frequency</p>
-                        </div>
-                        <ScatterView foods={filtered} onSelect={setSelected} />
-                      </>
-                    )}
-                    {view === "ranking" && (
-                      <>
-                        <div>
-                          <h2 className="text-lg font-semibold">Top 30 · Total calories in the month</h2>
-                          <p className="text-sm text-muted-foreground">What <em>really</em> dominates your intake — not by density, but by total volume.</p>
-                        </div>
-                        <RankingView foods={filtered} onSelect={setSelected} />
-                      </>
-                    )}
-                    {view === "treemap" && (
-                      <TreemapView foods={filtered} onSelect={setSelected} />
-                    )}
                   </div>
+
+                  {compareList.length > 0 && (
+                    <div className="px-4 lg:px-6">
+                      <CompareStrip foods={compareList} onClear={() => setCompareList([])} onRemove={(name) => setCompareList((p) => p.filter((f) => f.name !== name))} />
+                    </div>
+                  )}
+
+                  {view === "scatter" && (
+                    <div className="flex flex-col gap-4 px-4 lg:px-6">
+                      <div>
+                        <h2 className="text-lg font-semibold">Caloric density vs. portion you eat</h2>
+                        <p className="text-sm text-muted-foreground">Y-axis = density (kcal/g) · X-axis = average grams per occasion · Size = frequency</p>
+                      </div>
+                      <ScatterView foods={filtered} onSelect={setSelected} />
+                    </div>
+                  )}
+
+                  {view === "ranking" && (
+                    <div className="flex flex-col gap-4 px-4 lg:px-6">
+                      <div>
+                        <h2 className="text-lg font-semibold">Top 30 · Total calories in the month</h2>
+                        <p className="text-sm text-muted-foreground">What <em>really</em> dominates your intake — not by density, but by total volume.</p>
+                      </div>
+                      <RankingView foods={filtered} onSelect={setSelected} />
+                    </div>
+                  )}
+
+                  {view === "treemap" && (
+                    <div className="px-4 lg:px-6">
+                      <TreemapView foods={filtered} onSelect={setSelected} />
+                    </div>
+                  )}
                 </div>
 
                 {/* Subtle tint over the blurred preview — a hard visual barrier
@@ -307,12 +512,56 @@ export function Explorer() {
           dashboard. Only mounted once loading is complete AND the user has no
           data — never during a fetch, so a user with data that simply hasn't
           finished loading won't see it. Unmounts immediately once data is
-          imported (hasRealData flips true). Conditionally mounted (not just
-          open={false}) so the Dialog's useId calls don't shift the sidebar
-          tooltip IDs during SSR hydration. */}
-      {!loading && !boundsLoading && !error && !hasRealData && (
-        <OnboardingModal open onImported={setFoods} />
+          imported (hasRealData flips). */
+      }
+      {!loading && !error && !hasRealData && (
+        <OnboardingModal
+          open={!loading && !error && !hasRealData}
+          onImported={(foods) => setFoods(foods)}
+        />
       )}
     </SidebarProvider>
+  );
+}
+
+// --- helpers below this line ---
+
+/**
+ * A draggable frame around an Explorer block in arrange mode. When
+ * `arranging` is true the whole frame becomes the drag activator; the
+ * grip icon in the header is purely an affordance. Listeners go on the
+ * frame so clicks on slice swatches / row buttons / etc. in the inert
+ * content underneath do not get hijacked — the content is itself
+ * pointer-events-none.
+ */
+function SortableBlockFrame({
+  id,
+  label,
+  arranging,
+  children,
+}: {
+  id: BlockId;
+  label: string;
+  arranging: boolean;
+  children: React.ReactNode;
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
+
+  const style: React.CSSProperties = {
+    transform: CSS.Transform.toString(transform),
+    transition: transition ?? undefined,
+  };
+
+  return (
+    <ExplorerBlockFrame
+      ref={setNodeRef}
+      style={style}
+      label={label}
+      arranging={arranging}
+      dragging={isDragging}
+      gripProps={{ ...attributes, ...listeners }}
+    >
+      {children}
+    </ExplorerBlockFrame>
   );
 }

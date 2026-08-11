@@ -14,8 +14,13 @@ interface SectionCardsProps {
   stats: {
     count: number;
     avgDensity: number;
+    highDensityPct?: number;
+    highDensityCalories?: number;
+    totalCalories?: number;
   };
   trend: number | null;
+  /** Optional share-trend vs previous period (#56). */
+  highDensityTrend?: number | null;
   /** True while the background previous-period avg-density fetch is in flight. */
   prevAvgDensityLoading?: boolean;
 }
