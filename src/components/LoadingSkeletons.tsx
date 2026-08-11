@@ -24,6 +24,50 @@ export function LoadingStatus({ text }: { text: string }) {
 }
 
 /**
+ * Skeleton mirroring the calorie-share donut + macro-profile radar that now sit
+ * side-by-side in a 2-col grid on the Explorer page (and every other data view).
+ */
+function DonutRadarSkeleton() {
+  return (
+    <div className="grid grid-cols-1 gap-4 px-4 lg:px-6 lg:grid-cols-2">
+      {/* Donut (mirrors CalorieShareDonut) */}
+      <Card>
+        <CardContent className="pt-4">
+          <div className="mb-2 flex items-baseline justify-between gap-2">
+            <Skeleton className="h-4 w-40" />
+            <Skeleton className="h-3 w-32" />
+          </div>
+          <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-center">
+            <Skeleton className="size-[220px] shrink-0 rounded-full" />
+            <div className="grid w-full grid-cols-1 gap-x-4 gap-y-1.5 sm:grid-cols-2">
+              {Array.from({ length: 8 }).map((_, i) => (
+                <Skeleton key={i} className="h-4 w-full max-w-[180px]" />
+              ))}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Radar (mirrors MacroProfileRadar) */}
+      <Card>
+        <CardContent className="pt-4">
+          <div className="mb-2 flex items-baseline justify-between gap-2">
+            <Skeleton className="h-4 w-40" />
+            <Skeleton className="h-3 w-28" />
+          </div>
+          <Skeleton className="mx-auto h-[220px] w-full max-w-[300px] rounded-md" />
+          <div className="mt-3 flex justify-center gap-4">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <Skeleton key={i} className="h-4 w-12" />
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+/**
  * Skeleton mirroring the Explorer dashboard layout: date picker + stat cards
  * (SectionCards) + calorie-share donut (CalorieShareDonut) + controls + foods
  * table (ExplorerView).
@@ -53,25 +97,7 @@ export function ExplorerSkeleton() {
         ))}
       </div>
 
-      {/* Donut (mirrors CalorieShareDonut) */}
-      <div className="px-4 lg:px-6">
-        <Card>
-          <CardContent className="pt-4">
-            <div className="mb-2 flex items-baseline justify-between gap-2">
-              <Skeleton className="h-4 w-40" />
-              <Skeleton className="h-3 w-32" />
-            </div>
-            <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-center">
-              <Skeleton className="size-[220px] shrink-0 rounded-full" />
-              <div className="grid w-full grid-cols-1 gap-x-4 gap-y-1.5 sm:grid-cols-2">
-                {Array.from({ length: 8 }).map((_, i) => (
-                  <Skeleton key={i} className="h-4 w-full max-w-[180px]" />
-                ))}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      <DonutRadarSkeleton />
 
       {/* Controls + Table (mirrors Controls + ExplorerView) */}
       <div className="flex flex-col gap-4 px-4 lg:px-6">
@@ -133,25 +159,7 @@ export function ScatterSkeleton() {
         ))}
       </div>
 
-      {/* Donut (shared) */}
-      <div className="px-4 lg:px-6">
-        <Card>
-          <CardContent className="pt-4">
-            <div className="mb-2 flex items-baseline justify-between gap-2">
-              <Skeleton className="h-4 w-40" />
-              <Skeleton className="h-3 w-32" />
-            </div>
-            <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-center">
-              <Skeleton className="size-[220px] shrink-0 rounded-full" />
-              <div className="grid w-full grid-cols-1 gap-x-4 gap-y-1.5 sm:grid-cols-2">
-                {Array.from({ length: 8 }).map((_, i) => (
-                  <Skeleton key={i} className="h-4 w-full max-w-[180px]" />
-                ))}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      <DonutRadarSkeleton />
 
       {/* Controls + scatter chart */}
       <div className="flex flex-col gap-4 px-4 lg:px-6">
@@ -221,25 +229,7 @@ export function RankingSkeleton() {
         ))}
       </div>
 
-      {/* Donut (shared) */}
-      <div className="px-4 lg:px-6">
-        <Card>
-          <CardContent className="pt-4">
-            <div className="mb-2 flex items-baseline justify-between gap-2">
-              <Skeleton className="h-4 w-40" />
-              <Skeleton className="h-3 w-32" />
-            </div>
-            <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-center">
-              <Skeleton className="size-[220px] shrink-0 rounded-full" />
-              <div className="grid w-full grid-cols-1 gap-x-4 gap-y-1.5 sm:grid-cols-2">
-                {Array.from({ length: 8 }).map((_, i) => (
-                  <Skeleton key={i} className="h-4 w-full max-w-[180px]" />
-                ))}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      <DonutRadarSkeleton />
 
       {/* Controls + ranking chart */}
       <div className="flex flex-col gap-4 px-4 lg:px-6">
@@ -294,25 +284,7 @@ export function TreemapSkeleton() {
         ))}
       </div>
 
-      {/* Donut (shared) */}
-      <div className="px-4 lg:px-6">
-        <Card>
-          <CardContent className="pt-4">
-            <div className="mb-2 flex items-baseline justify-between gap-2">
-              <Skeleton className="h-4 w-40" />
-              <Skeleton className="h-3 w-32" />
-            </div>
-            <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-center">
-              <Skeleton className="size-[220px] shrink-0 rounded-full" />
-              <div className="grid w-full grid-cols-1 gap-x-4 gap-y-1.5 sm:grid-cols-2">
-                {Array.from({ length: 8 }).map((_, i) => (
-                  <Skeleton key={i} className="h-4 w-full max-w-[180px]" />
-                ))}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      <DonutRadarSkeleton />
 
       {/* Controls + treemap */}
       <div className="flex flex-col gap-4 px-4 lg:px-6">

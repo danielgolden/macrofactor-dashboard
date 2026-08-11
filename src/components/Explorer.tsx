@@ -24,6 +24,7 @@ import { TreemapView } from "./TreemapView";
 import { TrendsView } from "./TrendsView";
 import { ChatView } from "./ChatView";
 import { CalorieShareDonut } from "./CalorieShareDonut";
+import { MacroProfileRadar } from "./MacroProfileRadar";
 import {
   ExplorerSkeleton,
   ScatterSkeleton,
@@ -229,9 +230,10 @@ export function Explorer() {
                     <>
                       <SectionCards stats={stats} trend={trend} />
 
-                      {/* Top foods calorie-share donut */}
-                      <div className="px-4 lg:px-6">
+                      {/* Top foods calorie-share donut + macro profile radar */}
+                      <div className="grid grid-cols-1 gap-4 px-4 lg:px-6 lg:grid-cols-2">
                         <CalorieShareDonut foods={displayFoods} onSelect={setSelected} />
+                        <MacroProfileRadar foods={displayFoods} />
                       </div>
                     </>
                   )}
