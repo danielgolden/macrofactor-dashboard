@@ -142,11 +142,11 @@ export function CalorieShareDonut({ foods, onSelect }: Props) {
                   content={({ viewBox }) => {
                     if (viewBox && "cx" in viewBox && "cy" in viewBox) {
                       return (
-                        <text x={viewBox.cx} y={viewBox.cy} textAnchor="middle" dominantBaseline="middle">
+                        <text x={viewBox.cx} y={viewBox.cy} textAnchor="middle" dominantBaseline="central">
                           <tspan x={viewBox.cx} dy="-0.5em" className="fill-foreground text-2xl font-semibold">
                             {Math.round(grandTotal).toLocaleString()}
                           </tspan>
-                          <tspan x={viewBox.cx} dy="1.4em" className="fill-muted-foreground text-xs">
+                          <tspan x={viewBox.cx} dy="1.5em" className="fill-muted-foreground text-xs">
                             total kcal
                           </tspan>
                         </text>
@@ -177,7 +177,7 @@ export function CalorieShareDonut({ foods, onSelect }: Props) {
                           className="h-2.5 w-2.5 shrink-0 rounded-[2px]"
                           style={{ backgroundColor: s.fill }}
                         />
-                        <span className="max-w-[140px] truncate text-xs text-muted-foreground">
+                        <span className="min-w-0 flex-1 truncate text-xs text-muted-foreground">
                           {s.name}
                         </span>
                         <span className="ml-auto text-xs font-medium tabular-nums">
