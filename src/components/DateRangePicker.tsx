@@ -13,6 +13,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import {
   PRESETS,
   isPresetDisabled,
+  toISO,
   type DateBounds,
   type DateRange,
 } from "@/lib/dateRange";
@@ -21,16 +22,6 @@ interface Props {
   value: DateRange | null;
   onChange: (range: DateRange | null) => void;
   bounds: DateBounds | null;
-}
-
-/**
- * Format a Date as a local-timezone YYYY-MM-DD string. The previous helper
- * used `d.toISOString().slice(0, 10)` (UTC), which was a one-day-shift for
- * any user at UTC+1 or east on dates the picker returned at local midnight.
- * Tracked separately as #57 for the preset/initial-range paths.
- */
-export function toLocalISODate(d: Date): string {
-  return format(d, "yyyy-MM-dd");
 }
 
 export function DateRangePicker({ value, onChange, bounds }: Props) {
@@ -100,8 +91,8 @@ export function DateRangePicker({ value, onChange, bounds }: Props) {
 
     // Closing: commit the draft if any, then clear it.
     if (draft?.from) {
-      const start = toLocalISODate(draft.from);
-      const end = toLocalISODate(draft.to ?? draft.from);
+      const start = toISO(draft.from);
+      const end = toISO(draft.to ?? draft.from);
       onChange({ start, end });
     }
     setDraft(undefined);

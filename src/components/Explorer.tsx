@@ -4,7 +4,7 @@ import type { Food, Zone, Category } from "@/lib/types";
 import { VIEWS, type ViewId } from "@/lib/views";
 import { useFoods } from "@/lib/useFoods";
 import { useDateRangeBounds } from "@/lib/useDateRangeBounds";
-import { computeInitialRange, type DateRange } from "@/lib/dateRange";
+import { computeInitialRange, toISO, type DateRange } from "@/lib/dateRange";
 import { AppSidebar } from "./app-sidebar";
 import { SiteHeader } from "./site-header";
 import { SectionCards } from "./section-cards";
@@ -125,8 +125,8 @@ export function Explorer() {
     prevStart.setDate(prevStart.getDate() - durationDays);
 
     const params = new URLSearchParams({
-      startDate: prevStart.toISOString().slice(0, 10),
-      endDate: prevEnd.toISOString().slice(0, 10),
+      startDate: toISO(prevStart),
+      endDate: toISO(prevEnd),
       all: "true",
     });
 

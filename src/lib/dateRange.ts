@@ -1,8 +1,19 @@
+import { format } from "date-fns";
+
 export type DateRange = { start: string; end: string };
 export type DateBounds = { min: Date; max: Date };
 
+/**
+ * Format a Date as a local-timezone YYYY-MM-DD string.
+ *
+ * The previous implementation used `d.toISOString().slice(0, 10)`, which
+ * converts to UTC first. Every Date we serialize here is a *local-midnight*
+ * date (from `parseISO`, react-day-picker, or `setHours(0,0,0,0)`), so for
+ * any user at a positive UTC offset (UTC+1 and east) local midnight is the
+ * *previous* day in UTC and the serialized string was off by one. (#57)
+ */
 export function toISO(d: Date): string {
-  return d.toISOString().slice(0, 10);
+  return format(d, "yyyy-MM-dd");
 }
 
 export function todayDate(): Date {
