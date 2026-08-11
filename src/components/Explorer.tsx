@@ -17,6 +17,7 @@ import { ScatterView } from "./ScatterView";
 import { RankingView } from "./RankingView";
 import { ImportButton } from "./ImportButton";
 import { OnboardingModal } from "./OnboardingModal";
+import { highDensityCalories, highDensityCaloriesShare } from "@/lib/stats";
 import { dummyFoods } from "@/lib/dummyData";
 import { toast } from "sonner";
 import { DateRangePicker } from "./DateRangePicker";
@@ -98,7 +99,13 @@ export function Explorer() {
   const stats = useMemo(() => {
     const totalW = displayFoods.reduce((s, f) => s + f.totalWeight, 0);
     const totalCal = displayFoods.reduce((s, f) => s + f.totalCalories, 0);
-    return { count: displayFoods.length, avgDensity: totalW > 0 ? totalCal / totalW : 0 };
+    return {
+      count: displayFoods.length,
+      avgDensity: totalW > 0 ? totalCal / totalW : 0,
+      totalCalories: totalCal,
+      highDensityCalories: highDensityCalories(displayFoods),
+      highDensityPct: highDensityCaloriesShare(displayFoods),
+    };
   }, [displayFoods]);
 
   const PAGE_SIZE = 100;
@@ -107,10 +114,12 @@ export function Explorer() {
   const paged = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
   const [prevAvgDensity, setPrevAvgDensity] = useState<number | null>(null);
+  const [prevHighDensityPct, setPrevHighDensityPct] = useState<number | null>(null);
   const [prevAvgDensityLoading, setPrevAvgDensityLoading] = useState(false);
   useEffect(() => {
     if (!dateRange) {
       setPrevAvgDensity(null);
+      setPrevHighDensityPct(null);
       setPrevAvgDensityLoading(false);
       return;
     }
@@ -136,14 +145,22 @@ export function Explorer() {
       .then((d) => {
         if (d.error || !d.foods?.length) {
           setPrevAvgDensity(null);
+          setPrevHighDensityPct(null);
           return;
         }
-        const prevTotalW = d.foods.reduce((s: number, f: Food) => s + f.totalWeight, 0);
-        const prevTotalCal = d.foods.reduce((s: number, f: Food) => s + f.totalCalories, 0);
+        const prevFoods: Food[] = d.foods;
+        const prevTotalW = prevFoods.reduce((s, f) => s + f.totalWeight, 0);
+        const prevTotalCal = prevFoods.reduce((s, f) => s + f.totalCalories, 0);
         const prevAvg = prevTotalW > 0 ? prevTotalCal / prevTotalW : 0;
         setPrevAvgDensity(prevAvg > 0 ? prevAvg : null);
+        // No additional request: derive the previous-period high-density
+        // share from the same foods payload (#56 — Trend free).
+        setPrevHighDensityPct(highDensityCaloriesShare(prevFoods));
       })
-      .catch(() => setPrevAvgDensity(null))
+      .catch(() => {
+        setPrevAvgDensity(null);
+        setPrevHighDensityPct(null);
+      })
       .finally(() => setPrevAvgDensityLoading(false));
 
     return () => controller.abort();
@@ -153,6 +170,19 @@ export function Explorer() {
     if (prevAvgDensity === null || stats.avgDensity <= 0 || prevAvgDensity <= 0) return null;
     return ((stats.avgDensity - prevAvgDensity) / prevAvgDensity) * 100;
   }, [stats.avgDensity, prevAvgDensity]);
+
+  // Relative change in *share* of calories from high-density foods vs the
+  // previous period. Same data flow as `trend`, no extra request.
+  const highDensityTrend = useMemo(() => {
+    if (
+      prevHighDensityPct === null ||
+      prevHighDensityPct <= 0 ||
+      stats.highDensityPct <= 0
+    ) {
+      return null;
+    }
+    return ((stats.highDensityPct - prevHighDensityPct) / prevHighDensityPct) * 100;
+  }, [stats.highDensityPct, prevHighDensityPct]);
 
   const currentView = VIEWS.find((v) => v.id === view)!;
 
@@ -227,7 +257,12 @@ export function Explorer() {
                   {/* Stats cards — only in Explorer view */}
                   {view === "explorer" && (
                     <>
-                      <SectionCards stats={stats} trend={trend} />
+                      <SectionCards
+                      stats={stats}
+                      trend={trend}
+                      highDensityTrend={highDensityTrend}
+                      prevAvgDensityLoading={prevAvgDensityLoading}
+                    />
 
                       {/* Top foods calorie-share donut */}
                       <div className="px-4 lg:px-6">
