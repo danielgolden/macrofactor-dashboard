@@ -1,45 +1,45 @@
 "use client";
 
 import {
+  FlameIcon,
   GaugeIcon,
   LoaderCircleIcon,
   TrendingDownIcon,
   TrendingUpIcon,
-  TrophyIcon,
 } from "lucide-react";
 
 import { Card, CardAction, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { ZONE_META } from "@/lib/types";
 
 interface SectionCardsProps {
   stats: {
     count: number;
     avgDensity: number;
+    highDensityPct: number;
+    highDensityCalories: number;
+    totalCalories: number;
   };
   trend: number | null;
+  highDensityTrend: number | null;
   /** True while the background previous-period avg-density fetch is in flight. */
   prevAvgDensityLoading?: boolean;
 }
 
-export function SectionCards({ stats, trend, prevAvgDensityLoading = false }: SectionCardsProps) {
+export function SectionCards({
+  stats,
+  trend,
+  highDensityTrend,
+  prevAvgDensityLoading = false,
+}: SectionCardsProps) {
   const trendUp = trend !== null && trend > 0;
   const trendDown = trend !== null && trend < 0;
+  const highUp = highDensityTrend !== null && highDensityTrend > 0;
+  const highDown = highDensityTrend !== null && highDensityTrend < 0;
 
+  // The grid switches back to a 2-column layout now that the "Total Foods"
+  // card has been removed in #68's follow-up. See issue #56 / #68.
   return (
-    <div className="grid grid-cols-1 gap-4 px-4 sm:px-6 lg:grid-cols-2 lg:px-6">
-      <Card>
-        <CardHeader>
-          <CardDescription>Total Foods</CardDescription>
-          <CardTitle className="text-2xl font-semibold tabular-nums">
-            {stats.count}
-          </CardTitle>
-          <CardAction>
-            <TrophyIcon className="size-4 text-muted-foreground" />
-          </CardAction>
-        </CardHeader>
-        <CardFooter className="text-xs text-muted-foreground">
-          in the selected period
-        </CardFooter>
-      </Card>
+    <div className="grid grid-cols-1 gap-4 px-4 sm:grid-cols-2 sm:px-6 lg:px-6">
 
       <Card>
         <CardHeader>
@@ -80,6 +80,59 @@ export function SectionCards({ stats, trend, prevAvgDensityLoading = false }: Se
             </span>
           )}
         </CardFooter>
+      </Card>
+
+      {/* Card (#56, updated #62): share of *calories* (not food count) coming
+       * from high-calorie foods (>4 kcal/g). The horizontal meter was
+       * removed in #62's follow-up — reviewer found it visually heavy
+       * next to the donut directly below. The footer alone communicates
+       * the share. Reads from `displayFoods` so it is unaffected by the
+       * active search/zone/category filter, matching the other two cards. */}
+      <Card>
+        <CardHeader>
+          <CardDescription>Calories from high-calorie foods</CardDescription>
+          <CardTitle className="text-2xl font-semibold tabular-nums">
+            {stats.totalCalories > 0 ? `${stats.highDensityPct.toFixed(1)}%` : "—"}
+          </CardTitle>
+          <CardAction>
+            <FlameIcon className="size-4 text-muted-foreground" />
+          </CardAction>
+        </CardHeader>
+        {stats.totalCalories > 0 ? (
+          <CardFooter className="flex items-center justify-between gap-2 text-xs">
+            <span className="text-muted-foreground">
+              {Math.round(stats.highDensityCalories).toLocaleString()} of{" "}
+              {Math.round(stats.totalCalories).toLocaleString()} kcal · {ZONE_META.high.range}
+            </span>
+            {prevAvgDensityLoading ? (
+              <span className="flex items-center gap-1.5 text-muted-foreground">
+                <LoaderCircleIcon className="size-3 animate-spin" />
+              </span>
+            ) : highDensityTrend === null ? null : (
+              <span
+                className={
+                  highUp
+                    ? "flex items-center gap-1 font-medium text-emerald-600 dark:text-emerald-400"
+                    : highDown
+                      ? "flex items-center gap-1 font-medium text-red-600 dark:text-red-400"
+                      : "flex items-center gap-1 text-muted-foreground"
+                }
+              >
+                {highUp ? (
+                  <TrendingUpIcon className="size-3" />
+                ) : highDown ? (
+                  <TrendingDownIcon className="size-3" />
+                ) : null}
+                {highDensityTrend > 0 ? "+" : ""}
+                {highDensityTrend.toFixed(1)}%
+              </span>
+            )}
+          </CardFooter>
+        ) : (
+          <CardFooter className="text-xs text-muted-foreground">
+            no calories in this period
+          </CardFooter>
+        )}
       </Card>
     </div>
   );
