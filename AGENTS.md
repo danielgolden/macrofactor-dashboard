@@ -1,7 +1,7 @@
 <!-- stripe-projects-cli managed:agents-md:start -->
 ## Stripe Projects CLI
 
-This repository is initialized for the Stripe project "macrofactor-explorer".
+This repository is initialized for the Stripe project "restructure-explorer".
 
 ## Tools used
 

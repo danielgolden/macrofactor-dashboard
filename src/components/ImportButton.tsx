@@ -26,8 +26,8 @@ export function ImportButton({ onImported, size = "sm", className }: Props) {
         method: "POST",
         body: formData,
       });
-      const data = await res.json();
-      if (data.error) throw new Error(data.error);
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || data.error) throw new Error(data.error || `Import failed (HTTP ${res.status})`);
       onImported(data.foods);
       setStatus("done");
       setTimeout(() => setStatus("idle"), 3000);

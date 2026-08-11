@@ -1,9 +1,10 @@
 "use client";
 
 import { useMemo, type MouseEvent } from "react";
+import { PieChartIcon } from "lucide-react";
 import { Cell, Label, Pie, PieChart } from "recharts";
 
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader } from "@/components/ui/card";
 import {
   ChartContainer,
   ChartTooltip,
@@ -28,6 +29,10 @@ const PALETTE = [
 ];
 
 const OTHER_COLOR = "var(--muted-foreground)";
+
+// Max legend rows that fit in a single column beside the 220px donut
+// (~22px per row: 16px text + 6px gap).
+const LEGEND_MAX_ROWS = 10;
 
 interface Segment {
   key: string;
@@ -104,14 +109,13 @@ export function CalorieShareDonut({ foods, onSelect }: Props) {
 
   return (
     <Card>
+      <CardHeader>
+        <CardDescription>Top foods by calories</CardDescription>
+        <CardAction>
+          <PieChartIcon className="size-4 text-muted-foreground" />
+        </CardAction>
+      </CardHeader>
       <CardContent className="pt-4">
-        <div className="mb-2 flex items-baseline justify-between gap-2">
-          <h2 className="text-sm font-semibold">Top foods by calories</h2>
-          <span className="text-xs text-muted-foreground">
-            {topCount} of {foods.length} foods · {Math.round(grandTotal).toLocaleString()} kcal total
-          </span>
-        </div>
-
         <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-center">
           {/* Donut chart */}
           <ChartContainer
@@ -159,10 +163,10 @@ export function CalorieShareDonut({ foods, onSelect }: Props) {
             </PieChart>
           </ChartContainer>
 
-          {/* Legend */}
+          {/* Legend — single column, capped to what fits beside the 220px donut */}
           <TooltipProvider delay={200}>
-            <div className="grid w-full grid-cols-1 gap-x-4 gap-y-1.5 sm:grid-cols-2">
-              {segments.map((s) => (
+            <div className="grid w-full grid-cols-1 gap-y-1.5">
+              {segments.slice(0, LEGEND_MAX_ROWS).map((s) => (
                 <Tooltip key={s.key}>
                   <TooltipTrigger
                     render={
@@ -201,6 +205,9 @@ export function CalorieShareDonut({ foods, onSelect }: Props) {
           </TooltipProvider>
         </div>
       </CardContent>
+      <CardFooter className="text-xs text-muted-foreground">
+        {topCount} of {foods.length} foods · share of total calories in period
+      </CardFooter>
     </Card>
   );
 }
