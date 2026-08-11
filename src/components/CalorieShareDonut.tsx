@@ -162,15 +162,15 @@ export function CalorieShareDonut({ foods, onSelect }: Props) {
             </div>
           </div>
 
-          {/* Legend. Each row is `items-start` and the swatch is `mt-[3px]`
-           * so a wrapped name (very common: MacroFactor lists "Brand ·
-           * Preparation") does not drag the swatch off the first line of
-           * text. The name spans the available width with `min-w-0 flex-1`,
-           * the percentage column is `shrink-0 tabular-nums`, and names
-           * with `break-words` instead of a hard truncate at 140px, so
-           * long names wrap onto two lines on narrow columns and never
-           * lose characters unnecessarily. The hover <Tooltip> remains
-           * for the rare wide legend where wrap still doesn't fit. */}
+          {/* Legend. Each row is `items-start` and the swatch is fixed-size
+           * so it doesn't reflow when the name truncates. The name is
+           * clamped to a single visual line (`truncate` — white-space:
+           * nowrap + overflow:hidden + text-overflow:ellipsis) and
+           * spans the available column width via `min-w-0` inside a
+           * min-content grid cell. The hover <Tooltip> remains so very
+           * long MacroFactor names ("Brand · Preparation, raw") can still
+           * be read in full on hover. Matches the linked Brian Tree
+           * single-line truncation pattern. */}
           <TooltipProvider delay={200}>
             <div className="grid w-full grid-cols-1 items-start gap-x-4 gap-y-1.5 sm:grid-cols-2">
               {segments.map((s) => (
@@ -182,13 +182,13 @@ export function CalorieShareDonut({ foods, onSelect }: Props) {
                           e.stopPropagation();
                           if (s.food) onSelect(s.food);
                         }}
-                        className={`flex w-full items-start gap-1.5 text-left ${s.food ? "cursor-pointer" : "cursor-default"}`}
+                        className={`flex items-center gap-1.5 ${s.food ? "cursor-pointer" : "cursor-default"}`}
                       >
                         <span
-                          className="mt-[3px] h-2.5 w-2.5 shrink-0 rounded-[2px]"
+                          className="h-2.5 w-2.5 shrink-0 rounded-[2px]"
                           style={{ backgroundColor: s.fill }}
                         />
-                        <span className="min-w-0 flex-1 break-words text-xs text-muted-foreground">
+                        <span className="min-w-0 flex-1 truncate text-xs text-muted-foreground">
                           {s.name}
                         </span>
                         <span className="shrink-0 text-xs font-medium tabular-nums">
