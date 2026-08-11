@@ -182,7 +182,7 @@ export function CalorieShareDonut({ foods, onSelect }: Props) {
                           e.stopPropagation();
                           if (s.food) onSelect(s.food);
                         }}
-                        className={`flex items-center gap-1.5 ${s.food ? "cursor-pointer" : "cursor-default"}`}
+                        className={`flex w-full items-center gap-1.5 text-left ${s.food ? "cursor-pointer" : "cursor-default"}`}
                       >
                         <span
                           className="h-2.5 w-2.5 shrink-0 rounded-[2px]"
