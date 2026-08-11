@@ -143,6 +143,7 @@ export function Explorer() {
     fetch(`/api/foods?${params}`, { signal: controller.signal })
       .then((r) => r.json())
       .then((d) => {
+        if (controller.signal.aborted) return;
         if (d.error || !d.foods?.length) {
           setPrevAvgDensity(null);
           setPrevHighDensityPct(null);
@@ -158,10 +159,14 @@ export function Explorer() {
         setPrevHighDensityPct(highDensityCaloriesShare(prevFoods));
       })
       .catch(() => {
+        if (controller.signal.aborted) return;
         setPrevAvgDensity(null);
         setPrevHighDensityPct(null);
       })
-      .finally(() => setPrevAvgDensityLoading(false));
+      .finally(() => {
+        if (controller.signal.aborted) return;
+        setPrevAvgDensityLoading(false);
+      });
 
     return () => controller.abort();
   }, [dateRange]);
