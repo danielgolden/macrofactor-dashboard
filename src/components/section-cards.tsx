@@ -6,7 +6,6 @@ import {
   LoaderCircleIcon,
   TrendingDownIcon,
   TrendingUpIcon,
-  TrophyIcon,
 } from "lucide-react";
 
 import { Card, CardAction, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -37,24 +36,10 @@ export function SectionCards({
   const highUp = highDensityTrend !== null && highDensityTrend > 0;
   const highDown = highDensityTrend !== null && highDensityTrend < 0;
 
-  // The grid switches from `lg:grid-cols-2` to `sm:grid-cols-2 lg:grid-cols-3`
-  // now that we have three cards. See issue #56.
+  // The grid switches back to a 2-column layout now that the "Total Foods"
+  // card has been removed in #68's follow-up. See issue #56 / #68.
   return (
-    <div className="grid grid-cols-1 gap-4 px-4 sm:grid-cols-2 sm:px-6 lg:grid-cols-3 lg:px-6">
-      <Card>
-        <CardHeader>
-          <CardDescription>Total Foods</CardDescription>
-          <CardTitle className="text-2xl font-semibold tabular-nums">
-            {stats.count}
-          </CardTitle>
-          <CardAction>
-            <TrophyIcon className="size-4 text-muted-foreground" />
-          </CardAction>
-        </CardHeader>
-        <CardFooter className="text-xs text-muted-foreground">
-          in the selected period
-        </CardFooter>
-      </Card>
+    <div className="grid grid-cols-1 gap-4 px-4 sm:grid-cols-2 sm:px-6 lg:px-6">
 
       <Card>
         <CardHeader>
