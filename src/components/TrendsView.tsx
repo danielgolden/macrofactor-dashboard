@@ -52,11 +52,16 @@ const macroConfig = {
   carbPct: { label: "Carbs %", color: MACRO_COLORS.carbs },
 } satisfies ChartConfig;
 
-const macroDeltaConfig = {
-  proteinDelta: { label: "Protein", color: MACRO_COLORS.protein },
-  fatDelta: { label: "Fat", color: MACRO_COLORS.fat },
-  carbDelta: { label: "Carbs", color: MACRO_COLORS.carbs },
-} satisfies ChartConfig;
+function dominantMacro(w: WeekBucket): { macro: "protein" | "fat" | "carbs"; pct: number; cal: number } {
+  const pCal = w.proteinG * 4;
+  const fCal = w.fatG * 9;
+  const cCal = w.carbsG * 4;
+  if (pCal >= fCal && pCal >= cCal) return { macro: "protein", pct: w.proteinPct, cal: pCal };
+  if (fCal >= pCal && fCal >= cCal) return { macro: "fat", pct: w.fatPct, cal: fCal };
+  return { macro: "carbs", pct: w.carbPct, cal: cCal };
+}
+
+const MACRO_LABEL: Record<string, string> = { protein: "Protein", fat: "Fat", carbs: "Carbs" };
 
 function DeltaBadge({ delta, suffix }: { delta: number; suffix: string }) {
   if (delta === 0) {
@@ -218,17 +223,11 @@ export function TrendsView() {
     [latestFoodWeek, prevFoodWeek]
   );
 
-  const macroDeltaData = useMemo(() => {
-    const recent = nonZeroWeeks.slice(-8);
-    return recent.map((w, i) => {
-      const prevW = i > 0 ? recent[i - 1] : null;
-      return {
-        weekLabel: w.weekLabel,
-        proteinDelta: prevW ? Math.round(w.proteinG * 4 - prevW.proteinG * 4) : 0,
-        fatDelta: prevW ? Math.round(w.fatG * 9 - prevW.fatG * 9) : 0,
-        carbDelta: prevW ? Math.round(w.carbsG * 4 - prevW.carbsG * 4) : 0,
-      };
-    });
+  const dominantHistory = useMemo(() => {
+    return nonZeroWeeks.slice(-8).map((w) => ({
+      weekLabel: w.weekLabel,
+      ...dominantMacro(w),
+    }));
   }, [nonZeroWeeks]);
 
   const maxDelta = useMemo(() => {
@@ -403,36 +402,36 @@ export function TrendsView() {
         </Card>
       </section>
 
-      {/* Section: macro calorie deltas */}
+      {/* Section: dominant macro */}
       <section className="flex flex-col gap-2">
         <div>
-          <h2 className="text-lg font-semibold">Macro calorie deltas by week</h2>
+          <h2 className="text-lg font-semibold">Dominant macro by week</h2>
           <p className="text-sm text-muted-foreground">
-            Week-over-week change in calories from each macro — compare how protein, fat, and carbs shifted versus previous weeks.
+            Which macro supplied the most calories each recent week.
           </p>
         </div>
         <Card>
           <CardContent className="pt-4">
-            <ChartContainer config={macroDeltaConfig} className="w-full" style={{ height: 280 }}>
-              <BarChart data={macroDeltaData} margin={{ top: 8, right: 16, bottom: 4, left: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="weekLabel" tickLine={false} axisLine={false} tick={{ fontSize: 11 }} />
-                <YAxis
-                  type="number"
-                  tickLine={false}
-                  axisLine={false}
-                  tick={{ fontSize: 11 }}
-                  width={50}
-                  tickFormatter={(v: number) => `${v > 0 ? "+" : ""}${v}`}
-                />
-                <ReferenceLine y={0} stroke="var(--border)" />
-                <ChartTooltip content={<ChartTooltipContent />} />
-                <ChartLegend content={<ChartLegendContent />} />
-                <Bar dataKey="proteinDelta" fill="var(--color-proteinDelta)" />
-                <Bar dataKey="fatDelta" fill="var(--color-fatDelta)" />
-                <Bar dataKey="carbDelta" fill="var(--color-carbDelta)" />
-              </BarChart>
-            </ChartContainer>
+            <div className="flex flex-wrap gap-2">
+              {dominantHistory.map((d) => (
+                <div
+                  key={d.weekLabel}
+                  className="flex flex-col items-center gap-1 rounded-md border px-3 py-2"
+                  style={{ borderColor: MACRO_COLORS[d.macro] + "55" }}
+                >
+                  <span className="text-xs text-muted-foreground">{d.weekLabel}</span>
+                  <span
+                    className="text-sm font-semibold"
+                    style={{ color: MACRO_COLORS[d.macro] }}
+                  >
+                    {MACRO_LABEL[d.macro]}
+                  </span>
+                  <span className="text-xs text-muted-foreground tabular-nums">
+                    {d.pct.toFixed(0)}% · {d.cal.toFixed(0)} kcal
+                  </span>
+                </div>
+              ))}
+            </div>
           </CardContent>
         </Card>
       </section>
