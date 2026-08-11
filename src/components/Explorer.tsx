@@ -258,11 +258,11 @@ export function Explorer() {
                   {view === "explorer" && (
                     <>
                       <SectionCards
-                      stats={stats}
-                      trend={trend}
-                      highDensityTrend={highDensityTrend}
-                      prevAvgDensityLoading={prevAvgDensityLoading}
-                    />
+                        stats={stats}
+                        trend={trend}
+                        highDensityTrend={highDensityTrend}
+                        prevAvgDensityLoading={prevAvgDensityLoading}
+                      />
 
                       {/* Top foods calorie-share donut */}
                       <div className="px-4 lg:px-6">
