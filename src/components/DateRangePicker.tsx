@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { CalendarIcon } from "lucide-react";
 import { format, parseISO } from "date-fns";
 
@@ -31,6 +31,20 @@ export function DateRangePicker({ value, onChange, bounds }: Props) {
   const [open, setOpen] = useState(false);
   const isMobile = useIsMobile();
 
+  // Local month state: initialized from the selected start date so the
+  // calendar opens on the right month, but free to navigate via the
+  // prev/next buttons. Previously `month={selected?.from}` was passed
+  // directly, which forced the visible month back on every render and made
+  // the prev/next nav buttons effectively no-ops.
+  const [calendarMonth, setCalendarMonth] = useState<Date | undefined>(() =>
+    value ? parseISO(value.start) : undefined,
+  );
+
+  // Pending range: updated on every calendar click, but only committed via
+  // `onChange` when the popover closes (blur). This lets the user pick a
+  // full start+end range without each click triggering a data load.
+  const [pendingRange, setPendingRange] = useState<DateRange | null>(null);
+
   const activeLabel = (() => {
     if (!value) return "";
     for (const p of PRESETS) {
@@ -44,18 +58,51 @@ export function DateRangePicker({ value, onChange, bounds }: Props) {
     ? { from: parseISO(value.start), to: parseISO(value.end) }
     : undefined;
 
+  // Sync the visible month when the value changes externally (e.g. a preset
+  // is clicked or the initial range is computed). Local navigation is
+  // otherwise left untouched.
+  useEffect(() => {
+    if (selected?.from) setCalendarMonth(selected.from);
+  }, [selected?.from]);
+
+  // While the popover is open, reflect the in-progress selection; otherwise
+  // show the committed value.
+  const displayRange = open && pendingRange ? pendingRange : value;
+  const calendarSelected =
+    open && pendingRange
+      ? { from: parseISO(pendingRange.start), to: parseISO(pendingRange.end) }
+      : selected;
+
   const handleSelect = (range: { from?: Date; to?: Date } | undefined) => {
     if (!range?.from) {
-      onChange(null);
+      setPendingRange(null);
       return;
     }
     const start = toISO(range.from);
     const end = toISO(range.to ?? range.from);
-    onChange({ start, end });
+    setPendingRange({ start, end });
   };
 
-  const label = value
-    ? `${format(parseISO(value.start), "MMM d, yyyy")} – ${format(parseISO(value.end), "MMM d, yyyy")}`
+  // Commit the pending range only when the popover closes so that clicking
+  // individual dates doesn't trigger an immediate data load.
+  const handleOpenChange = (nextOpen: boolean) => {
+    setOpen(nextOpen);
+    if (!nextOpen && pendingRange) {
+      onChange(pendingRange);
+      setPendingRange(null);
+    }
+  };
+
+  // Presets are a one-click action and should commit immediately; clear any
+  // pending calendar selection so a stale pending range can't overwrite a
+  // preset that was clicked while the popover happened to be open.
+  const selectPreset = (preset: (typeof PRESETS)[number]) => {
+    onChange(preset.range());
+    setPendingRange(null);
+  };
+
+  const label = displayRange
+    ? `${format(parseISO(displayRange.start), "MMM d, yyyy")} – ${format(parseISO(displayRange.end), "MMM d, yyyy")}`
     : "Select dates";
 
   return (
@@ -73,13 +120,13 @@ export function DateRangePicker({ value, onChange, bounds }: Props) {
             // Re-select the previously active preset so the toggle stays on.
             if (activeLabel) {
               const preset = PRESETS.find((p) => p.label === activeLabel);
-              if (preset) onChange(preset.range());
+              if (preset) selectPreset(preset);
             }
             return;
           }
           const val = vals[0];
           const preset = PRESETS.find((p) => p.label === val);
-          if (preset) onChange(preset.range());
+          if (preset) selectPreset(preset);
         }}
       >
         {PRESETS.map((p) => (
@@ -94,7 +141,7 @@ export function DateRangePicker({ value, onChange, bounds }: Props) {
         ))}
       </ToggleGroup>
 
-      <Popover open={open} onOpenChange={setOpen}>
+      <Popover open={open} onOpenChange={handleOpenChange}>
         <PopoverTrigger
           render={
             <Button
@@ -110,10 +157,11 @@ export function DateRangePicker({ value, onChange, bounds }: Props) {
         <PopoverContent align="start" className="w-auto max-w-[calc(100vw-1.5rem)] p-0">
           <Calendar
             mode="range"
-            selected={selected}
+            selected={calendarSelected}
             onSelect={handleSelect}
             numberOfMonths={isMobile ? 1 : 2}
-            month={selected?.from}
+            month={calendarMonth}
+            onMonthChange={setCalendarMonth}
             disabled={bounds ? { before: bounds.min, after: bounds.max } : undefined}
           />
         </PopoverContent>
