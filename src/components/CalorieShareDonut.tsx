@@ -127,7 +127,6 @@ export function CalorieShareDonut({ foods, onSelect }: Props) {
                 nameKey="name"
                 innerRadius={62}
                 outerRadius={88}
-                paddingAngle={2}
                 stroke="none"
                 onClick={(data: unknown) => {
                   const seg = (data as unknown as { payload?: Segment }).payload;
