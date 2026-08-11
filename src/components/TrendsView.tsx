@@ -52,10 +52,10 @@ const macroConfig = {
   carbPct: { label: "Carbs %", color: MACRO_COLORS.carbs },
 } satisfies ChartConfig;
 
-const dominantBarConfig = {
-  proteinCal: { label: "Protein", color: MACRO_COLORS.protein },
-  fatCal: { label: "Fat", color: MACRO_COLORS.fat },
-  carbCal: { label: "Carbs", color: MACRO_COLORS.carbs },
+const macroDeltaConfig = {
+  proteinDelta: { label: "Protein", color: MACRO_COLORS.protein },
+  fatDelta: { label: "Fat", color: MACRO_COLORS.fat },
+  carbDelta: { label: "Carbs", color: MACRO_COLORS.carbs },
 } satisfies ChartConfig;
 
 function DeltaBadge({ delta, suffix }: { delta: number; suffix: string }) {
@@ -218,13 +218,17 @@ export function TrendsView() {
     [latestFoodWeek, prevFoodWeek]
   );
 
-  const dominantChartData = useMemo(() => {
-    return nonZeroWeeks.slice(-8).map((w) => ({
-      weekLabel: w.weekLabel,
-      proteinCal: Math.round(w.proteinG * 4),
-      fatCal: Math.round(w.fatG * 9),
-      carbCal: Math.round(w.carbsG * 4),
-    }));
+  const macroDeltaData = useMemo(() => {
+    const recent = nonZeroWeeks.slice(-8);
+    return recent.map((w, i) => {
+      const prevW = i > 0 ? recent[i - 1] : null;
+      return {
+        weekLabel: w.weekLabel,
+        proteinDelta: prevW ? Math.round(w.proteinG * 4 - prevW.proteinG * 4) : 0,
+        fatDelta: prevW ? Math.round(w.fatG * 9 - prevW.fatG * 9) : 0,
+        carbDelta: prevW ? Math.round(w.carbsG * 4 - prevW.carbsG * 4) : 0,
+      };
+    });
   }, [nonZeroWeeks]);
 
   const maxDelta = useMemo(() => {
@@ -399,26 +403,34 @@ export function TrendsView() {
         </Card>
       </section>
 
-      {/* Section: dominant macro */}
+      {/* Section: macro calorie deltas */}
       <section className="flex flex-col gap-2">
         <div>
-          <h2 className="text-lg font-semibold">Dominant macro by week</h2>
+          <h2 className="text-lg font-semibold">Macro calorie deltas by week</h2>
           <p className="text-sm text-muted-foreground">
-            Which macro supplied the most calories each recent week.
+            Week-over-week change in calories from each macro — compare how protein, fat, and carbs shifted versus previous weeks.
           </p>
         </div>
         <Card>
           <CardContent className="pt-4">
-            <ChartContainer config={dominantBarConfig} className="w-full" style={{ height: 280 }}>
-              <BarChart data={dominantChartData} layout="vertical" margin={{ top: 8, right: 16, bottom: 4, left: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" horizontal={false} />
-                <XAxis type="number" tickLine={false} axisLine={false} tick={{ fontSize: 11 }} />
-                <YAxis type="category" dataKey="weekLabel" tickLine={false} axisLine={false} tick={{ fontSize: 11 }} width={80} />
+            <ChartContainer config={macroDeltaConfig} className="w-full" style={{ height: 280 }}>
+              <BarChart data={macroDeltaData} margin={{ top: 8, right: 16, bottom: 4, left: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="weekLabel" tickLine={false} axisLine={false} tick={{ fontSize: 11 }} />
+                <YAxis
+                  type="number"
+                  tickLine={false}
+                  axisLine={false}
+                  tick={{ fontSize: 11 }}
+                  width={50}
+                  tickFormatter={(v: number) => `${v > 0 ? "+" : ""}${v}`}
+                />
+                <ReferenceLine y={0} stroke="var(--border)" />
                 <ChartTooltip content={<ChartTooltipContent />} />
                 <ChartLegend content={<ChartLegendContent />} />
-                <Bar dataKey="proteinCal" stackId="a" fill="var(--color-proteinCal)" />
-                <Bar dataKey="fatCal" stackId="a" fill="var(--color-fatCal)" />
-                <Bar dataKey="carbCal" stackId="a" fill="var(--color-carbCal)" />
+                <Bar dataKey="proteinDelta" fill="var(--color-proteinDelta)" />
+                <Bar dataKey="fatDelta" fill="var(--color-fatDelta)" />
+                <Bar dataKey="carbDelta" fill="var(--color-carbDelta)" />
               </BarChart>
             </ChartContainer>
           </CardContent>
