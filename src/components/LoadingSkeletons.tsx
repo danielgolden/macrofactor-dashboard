@@ -1,7 +1,5 @@
 "use client";
 
-import { LoaderCircleIcon } from "lucide-react";
-
 import {
   Card,
   CardContent,
@@ -11,19 +9,6 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 
 /**
- * Small spinner + status text. Rendered at the top of each skeleton block so
- * users see both motion (spinner) and context (what is loading).
- */
-export function LoadingStatus({ text }: { text: string }) {
-  return (
-    <div className="flex items-center gap-2 px-4 text-sm text-muted-foreground lg:px-6">
-      <LoaderCircleIcon className="size-4 animate-spin" />
-      <span>{text}</span>
-    </div>
-  );
-}
-
-/**
  * Skeleton mirroring the Explorer dashboard layout: date picker + stat cards
  * (SectionCards) + calorie-share donut (CalorieShareDonut) + controls + foods
  * table (ExplorerView).
@@ -31,8 +16,6 @@ export function LoadingStatus({ text }: { text: string }) {
 export function ExplorerSkeleton() {
   return (
     <div className="flex flex-col gap-4 md:gap-6">
-      <LoadingStatus text="Loading your foods…" />
-
       {/* Date range picker */}
       <div className="px-4 lg:px-6">
         <Skeleton className="h-9 w-full max-w-sm" />
@@ -111,8 +94,6 @@ export function ExplorerSkeleton() {
 export function ScatterSkeleton() {
   return (
     <div className="flex flex-col gap-4 md:gap-6">
-      <LoadingStatus text="Loading your foods…" />
-
       {/* Date range picker */}
       <div className="px-4 lg:px-6">
         <Skeleton className="h-9 w-full max-w-sm" />
@@ -199,8 +180,6 @@ export function ScatterSkeleton() {
 export function RankingSkeleton() {
   return (
     <div className="flex flex-col gap-4 md:gap-6">
-      <LoadingStatus text="Loading your foods…" />
-
       {/* Date range picker */}
       <div className="px-4 lg:px-6">
         <Skeleton className="h-9 w-full max-w-sm" />
@@ -272,8 +251,6 @@ export function RankingSkeleton() {
 export function TreemapSkeleton() {
   return (
     <div className="flex flex-col gap-4 md:gap-6">
-      <LoadingStatus text="Loading your foods…" />
-
       {/* Date range picker */}
       <div className="px-4 lg:px-6">
         <Skeleton className="h-9 w-full max-w-sm" />
@@ -364,8 +341,6 @@ export function TreemapSkeleton() {
 export function TrendsSkeleton() {
   return (
     <div className="flex flex-col gap-6">
-      <LoadingStatus text="Loading weekly trends…" />
-
       {/* Average density area chart */}
       <section className="flex flex-col gap-2">
         <div>
