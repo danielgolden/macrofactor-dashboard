@@ -58,12 +58,6 @@ const dominantBarConfig = {
   carbCal: { label: "Carbs", color: MACRO_COLORS.carbs },
 } satisfies ChartConfig;
 
-const macroDeltaConfig = {
-  proteinDelta: { label: "Protein", color: MACRO_COLORS.protein },
-  fatDelta: { label: "Fat", color: MACRO_COLORS.fat },
-  carbDelta: { label: "Carbs", color: MACRO_COLORS.carbs },
-} satisfies ChartConfig;
-
 function DeltaBadge({ delta, suffix }: { delta: number; suffix: string }) {
   if (delta === 0) {
     return (
@@ -143,16 +137,27 @@ function findFoodMovers(
   return { gainers, losers };
 }
 
-function FoodMoverRow({ name, delta }: { name: string; delta: number }) {
+function FoodMoverRow({ name, delta, maxDelta }: { name: string; delta: number; maxDelta: number }) {
   const up = delta > 0;
+  const pct = maxDelta > 0 ? Math.min(100, (Math.abs(delta) / maxDelta) * 100) : 0;
   return (
-    <div className="flex items-center justify-between gap-2 py-1">
-      <span className="truncate text-xs">{name}</span>
+    <div className="flex items-center gap-2 py-1">
+      <span className="w-32 shrink-0 truncate text-xs text-muted-foreground">{name}</span>
+      <div className="relative h-4 flex-1 rounded-sm bg-muted/40">
+        <div
+          className={`absolute inset-y-0 rounded-sm ${up ? "left-1/2" : "right-1/2"}`}
+          style={{
+            width: `${pct / 2}%`,
+            backgroundColor: up ? MACRO_COLORS.protein : "#c0392b",
+          }}
+        />
+        <div className="absolute inset-y-0 left-1/2 w-px bg-border" />
+      </div>
       <span
-        className={`inline-flex shrink-0 items-center gap-0.5 text-xs tabular-nums ${up ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"}`}
+        className={`w-16 shrink-0 text-right text-xs tabular-nums ${up ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"}`}
       >
         {up ? "+" : ""}
-        {delta.toFixed(0)} kcal
+        {delta.toFixed(0)}
       </span>
     </div>
   );
@@ -222,18 +227,10 @@ export function TrendsView() {
     }));
   }, [nonZeroWeeks]);
 
-  const macroDeltaData = useMemo(() => {
-    const recent = nonZeroWeeks.slice(-8);
-    return recent.map((w, i) => {
-      const prevW = i > 0 ? recent[i - 1] : null;
-      return {
-        weekLabel: w.weekLabel,
-        proteinDelta: prevW ? Math.round(w.proteinG * 4 - prevW.proteinG * 4) : 0,
-        fatDelta: prevW ? Math.round(w.fatG * 9 - prevW.fatG * 9) : 0,
-        carbDelta: prevW ? Math.round(w.carbsG * 4 - prevW.carbsG * 4) : 0,
-      };
-    });
-  }, [nonZeroWeeks]);
+  const maxDelta = useMemo(() => {
+    const all = [...movers.gainers, ...movers.losers].map((m) => Math.abs(m.delta));
+    return all.length ? Math.max(...all) : 0;
+  }, [movers]);
 
   if (loading) {
     return <TrendsSkeleton />;
@@ -428,40 +425,15 @@ export function TrendsView() {
         </Card>
       </section>
 
-      {/* Section: macro delta + biggest movers + new/dropped */}
+      {/* Section: biggest movers + new/dropped */}
       {prev && (
         <section className="flex flex-col gap-2">
           <div>
             <h2 className="text-lg font-semibold">What changed this week</h2>
             <p className="text-sm text-muted-foreground">
-              Calorie changes by macro vs previous weeks, and food-level shifts vs {prev.weekLabel}.
+              Food-level calorie shifts vs {prev.weekLabel}.
             </p>
           </div>
-          <Card>
-            <CardContent className="pt-4">
-              <h3 className="mb-2 text-sm font-semibold">Macro calorie deltas by week</h3>
-              <ChartContainer config={macroDeltaConfig} className="w-full" style={{ height: 240 }}>
-                <BarChart data={macroDeltaData} margin={{ top: 8, right: 16, bottom: 4, left: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="weekLabel" tickLine={false} axisLine={false} tick={{ fontSize: 11 }} />
-                  <YAxis
-                    type="number"
-                    tickLine={false}
-                    axisLine={false}
-                    tick={{ fontSize: 11 }}
-                    width={50}
-                    tickFormatter={(v: number) => `${v > 0 ? "+" : ""}${v}`}
-                  />
-                  <ReferenceLine y={0} stroke="var(--border)" />
-                  <ChartTooltip content={<ChartTooltipContent />} />
-                  <ChartLegend content={<ChartLegendContent />} />
-                  <Bar dataKey="proteinDelta" fill="var(--color-proteinDelta)" />
-                  <Bar dataKey="fatDelta" fill="var(--color-fatDelta)" />
-                  <Bar dataKey="carbDelta" fill="var(--color-carbDelta)" />
-                </BarChart>
-              </ChartContainer>
-            </CardContent>
-          </Card>
           <div className="grid gap-3 md:grid-cols-2">
             <Card>
               <CardContent className="pt-4">
@@ -473,7 +445,7 @@ export function TrendsView() {
                 ) : (
                   <div className="divide-y divide-border/40">
                     {movers.gainers.map((m) => (
-                      <FoodMoverRow key={m.name} name={m.name} delta={m.delta} />
+                      <FoodMoverRow key={m.name} name={m.name} delta={m.delta} maxDelta={maxDelta} />
                     ))}
                   </div>
                 )}
@@ -489,45 +461,49 @@ export function TrendsView() {
                 ) : (
                   <div className="divide-y divide-border/40">
                     {movers.losers.map((m) => (
-                      <FoodMoverRow key={m.name} name={m.name} delta={m.delta} />
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="pt-4">
-                <h3 className="mb-2 text-sm font-semibold">✦ New this week</h3>
-                {newAndDropped.newFoods.length === 0 ? (
-                  <p className="py-4 text-xs text-muted-foreground">Nothing new.</p>
-                ) : (
-                  <div className="flex flex-wrap gap-1.5">
-                    {newAndDropped.newFoods.map((n) => (
-                      <span key={n} className="rounded-full bg-muted px-2 py-0.5 text-xs">
-                        {n}
-                      </span>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="pt-4">
-                <h3 className="mb-2 text-sm font-semibold">✦ Dropped this week</h3>
-                {newAndDropped.dropped.length === 0 ? (
-                  <p className="py-4 text-xs text-muted-foreground">Nothing dropped.</p>
-                ) : (
-                  <div className="flex flex-wrap gap-1.5">
-                    {newAndDropped.dropped.map((n) => (
-                      <span key={n} className="rounded-full bg-muted px-2 py-0.5 text-xs">
-                        {n}
-                      </span>
+                      <FoodMoverRow key={m.name} name={m.name} delta={m.delta} maxDelta={maxDelta} />
                     ))}
                   </div>
                 )}
               </CardContent>
             </Card>
           </div>
+          {(newAndDropped.newFoods.length > 0 || newAndDropped.dropped.length > 0) && (
+            <div className="grid gap-3 md:grid-cols-2">
+              <Card>
+                <CardContent className="pt-4">
+                  <h3 className="mb-2 text-sm font-semibold">✦ New this week</h3>
+                  {newAndDropped.newFoods.length === 0 ? (
+                    <p className="py-1 text-xs text-muted-foreground">Nothing new.</p>
+                  ) : (
+                    <div className="flex flex-wrap gap-1.5">
+                      {newAndDropped.newFoods.map((n) => (
+                        <span key={n} className="rounded-full bg-emerald-500/10 px-2 py-0.5 text-xs text-emerald-700 dark:text-emerald-300">
+                          {n}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="pt-4">
+                  <h3 className="mb-2 text-sm font-semibold">✦ Dropped this week</h3>
+                  {newAndDropped.dropped.length === 0 ? (
+                    <p className="py-1 text-xs text-muted-foreground">Nothing dropped.</p>
+                  ) : (
+                    <div className="flex flex-wrap gap-1.5">
+                      {newAndDropped.dropped.map((n) => (
+                        <span key={n} className="rounded-full bg-rose-500/10 px-2 py-0.5 text-xs text-rose-700 dark:text-rose-300">
+                          {n}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          )}
         </section>
       )}
     </div>
