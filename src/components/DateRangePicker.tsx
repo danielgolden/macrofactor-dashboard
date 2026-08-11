@@ -193,6 +193,14 @@ export function DateRangePicker({ value, onChange, bounds }: Props) {
             startMonth={bounds?.min}
             endMonth={bounds?.max}
             disabled={bounds ? { before: bounds.min, after: bounds.max } : undefined}
+            // resetOnSelect makes any click while the draft is already a
+            // *complete* range start a brand-new range (new from = click,
+            // to = undefined) rather than RDP's "addToRange" behavior — which
+            // always treats "click after from" as "extend to". Without this,
+            // changing the *start* of an existing range required the user to
+            // click a date before the current from, since click-after-from
+            // silently moved the *end* instead. See #43 review.
+            resetOnSelect
           />
         </PopoverContent>
       </Popover>

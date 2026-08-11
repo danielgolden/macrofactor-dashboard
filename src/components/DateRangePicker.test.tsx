@@ -159,4 +159,52 @@ describe("DateRangePicker", () => {
     const expected = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
     expect(expected).toBe("2025-08-15");
   });
+
+  it("clicking a new 'from' inside an open popover starts a brand-new range (regression guard for #43 review feedback)", async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    render(
+      <DateRangePicker
+        // Range is Jul 13 – Jul 16 2025.
+        value={{ start: "2025-07-13", end: "2025-07-16" }}
+        onChange={onChange}
+        bounds={bounds}
+      />,
+    );
+
+    // Open the popover.
+    await user.click(screen.getByRole("button", { name: /Jul/ }));
+
+    expect(
+      await screen.findByText(/July 2025/),
+    ).toBeInTheDocument();
+
+    // Clicking day 25 (also inside July) should set the draft to a new
+    // incomplete range — { from: 25, to: undefined } — and MUST NOT fire
+    // onChange (commit only on close). It also MUST NOT silently move the
+    // existing `to` from 16 → 25.
+    // react-day-picker attaches data-day="7/25/2025" to each day cell, so
+    // we look that up directly.
+    const day25 = document.querySelector<HTMLButtonElement>(
+      '[data-day="7/25/2025"]',
+    );
+    if (!day25) throw new Error("day 25 not found");
+    await user.click(day25);
+    expect(onChange).not.toHaveBeenCalled();
+
+    // Now clicking day 28 should complete the range as {from: 25, to: 28}
+    // — NOT extend the *old* range from {13, 16}.
+    const day28 = document.querySelector<HTMLButtonElement>(
+      '[data-day="7/28/2025"]',
+    );
+    if (!day28) throw new Error("day 28 not found");
+    await user.click(day28);
+    expect(onChange).not.toHaveBeenCalled();
+
+    // Close the popover; that's when commit happens.
+    await user.keyboard("{Escape}");
+    expect(onChange).toHaveBeenCalledTimes(1);
+    const arg = onChange.mock.calls[0][0];
+    expect(arg).toMatchObject({ start: "2025-07-25", end: "2025-07-28" });
+  });
 });
