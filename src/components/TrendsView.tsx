@@ -21,6 +21,7 @@ import {
   ChartLegendContent,
   ChartTooltip,
   ChartTooltipContent,
+  CHART_TOOLTIP_DEFAULTS,
   type ChartConfig,
 } from "@/components/ui/chart";
 import { Card, CardContent } from "@/components/ui/card";
@@ -293,7 +294,7 @@ export function TrendsView() {
                   tick={{ fontSize: 11 }}
                   width={40}
                 />
-                <ChartTooltip content={<ChartTooltipContent />} />
+                <ChartTooltip content={<ChartTooltipContent />} {...CHART_TOOLTIP_DEFAULTS} />
                 <ReferenceLine
                   y={latest.avgDensity}
                   stroke="var(--chart-1)"
@@ -391,7 +392,7 @@ export function TrendsView() {
                   width={40}
                   tickFormatter={(v: number) => `${v}%`}
                 />
-                <ChartTooltip content={<ChartTooltipContent />} />
+                <ChartTooltip content={<ChartTooltipContent />} {...CHART_TOOLTIP_DEFAULTS} />
                 <ChartLegend content={<ChartLegendContent />} />
                 <Line type="monotone" dataKey="proteinPct" stroke="var(--color-proteinPct)" strokeWidth={2} dot={false} connectNulls />
                 <Line type="monotone" dataKey="fatPct" stroke="var(--color-fatPct)" strokeWidth={2} dot={false} connectNulls />

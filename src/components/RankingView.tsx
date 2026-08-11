@@ -6,6 +6,7 @@ import { Bar, BarChart, CartesianGrid, Cell, XAxis, YAxis } from "recharts";
 import {
   ChartContainer,
   ChartTooltip,
+  CHART_TOOLTIP_DEFAULTS,
   type ChartConfig,
 } from "@/components/ui/chart";
 import type { Food } from "@/lib/types";
@@ -65,7 +66,7 @@ export function RankingView({ foods, onSelect }: { foods: Food[]; onSelect: (f: 
           interval={0}
           tick={{ fontSize: 11 }}
         />
-        <ChartTooltip content={<RankingTooltip />} cursor={{ fill: "var(--muted)", fillOpacity: 0.4 }} />
+        <ChartTooltip content={<RankingTooltip />} cursor={{ fill: "var(--muted)", fillOpacity: 0.4 }} {...CHART_TOOLTIP_DEFAULTS} />
         <Bar
           dataKey="totalCalories"
           radius={[0, 3, 3, 0]}

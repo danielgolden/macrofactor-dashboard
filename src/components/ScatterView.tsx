@@ -15,6 +15,7 @@ import {
 import {
   ChartContainer,
   ChartTooltip,
+  CHART_TOOLTIP_DEFAULTS,
   type ChartConfig,
 } from "@/components/ui/chart";
 import type { Food, Zone } from "@/lib/types";
@@ -97,7 +98,7 @@ export function ScatterView({ foods, onSelect }: { foods: Food[]; onSelect: (f: 
           />
           <ZAxis type="number" dataKey="timesEaten" range={[60, 400]} />
 
-          <ChartTooltip content={<ScatterTooltip />} cursor={{ strokeDasharray: "3 3" }} />
+          <ChartTooltip content={<ScatterTooltip />} cursor={{ strokeDasharray: "3 3" }} {...CHART_TOOLTIP_DEFAULTS} />
 
           {/* Quadrant dividers */}
           <ReferenceLine x={150} stroke="var(--muted-foreground)" strokeOpacity={0.4} strokeDasharray="5 3"

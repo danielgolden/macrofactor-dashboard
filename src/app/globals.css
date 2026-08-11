@@ -152,3 +152,9 @@
     cursor: not-allowed;
     }
 }
+/* Belt-and-braces: kill the recharts tooltip wrapper's transition so the
+ * tooltip appears in place even on charts that forget to spread
+ * CHART_TOOLTIP_DEFAULTS. See issue #47. */
+.recharts-tooltip-wrapper {
+  transition: none !important;
+}

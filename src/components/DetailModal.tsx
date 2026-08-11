@@ -4,7 +4,7 @@ import { PolarAngleAxis, PolarGrid, PolarRadiusAxis, Radar, RadarChart } from "r
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart";
+import { ChartContainer, ChartTooltip, ChartTooltipContent, CHART_TOOLTIP_DEFAULTS, type ChartConfig } from "@/components/ui/chart";
 import {
   Dialog,
   DialogContent,
@@ -97,7 +97,7 @@ export function DetailModal({ food, onClose, onCompare, inCompare }: Props) {
               <PolarGrid />
               <PolarAngleAxis dataKey="axis" tick={{ fontSize: 10 }} />
               <PolarRadiusAxis domain={[0, 100]} tick={false} axisLine={false} />
-              <ChartTooltip content={<ChartTooltipContent />} />
+              <ChartTooltip content={<ChartTooltipContent />} {...CHART_TOOLTIP_DEFAULTS} />
               <Radar
                 dataKey="value"
                 fill={catColor}

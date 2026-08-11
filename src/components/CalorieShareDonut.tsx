@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import {
   ChartContainer,
   ChartTooltip,
+  CHART_TOOLTIP_DEFAULTS,
   type ChartConfig,
 } from "@/components/ui/chart";
 import {
@@ -120,7 +121,7 @@ export function CalorieShareDonut({ foods, onSelect }: Props) {
             style={{ height: 220, width: "min(220px, 100%)" }}
           >
             <PieChart>
-              <ChartTooltip content={<DonutTooltip />} />
+              <ChartTooltip content={<DonutTooltip />} {...CHART_TOOLTIP_DEFAULTS} />
               <Pie
                 data={segments}
                 dataKey="calories"

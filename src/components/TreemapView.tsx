@@ -6,6 +6,7 @@ import { Treemap } from "recharts";
 import {
   ChartContainer,
   ChartTooltip,
+  CHART_TOOLTIP_DEFAULTS,
   type ChartConfig,
 } from "@/components/ui/chart";
 import type { Food, Category } from "@/lib/types";
@@ -141,7 +142,7 @@ export function TreemapView({ foods, onSelect }: { foods: Food[]; onSelect: (f: 
           content={<TreemapNode onSelect={onSelect} />}
           isAnimationActive={false}
         >
-          <ChartTooltip content={<TreemapTooltip total={total} />} />
+          <ChartTooltip content={<TreemapTooltip total={total} />} {...CHART_TOOLTIP_DEFAULTS} />
         </Treemap>
       </ChartContainer>
 
