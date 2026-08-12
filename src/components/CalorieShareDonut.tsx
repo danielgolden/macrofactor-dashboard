@@ -1,15 +1,8 @@
 "use client";
 
 import { useMemo, type MouseEvent } from "react";
-import { Cell, Pie, PieChart } from "recharts";
 
 import { Card, CardContent } from "@/components/ui/card";
-import {
-  ChartContainer,
-  ChartTooltip,
-  CHART_TOOLTIP_DEFAULTS,
-  type ChartConfig,
-} from "@/components/ui/chart";
 import {
   Tooltip,
   TooltipContent,
@@ -37,6 +30,8 @@ interface Segment {
   pct: number;
   fill: string;
   food?: Food;
+  startAngle: number;
+  endAngle: number;
 }
 
 interface Props {
@@ -44,29 +39,35 @@ interface Props {
   onSelect: (f: Food) => void;
 }
 
-const chartConfig = {
-  calories: { label: "Calories" },
-} satisfies ChartConfig;
+// Donut geometry. These mirror the previous recharts <Pie> sizing
+// (innerRadius=62, outerRadius=88) so the layout and the matching skeleton
+// (LoadingSkeletons.tsx -> size-[220px]) remain pixel-identical.
+const SIZE = 220;
+const CENTER = SIZE / 2;
+const MID_RADIUS = (62 + 88) / 2; // 75
+const STROKE_WIDTH = 88 - 62; // 26
+const GAP_DEG = 2; // recharts paddingAngle equivalent
 
-function DonutTooltip({
-  active,
-  payload,
-}: {
-  active?: boolean;
-  payload?: { payload: Segment }[];
-}) {
-  if (!active || !payload?.length) return null;
-  const s = payload[0].payload;
-  return (
-    <div className="grid min-w-44 gap-1 rounded-lg border border-border/50 bg-background px-2.5 py-1.5 text-xs shadow-xl">
-      <div className="font-medium">{s.name}</div>
-      <div className="text-muted-foreground">
-        {s.calories.toLocaleString(undefined, { maximumFractionDigits: 0 })} kcal
-      </div>
-      <div className="text-muted-foreground">{s.pct.toFixed(1)}% of total</div>
-      {s.food && <div className="text-muted-foreground/70">Click for details →</div>}
-    </div>
-  );
+function polarToCartesian(cx: number, cy: number, r: number, angleDeg: number) {
+  // angleDeg measured clockwise from 12 o'clock
+  const angleRad = ((angleDeg - 90) * Math.PI) / 180;
+  return {
+    x: cx + r * Math.cos(angleRad),
+    y: cy + r * Math.sin(angleRad),
+  };
+}
+
+function arcPath(
+  cx: number,
+  cy: number,
+  r: number,
+  startAngle: number,
+  endAngle: number,
+) {
+  const start = polarToCartesian(cx, cy, r, startAngle);
+  const end = polarToCartesian(cx, cy, r, endAngle);
+  const largeArc = endAngle - startAngle > 180 ? 1 : 0;
+  return `M ${start.x} ${start.y} A ${r} ${r} 0 ${largeArc} 1 ${end.x} ${end.y}`;
 }
 
 export function CalorieShareDonut({ foods, onSelect }: Props) {
@@ -77,7 +78,7 @@ export function CalorieShareDonut({ foods, onSelect }: Props) {
     const rest = sorted.slice(10);
     const restCal = rest.reduce((s, f) => s + f.totalCalories, 0);
 
-    const segs: Segment[] = top.map((f, i) => ({
+    const raw: { key: string; name: string; calories: number; pct: number; fill: string; food?: Food }[] = top.map((f, i) => ({
       key: f.name,
       name: f.name,
       calories: f.totalCalories,
@@ -87,7 +88,7 @@ export function CalorieShareDonut({ foods, onSelect }: Props) {
     }));
 
     if (rest.length > 0 && total > 0) {
-      segs.push({
+      raw.push({
         key: "__other__",
         name: `Other (${rest.length})`,
         calories: restCal,
@@ -95,6 +96,22 @@ export function CalorieShareDonut({ foods, onSelect }: Props) {
         fill: OTHER_COLOR,
       });
     }
+
+    // Lay segments end-to-end clockwise from 12 o'clock, reserving GAP_DEG
+    // of empty space after each one so neighbouring slices don't touch —
+    // matching the prior recharts paddingAngle={2} look.
+    let cursor = 0;
+    const segs: Segment[] = raw.map((s) => {
+      const deg = (s.pct / 100) * 360;
+      const arcDeg = Math.max(deg - GAP_DEG, 0);
+      const seg: Segment = {
+        ...s,
+        startAngle: cursor,
+        endAngle: cursor + arcDeg,
+      };
+      cursor += deg;
+      return seg;
+    });
 
     return { segments: segs, grandTotal: total, topCount: top.length };
   }, [foods]);
@@ -115,50 +132,59 @@ export function CalorieShareDonut({ foods, onSelect }: Props) {
 
         <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-center">
           {/* Donut chart. The center figure is an HTML overlay (sibling of
-           * ChartContainer) rather than an SVG <Label>, because earlier
-           * attempts at centering in SVG via dominant-baseline + em-relative
-           * dy drifted whenever type sizes or digit counts changed.
+           * the SVG) rather than an SVG <text>, because earlier attempts at
+           * centering in SVG via dominant-baseline + em-relative dy drifted
+           * whenever type sizes or digit counts changed.
            * `flex flex-col items-center justify-center` under a
            * `relative shrink-0` wrapper keeps the text concentric with the
            * ring at any font size. See issue #48. */}
           <div
             className="relative shrink-0"
-            style={{ height: 220, width: "min(220px, 100%)" }}
+            style={{ height: SIZE, width: `min(${SIZE}px, 100%)` }}
           >
-            <ChartContainer
-              config={chartConfig}
-              className="h-full w-full"
-            >
-              <PieChart>
-                <ChartTooltip
-                  content={<DonutTooltip />}
-                  {...CHART_TOOLTIP_DEFAULTS}
-                  // Lift the tooltip above the center-figure overlay below:
-                  // both are positioned with z-index:auto in the same
-                  // stacking context, so without this the overlay (later
-                  // in DOM) paints on top of the tooltip. See issue #48.
-                  wrapperStyle={{ zIndex: 50 }}
-                />
-                <Pie
-                  data={segments}
-                  dataKey="calories"
-                  nameKey="name"
-                  innerRadius={62}
-                  outerRadius={88}
-                  paddingAngle={2}
-                  stroke="none"
-                  onClick={(data: unknown) => {
-                    const seg = (data as unknown as { payload?: Segment }).payload;
-                    if (seg?.food) onSelect(seg.food);
-                  }}
-                  cursor="pointer"
-                >
-                  {segments.map((s) => (
-                    <Cell key={s.key} fill={s.fill} />
-                  ))}
-                </Pie>
-              </PieChart>
-            </ChartContainer>
+            <TooltipProvider delay={200}>
+              <svg
+                viewBox={`0 0 ${SIZE} ${SIZE}`}
+                className="h-full w-full"
+                role="img"
+                aria-label="Top foods by calorie share"
+              >
+                {segments.map((s) => {
+                  const interactive = Boolean(s.food);
+                  const d = arcPath(CENTER, CENTER, MID_RADIUS, s.startAngle, s.endAngle);
+                  return (
+                    <Tooltip key={s.key}>
+                      <TooltipTrigger
+                        render={
+                          <path
+                            d={d}
+                            fill="none"
+                            stroke={s.fill}
+                            strokeWidth={STROKE_WIDTH}
+                            strokeLinecap="butt"
+                            style={{ cursor: interactive ? "pointer" : "default" }}
+                            onClick={(e: MouseEvent) => {
+                              if (!s.food) return;
+                              e.stopPropagation();
+                              onSelect(s.food);
+                            }}
+                          />
+                        }
+                      />
+                      <TooltipContent side="top" className="max-w-xs">
+                        <div className="flex flex-col gap-0.5">
+                          <span className="font-medium">{s.name}</span>
+                          <span className="text-background/80">
+                            {s.calories.toLocaleString(undefined, { maximumFractionDigits: 0 })} kcal · {s.pct.toFixed(1)}%
+                            {s.food ? " · click for details" : ""}
+                          </span>
+                        </div>
+                      </TooltipContent>
+                    </Tooltip>
+                  );
+                })}
+              </svg>
+            </TooltipProvider>
             <div
               className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center"
               aria-hidden="true"

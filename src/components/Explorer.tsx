@@ -36,6 +36,7 @@ const TreemapView = dynamic(() => import("./TreemapView").then((m) => m.TreemapV
 const TrendsView = dynamic(() => import("./TrendsView").then((m) => m.TrendsView));
 const ChatView = dynamic(() => import("./ChatView").then((m) => m.ChatView));
 const OnboardingModal = dynamic(() => import("./OnboardingModal").then((m) => m.OnboardingModal));
+const DetailModal = dynamic(() => import("./DetailModal").then((m) => m.DetailModal));
 
 export function Explorer() {
   const [view, setView]         = useState<ViewId>("explorer");
