@@ -15,7 +15,6 @@ import { CompareStrip } from "./CompareStrip";
 import { ExplorerView } from "./ExplorerView";
 import { ImportButton } from "./ImportButton";
 import { highDensityCalories, highDensityCaloriesShare } from "@/lib/stats";
-import { dummyFoods } from "@/lib/dummyData";
 import { toast } from "sonner";
 import { DateRangePicker } from "./DateRangePicker";
 import { CalorieShareDonut } from "./CalorieShareDonut";
@@ -58,6 +57,26 @@ export function Explorer() {
   // The moment real data is imported, `hasRealData` flips true and the
   // dummy data / blur / onboarding modal are discarded.
   const hasRealData = rawFoods.length > 0;
+
+  // dummyFoods is only needed in the empty-state branch (!hasRealData), so it
+  // is loaded on demand via a dynamic import rather than bundled into the
+  // always-loaded Explorer chunk. Until the chunk resolves, displayFoods is
+  // empty — the blurred preview renders blank for a tick, which is hidden by
+  // the onboarding modal anyway.
+  const [dummyFoods, setDummyFoods] = useState<Food[]>([]);
+  useEffect(() => {
+    if (hasRealData) return;
+    let cancelled = false;
+    import("@/lib/dummyData")
+      .then((m) => {
+        if (!cancelled) setDummyFoods(m.dummyFoods);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [hasRealData]);
+
   const displayFoods = hasRealData ? rawFoods : dummyFoods;
 
   const handleClearData = useCallback(async () => {
