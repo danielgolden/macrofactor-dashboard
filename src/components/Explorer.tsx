@@ -12,7 +12,6 @@ import { SectionCards } from "./section-cards";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { Controls } from "./Controls";
 import { CompareStrip } from "./CompareStrip";
-import { DetailModal } from "./DetailModal";
 import { ExplorerView } from "./ExplorerView";
 import { ImportButton } from "./ImportButton";
 import { highDensityCalories, highDensityCaloriesShare } from "@/lib/stats";
