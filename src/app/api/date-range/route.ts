@@ -8,26 +8,26 @@ export async function GET() {
 
   const supabase = createServerClient();
 
-  const { data, error } = await supabase
-    .from("food_log_entries")
-    .select("date")
-    .eq("user_id", userId)
-    .order("date", { ascending: true })
-    .limit(1);
+  const [minResult, maxResult] = await Promise.all([
+    supabase
+      .from("food_log_entries")
+      .select("date")
+      .eq("user_id", userId)
+      .order("date", { ascending: true })
+      .limit(1),
+    supabase
+      .from("food_log_entries")
+      .select("date")
+      .eq("user_id", userId)
+      .order("date", { ascending: false })
+      .limit(1),
+  ]);
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (minResult.error) return NextResponse.json({ error: minResult.error.message }, { status: 500 });
+  if (maxResult.error) return NextResponse.json({ error: maxResult.error.message }, { status: 500 });
 
-  const { data: maxData, error: maxError } = await supabase
-    .from("food_log_entries")
-    .select("date")
-    .eq("user_id", userId)
-    .order("date", { ascending: false })
-    .limit(1);
-
-  if (maxError) return NextResponse.json({ error: maxError.message }, { status: 500 });
-
-  const min = data?.[0]?.date ?? null;
-  const max = maxData?.[0]?.date ?? null;
+  const min = minResult.data?.[0]?.date ?? null;
+  const max = maxResult.data?.[0]?.date ?? null;
 
   return NextResponse.json({ min, max });
 }
