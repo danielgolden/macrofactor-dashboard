@@ -1,3 +1,4 @@
+import { format } from "date-fns";
 import type { LogEntry } from "./aggregateEntries";
 
 export interface WeekBucket {
@@ -39,8 +40,16 @@ export function startOfWeek(dateStr: string): Date {
   return d;
 }
 
+/**
+ * Format a Date as a local-timezone YYYY-MM-DD string.
+ *
+ * `startOfWeek` returns local-midnight Date objects; the previous
+ * `d.toISOString().slice(0, 10)` shifted them back a day for users east
+ * of UTC, mis-bucketing week starts. Use date-fns `format` (local) —
+ * matches `toISO` in `./dateRange.ts`. (#57)
+ */
 export function isoDate(d: Date): string {
-  return d.toISOString().slice(0, 10);
+  return format(d, "yyyy-MM-dd");
 }
 
 export function weekLabel(d: Date): string {
