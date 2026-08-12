@@ -129,7 +129,7 @@ export function CalorieShareDonut({ foods, onSelect }: Props) {
               config={chartConfig}
               className="h-full w-full"
             >
-                <PieChart>
+              <PieChart>
                 <ChartTooltip
                   content={<DonutTooltip />}
                   {...CHART_TOOLTIP_DEFAULTS}
