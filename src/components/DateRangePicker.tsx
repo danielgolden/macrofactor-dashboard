@@ -1,11 +1,11 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import dynamic from "next/dynamic";
 import { CalendarIcon } from "lucide-react";
 import { format, parseISO, startOfMonth } from "date-fns";
 
 import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { cn } from "@/lib/utils";
@@ -17,6 +17,15 @@ import {
   type DateBounds,
   type DateRange,
 } from "@/lib/dateRange";
+
+// The Calendar component pulls in the entire react-day-picker library,
+// which is only needed once the user actually opens the date-picker
+// popover. Lazy-loading it keeps react-day-picker out of the always-loaded
+// Explorer chunk (the dashboard's critical load path); the chunk is
+// fetched on demand the first time the popover opens.
+const Calendar = dynamic(() =>
+  import("@/components/ui/calendar").then((m) => m.Calendar),
+);
 
 interface Props {
   value: DateRange | null;

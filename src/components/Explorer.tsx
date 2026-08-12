@@ -1,5 +1,6 @@
 "use client";
 import { useState, useMemo, useCallback, useEffect } from "react";
+import dynamic from "next/dynamic";
 import type { Food, Zone, Category } from "@/lib/types";
 import { VIEWS, type ViewId } from "@/lib/views";
 import { useFoods } from "@/lib/useFoods";
@@ -11,19 +12,11 @@ import { SectionCards } from "./section-cards";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { Controls } from "./Controls";
 import { CompareStrip } from "./CompareStrip";
-import { DetailModal } from "./DetailModal";
 import { ExplorerView } from "./ExplorerView";
-import { ScatterView } from "./ScatterView";
-import { RankingView } from "./RankingView";
 import { ImportButton } from "./ImportButton";
-import { OnboardingModal } from "./OnboardingModal";
 import { highDensityCalories, highDensityCaloriesShare } from "@/lib/stats";
-import { dummyFoods } from "@/lib/dummyData";
 import { toast } from "sonner";
 import { DateRangePicker } from "./DateRangePicker";
-import { TreemapView } from "./TreemapView";
-import { TrendsView } from "./TrendsView";
-import { ChatView } from "./ChatView";
 import { CalorieShareDonut } from "./CalorieShareDonut";
 import {
   ExplorerSkeleton,
@@ -31,6 +24,18 @@ import {
   RankingSkeleton,
   TreemapSkeleton,
 } from "./LoadingSkeletons";
+
+// Heavy, conditionally-rendered views are split into on-demand chunks so the
+// initial dashboard bundle only carries the default "explorer" view. Each of
+// these pulls in recharts / AI SDK / large component trees that aren't needed
+// until the user switches to that view (or opens the relevant modal).
+const ScatterView = dynamic(() => import("./ScatterView").then((m) => m.ScatterView));
+const RankingView = dynamic(() => import("./RankingView").then((m) => m.RankingView));
+const TreemapView = dynamic(() => import("./TreemapView").then((m) => m.TreemapView));
+const TrendsView = dynamic(() => import("./TrendsView").then((m) => m.TrendsView));
+const ChatView = dynamic(() => import("./ChatView").then((m) => m.ChatView));
+const OnboardingModal = dynamic(() => import("./OnboardingModal").then((m) => m.OnboardingModal));
+const DetailModal = dynamic(() => import("./DetailModal").then((m) => m.DetailModal));
 
 export function Explorer() {
   const [view, setView]         = useState<ViewId>("explorer");
@@ -52,6 +57,26 @@ export function Explorer() {
   // The moment real data is imported, `hasRealData` flips true and the
   // dummy data / blur / onboarding modal are discarded.
   const hasRealData = rawFoods.length > 0;
+
+  // dummyFoods is only needed in the empty-state branch (!hasRealData), so it
+  // is loaded on demand via a dynamic import rather than bundled into the
+  // always-loaded Explorer chunk. Until the chunk resolves, displayFoods is
+  // empty — the blurred preview renders blank for a tick, which is hidden by
+  // the onboarding modal anyway.
+  const [dummyFoods, setDummyFoods] = useState<Food[]>([]);
+  useEffect(() => {
+    if (hasRealData) return;
+    let cancelled = false;
+    import("@/lib/dummyData")
+      .then((m) => {
+        if (!cancelled) setDummyFoods(m.dummyFoods);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [hasRealData]);
+
   const displayFoods = hasRealData ? rawFoods : dummyFoods;
 
   const handleClearData = useCallback(async () => {

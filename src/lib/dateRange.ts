@@ -28,20 +28,24 @@ export function addDays(d: Date, n: number): Date {
   return r;
 }
 
+export function todayRange(): DateRange {
+  const t = todayDate();
+  return { start: toISO(t), end: toISO(t) };
+}
+
+export function last7DaysRange(): DateRange {
+  const t = todayDate();
+  return { start: toISO(addDays(t, -6)), end: toISO(t) };
+}
+
 export const PRESETS: { label: string; range: () => DateRange }[] = [
   {
     label: "Today",
-    range: () => {
-      const t = todayDate();
-      return { start: toISO(t), end: toISO(t) };
-    },
+    range: todayRange,
   },
   {
     label: "7 d",
-    range: () => {
-      const t = todayDate();
-      return { start: toISO(addDays(t, -6)), end: toISO(t) };
-    },
+    range: last7DaysRange,
   },
   {
     label: "30 d",
@@ -74,10 +78,10 @@ export function isPresetDisabled(
 export function computeInitialRange(bounds: DateBounds | null): DateRange | null {
   if (!bounds) return null;
 
-  const sevenDays = PRESETS.find((p) => p.label === "7 d")!.range();
+  const sevenDays = last7DaysRange();
   if (rangeOverlapsBounds(sevenDays, bounds)) return sevenDays;
 
-  const today = PRESETS.find((p) => p.label === "Today")!.range();
+  const today = todayRange();
   if (rangeOverlapsBounds(today, bounds)) return today;
 
   const iso = toISO(bounds.max);
