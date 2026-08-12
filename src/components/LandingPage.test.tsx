@@ -58,7 +58,7 @@ describe("LandingPage", () => {
 
     for (const step of [
       "Export your food log",
-      "Sign in with Google",
+      "Sign in, no email needed",
       "Import and explore",
     ]) {
       expect(screen.getByRole("heading", { name: step })).toBeInTheDocument();

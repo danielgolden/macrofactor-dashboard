@@ -1,12 +1,12 @@
 import Link from "next/link";
-import { SignIn } from "@clerk/nextjs";
-import { LogInIcon, UtensilsIcon } from "lucide-react";
+import { SignUp } from "@clerk/nextjs";
+import { AtSignIcon, UtensilsIcon } from "lucide-react";
 
 import { lastik } from "@/lib/fonts";
 import landing from "@/components/LandingPage.module.css";
 import local from "@/components/AuthPage.module.css";
 
-export default function SignInPage() {
+export default function SignUpPage() {
   return (
     <div className={`${landing.root} ${lastik.variable} ${local.page}`}>
       <header className={local.header}>
@@ -24,17 +24,17 @@ export default function SignInPage() {
         <div className={local.copy}>
           <span className={landing.kicker}>A companion for MacroFactor</span>
           <h1 className={`${landing.display} ${local.h1}`}>
-            Your food log has <em>more to tell you.</em>
+            Pick a username. <em>That&rsquo;s it.</em>
           </h1>
           <p className={local.sub}>
-            Sign in to pick up where MacroFactor leaves off — the patterns
-            behind how you eat, in charts and plain language.
+            No email, no phone number. Choose a username and a password and your
+            log is yours — or continue with Google if you prefer one click.
           </p>
         </div>
 
         <div className={local.signin}>
-          <SignIn
-            signUpUrl="/sign-up"
+          <SignUp
+            signInUrl="/sign-in"
             forceRedirectUrl="/app"
             appearance={{
               variables: {
@@ -46,8 +46,8 @@ export default function SignInPage() {
         </div>
 
         <p className={local.note}>
-          <LogInIcon size={14} />
-          One click with Google, or a username and password — no email needed.
+          <AtSignIcon size={14} />
+          We never ask for an email address.
         </p>
       </main>
     </div>
