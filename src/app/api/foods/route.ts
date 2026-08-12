@@ -22,7 +22,10 @@ export async function GET(req: NextRequest) {
   if (startDate && endDate) {
     let query = supabase
       .from("food_log_entries")
-      .select("*")
+      // Only the columns aggregateEntries actually reads — omitting user_id
+      // and row_hash (64-char SHA-256 per row) cuts the transfer payload
+      // substantially, especially for users with thousands of log entries.
+      .select("date, food_name, weight_g, calories, fat_g, carbs_g, protein_g")
       .eq("user_id", userId)
       .gte("date", startDate)
       .lte("date", endDate);
@@ -44,7 +47,7 @@ export async function GET(req: NextRequest) {
       fatG: Number(r.fat_g),
       carbsG: Number(r.carbs_g),
       proteinG: Number(r.protein_g),
-      rowHash: r.row_hash ?? "",
+      rowHash: "",
     }));
 
     const foods = aggregateEntries(entries);
