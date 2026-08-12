@@ -200,10 +200,11 @@ export function LandingPage() {
               </span>
             </div>
             <div className={styles.stepBody}>
-              <h3 className={`${styles.serifSmall} ${styles.stepTitle}`}>Sign in with Google</h3>
+              <h3 className={`${styles.serifSmall} ${styles.stepTitle}`}>Sign in, no email needed</h3>
               <p className={styles.stepText}>
-                One click, no password. Your data stays private — each user only
-                ever sees their own log.
+                One click with Google, or just a username and password — we
+                never ask for an email address. Your data stays private — each
+                user only ever sees their own log.
               </p>
             </div>
           </div>

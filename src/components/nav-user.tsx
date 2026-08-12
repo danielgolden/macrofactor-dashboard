@@ -46,14 +46,15 @@ export function NavUser({ onClearData }: { onClearData?: () => void }) {
 
   if (!user) return null;
 
-  const name = user.fullName ?? "User";
-  const email = user.primaryEmailAddress?.emailAddress ?? "";
-  const initials = name
-    .split(" ")
-    .map((p) => p[0])
-    .slice(0, 2)
-    .join("")
-    .toUpperCase();
+  // Accounts can be username-only (no email, no name), so fall back down the
+  // chain rather than assuming an email address exists.
+  const name = user.fullName || user.username || "User";
+  const handle = user.primaryEmailAddress?.emailAddress
+    ?? (user.username ? `@${user.username}` : "");
+  const words = name.split(" ").filter(Boolean);
+  const initials = (
+    words.length > 1 ? words.slice(0, 2).map((p) => p[0]).join("") : name.slice(0, 2)
+  ).toUpperCase();
 
   const handleClearData = async () => {
     setClearing(true);
@@ -90,7 +91,7 @@ export function NavUser({ onClearData }: { onClearData?: () => void }) {
             </Avatar>
             <div className="grid flex-1 text-left text-sm leading-tight">
               <span className="truncate font-medium">{name}</span>
-              <span className="truncate text-xs text-foreground/70">{email}</span>
+              <span className="truncate text-xs text-foreground/70">{handle}</span>
             </div>
             <EllipsisVerticalIcon className="ml-auto size-4" />
           </DropdownMenuTrigger>
@@ -109,7 +110,7 @@ export function NavUser({ onClearData }: { onClearData?: () => void }) {
                   </Avatar>
                   <div className="grid flex-1 text-left text-sm leading-tight">
                     <span className="truncate font-medium">{name}</span>
-                    <span className="truncate text-xs text-muted-foreground">{email}</span>
+                    <span className="truncate text-xs text-muted-foreground">{handle}</span>
                   </div>
                 </div>
               </DropdownMenuLabel>

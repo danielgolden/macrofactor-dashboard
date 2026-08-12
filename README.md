@@ -5,7 +5,7 @@ Visualizador personal de densidad calórica — Next.js + Clerk + Supabase.
 ## Stack
 
 - **Next.js 15** (App Router)
-- **Clerk** — autenticación con Google
+- **Clerk** — autenticación con Google o con username (sin email)
 - **Supabase** — base de datos PostgreSQL
 - **Stripe Projects** — gestión de credenciales y servicios
 
@@ -45,6 +45,42 @@ cp .env.example .env.local
 npm install
 npm run dev
 ```
+
+---
+
+## Autenticación sin email
+
+La app permite crear cuenta **sin dar un correo electrónico**: username +
+password, o un click con Google. El código ya expone `/sign-in` y `/sign-up`,
+pero *qué identificadores acepta Clerk se configura en el Dashboard*, no en el
+repo. Sin este paso el formulario de registro seguirá pidiendo email.
+
+En [dashboard.clerk.com](https://dashboard.clerk.com) → tu aplicación →
+**Configure → User & authentication**:
+
+1. **Email, phone, username**
+   - Activar **Username** (`Required`).
+   - **Email address** → `Off`, o `Optional` si quieres permitir (no exigir)
+     recuperación de cuenta por correo.
+   - Al menos un identificador es obligatorio, así que activa Username *antes*
+     de apagar Email; si no, el Dashboard rechaza el cambio.
+2. **Authentication strategies** → activar **Password** (y opcionalmente
+   **Passkey**), que es lo que sustituye al email code / magic link.
+3. **Social connections** → dejar **Google** activo. Ojo: Google entrega el
+   email de la cuenta igualmente; es una opción de conveniencia, no la vía
+   anónima. La vía sin email es username + password.
+
+Consideraciones antes de apagar el email por completo:
+
+- **No hay recuperación de cuenta.** Sin email ni teléfono, un usuario que
+  olvide su password pierde el acceso, y con él sus datos importados. La única
+  salida es resetear el password desde el Dashboard de Clerk.
+- **El flujo combinado sign-in-or-up no soporta username** (Clerk necesita un
+  medio de contacto para verificar). Por eso `/sign-in` y `/sign-up` son
+  páginas separadas y enlazadas entre sí vía `signUpUrl` / `signInUrl`.
+- La app no depende del email en ningún punto: el aislamiento de datos usa el
+  `userId` de Clerk (ver RLS en `supabase/migration.sql`), y la barra lateral
+  cae a `@username` cuando no hay correo.
 
 ---
 
