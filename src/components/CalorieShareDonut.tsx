@@ -130,7 +130,15 @@ export function CalorieShareDonut({ foods, onSelect }: Props) {
               className="h-full w-full"
             >
               <PieChart>
-                <ChartTooltip content={<DonutTooltip />} {...CHART_TOOLTIP_DEFAULTS} />
+                <ChartTooltip
+                  content={<DonutTooltip />}
+                  {...CHART_TOOLTIP_DEFAULTS}
+                  // Lift the tooltip above the center-figure overlay below:
+                  // both are positioned with z-index:auto in the same
+                  // stacking context, so without this the overlay (later
+                  // in DOM) paints on top of the tooltip. See issue #48.
+                  wrapperStyle={{ zIndex: 50 }}
+                />
                 <Pie
                   data={segments}
                   dataKey="calories"
