@@ -39,9 +39,10 @@ export function prefetchFoods(range: { start: string; end: string }): Promise<Fo
   foodsPrefetchCache.set(key, p);
   // Self-evict on settle so an unconsumed or rejected prefetch can never
   // leak or shadow a later fresh fetch for the same range.
-  p.finally(() => {
+  const evict = () => {
     if (foodsPrefetchCache.get(key) === p) foodsPrefetchCache.delete(key);
-  });
+  };
+  p.then(evict, evict);
   return p;
 }
 
